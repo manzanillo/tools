@@ -235,6 +235,94 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
+        /* Modal styling */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--secondary-text);
+        }
+        
+        .embed-code-container {
+            margin-bottom: 1.5rem;
+        }
+        
+        .embed-code {
+            width: 100%;
+            height: 80px;
+            background: rgba(30, 30, 32, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text-color);
+            font-family: 'SF Mono', Menlo, Monaco, 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: none;
+        }
+        
+        .embed-options {
+            margin-top: 1.5rem;
+        }
+        
+        .embed-size {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .embed-size input {
+            width: 80px;
+        }
+
         /* Dark mode */
         @media (prefers-color-scheme: dark) {
             :root {
@@ -272,6 +360,36 @@
         /* For language specific styling */
         .hljs {
             background: transparent !important;
+        }
+        
+        /* Embed mode */
+        .embed-mode .header,
+        .embed-mode .glass-panel:not(.preview-section) {
+            display: none;
+        }
+        
+        .embed-mode .container {
+            margin: 0;
+            width: 100%;
+            gap: 0;
+        }
+        
+        .embed-mode .preview-section {
+            border-radius: 0;
+            margin: 0;
+            height: 100vh;
+            box-shadow: none;
+        }
+        
+        .embed-mode .action-buttons {
+            display: none;
+        }
+        
+        body.embed-mode {
+            background: transparent;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -380,6 +498,48 @@
                     </svg>
                     Reset
                 </button>
+                <button class="btn btn-secondary" id="embedBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 18l6-6-6-6"></path>
+                        <path d="M8 6l-6 6 6 6"></path>
+                    </svg>
+                    Get Embed Code
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Embed Modal -->
+    <div class="modal" id="embedModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Embed This Snippet</h2>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div class="embed-code-container">
+                <p>Copy and paste this code into your website:</p>
+                <textarea class="embed-code" id="embedCodeText" readonly></textarea>
+                <button class="btn" id="copyEmbedBtn" style="margin-top: 1rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy Embed Code
+                </button>
+            </div>
+            <div class="embed-options">
+                <p>Customize size:</p>
+                <div class="embed-size">
+                    <div class="control-group">
+                        <label for="embedWidth">Width</label>
+                        <input type="text" id="embedWidth" value="600">
+                    </div>
+                    <div class="control-group">
+                        <label for="embedHeight">Height</label>
+                        <input type="text" id="embedHeight" value="400">
+                    </div>
+                </div>
+                <button class="btn btn-secondary" id="updateEmbedBtn">Update Embed Code</button>
             </div>
         </div>
     </div>
@@ -403,7 +563,80 @@
 
             // Initialize highlighting
             hljs.highlightAll();
+            
+            // Parse URL parameters
+            parseUrlParams();
         });
+
+        // Parse URL parameters and set code and other settings
+        function parseUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Get code from URL
+            if (urlParams.has('code')) {
+                const encodedCode = urlParams.get('code');
+                const decodedCode = decodeURIComponent(atob(encodedCode));
+                codeInput.value = decodedCode;
+                updateCodePreview();
+            }
+            
+            // Get language from URL
+            if (urlParams.has('lang')) {
+                const lang = urlParams.get('lang');
+                if (document.querySelector(`#language option[value="${lang}"]`)) {
+                    languageSelect.value = lang;
+                    updateCodePreview();
+                    updateFilename();
+                }
+            }
+            
+            // Get theme from URL
+            if (urlParams.has('theme')) {
+                const theme = urlParams.get('theme');
+                if (document.querySelector(`#theme option[value="${theme}"]`)) {
+                    themeSelect.value = theme;
+                    updateTheme();
+                }
+            }
+            
+            // Get filename from URL
+            if (urlParams.has('filename')) {
+                filenameInput.value = urlParams.get('filename');
+                updateFilename();
+            }
+            
+            // Get background color from URL
+            if (urlParams.has('bg')) {
+                const bgColor = urlParams.get('bg');
+                if (/^#([0-9A-F]{3}){1,2}$/i.test(bgColor)) {
+                    bgColorPicker.value = bgColor;
+                    updateBackgroundColor();
+                }
+            }
+            
+            // Get border radius from URL
+            if (urlParams.has('radius')) {
+                const radius = parseInt(urlParams.get('radius'));
+                if (!isNaN(radius) && radius >= 4 && radius <= 24) {
+                    radiusSlider.value = radius;
+                    updateRadius();
+                }
+            }
+            
+            // Get padding from URL
+            if (urlParams.has('padding')) {
+                const padding = parseInt(urlParams.get('padding'));
+                if (!isNaN(padding) && padding >= 8 && padding <= 40) {
+                    paddingSlider.value = padding;
+                    updatePadding();
+                }
+            }
+            
+            // Check if embed mode
+            if (urlParams.has('embed') && urlParams.get('embed') === 'true') {
+                document.body.classList.add('embed-mode');
+            }
+        }
 
         // DOM Elements
         const codeInput = document.getElementById('codeInput');
@@ -419,8 +652,18 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const copyBtn = document.getElementById('copyBtn');
         const resetBtn = document.getElementById('resetBtn');
+        const embedBtn = document.getElementById('embedBtn');
         const codeSnippet = document.getElementById('codeSnippet');
         const previewContainer = document.getElementById('previewContainer');
+        
+        // Modal elements
+        const embedModal = document.getElementById('embedModal');
+        const closeModal = document.getElementById('closeModal');
+        const embedCodeText = document.getElementById('embedCodeText');
+        const copyEmbedBtn = document.getElementById('copyEmbedBtn');
+        const embedWidth = document.getElementById('embedWidth');
+        const embedHeight = document.getElementById('embedHeight');
+        const updateEmbedBtn = document.getElementById('updateEmbedBtn');
 
         // Update code preview
         function updateCodePreview() {
@@ -516,6 +759,10 @@
             downloadBtn.textContent = 'Generating...';
             downloadBtn.disabled = true;
             
+            // Check if we're in embed mode
+            const urlParams = new URLSearchParams(window.location.search);
+            const isEmbed = urlParams.has('embed') && urlParams.get('embed') === 'true';
+            
             // Create a temporary container with fixed dimensions
             const tempContainer = document.createElement('div');
             tempContainer.style.position = 'absolute';
@@ -524,7 +771,8 @@
             tempContainer.style.width = '800px';
             tempContainer.style.height = 'auto';
             tempContainer.style.padding = '40px';
-            tempContainer.style.background = 'transparent';
+            tempContainer.style.background = isEmbed ? 'transparent' : bgColorPicker.value;
+            tempContainer.style.borderRadius = '8px';
             tempContainer.style.zIndex = '-1';
             
             // Clone the code snippet
@@ -613,6 +861,79 @@
         downloadBtn.addEventListener('click', downloadAsPNG);
         copyBtn.addEventListener('click', copyCodeToClipboard);
         resetBtn.addEventListener('click', resetSettings);
+        embedBtn.addEventListener('click', showEmbedModal);
+        closeModal.addEventListener('click', () => embedModal.classList.remove('show'));
+        copyEmbedBtn.addEventListener('click', copyEmbedCode);
+        updateEmbedBtn.addEventListener('click', updateEmbedCode);
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === embedModal) {
+                embedModal.classList.remove('show');
+            }
+        });
+        
+        // Generate embed URL
+        function generateEmbedUrl() {
+            const code = codeInput.value;
+            if (!code) return '';
+            
+            // Base64 encode the code to handle special characters
+            const encodedCode = btoa(encodeURIComponent(code));
+            
+            // Build URL with parameters
+            const url = new URL(window.location.href.split('?')[0]);
+            url.searchParams.append('embed', 'true');
+            url.searchParams.append('code', encodedCode);
+            url.searchParams.append('lang', languageSelect.value);
+            url.searchParams.append('theme', themeSelect.value);
+            
+            if (filenameInput.value) {
+                url.searchParams.append('filename', filenameInput.value);
+            }
+            
+            url.searchParams.append('bg', bgColorPicker.value);
+            url.searchParams.append('radius', radiusSlider.value);
+            url.searchParams.append('padding', paddingSlider.value);
+            
+            return url.toString();
+        }
+        
+        // Show embed modal
+        function showEmbedModal() {
+            if (!codeInput.value) {
+                alert('Please enter some code first.');
+                return;
+            }
+            
+            updateEmbedCode();
+            embedModal.classList.add('show');
+        }
+        
+        // Update embed code in the modal
+        function updateEmbedCode() {
+            const embedUrl = generateEmbedUrl();
+            const width = embedWidth.value || '600';
+            const height = embedHeight.value || '400';
+            
+            const embedCode = `<iframe src="${embedUrl}" width="${width}" height="${height}" frameborder="0" allowtransparency="true"></iframe>`;
+            embedCodeText.value = embedCode;
+        }
+        
+        // Copy embed code to clipboard
+        function copyEmbedCode() {
+            embedCodeText.select();
+            document.execCommand('copy');
+            
+            const originalText = copyEmbedBtn.innerHTML;
+            copyEmbedBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg> Copied!`;
+            
+            setTimeout(() => {
+                copyEmbedBtn.innerHTML = originalText;
+            }, 2000);
+        }
 
         // Initialize
         updateCodePreview();
@@ -620,6 +941,7 @@
         updateTheme();
         updateRadius();
         updatePadding();
+        updateBackgroundColor();
 
         // Add shimmer effect on mouse move
         previewContainer.addEventListener('mousemove', (e) => {
