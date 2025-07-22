@@ -6,29 +6,232 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Text Formatter for LinkedIn</title>
-    <link rel="stylesheet" href="styles.css">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Format your LinkedIn text with bold, italic, and bold-italic Unicode characters for more engaging posts.">
+    <meta name="keywords" content="LinkedIn formatter, LinkedIn text styling, bold text, italic text, font converter">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="LinkedIn Text Formatter">
+    <meta property="og:description"
+        content="Format your LinkedIn text with bold, italic, and bold-italic Unicode characters for more engaging posts.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/linkedInFormatter.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+    
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: rgba(0, 0, 0, 0.05);
+            --accent-color: #0071e3;
+            --text-color: #1d1d1f;
+            --secondary-text: #86868b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .header {
+            width: 100%;
+            padding: 1.5rem 0;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 2rem auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            padding: 2rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 113, 227, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(60, 60, 65, 0.1);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(60, 60, 65, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .output-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .output-section h2 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .output {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 1rem;
+            min-height: 60px;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .footer {
+            width: 100%;
+            padding: 1.5rem 0;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            margin-top: auto;
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1d1d1f;
+                --glass-bg: rgba(30, 30, 32, 0.7);
+                --glass-border: rgba(255, 255, 255, 0.1);
+                --glass-shadow: rgba(0, 0, 0, 0.2);
+                --text-color: #f5f5f7;
+                --secondary-text: #86868b;
+            }
+
+            textarea, .output {
+                background: rgba(60, 60, 65, 0.5);
+                color: var(--text-color);
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
+    <div class="header">
         <h1>LinkedIn Text Formatter</h1>
-        <p>Enter text below to convert it to bold, bold italics, and italics for LinkedIn:</p>
+    </div>
 
-        <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+    <div class="container">
+        <div class="glass-panel">
+            <p>Enter text below to convert it to bold, bold italics, and italics for LinkedIn:</p>
 
-        <button id="convertBtn">Convert to Formats</button>
+            <textarea id="inputText" placeholder="Enter your text here..."></textarea>
 
-        <h2>Bold Text:</h2>
-        <div id="outputBold" class="output"></div>
-        <br /><button id="copyBoldBtn">Copy Bold</button>
+            <div style="text-align: center;">
+                <button id="convertBtn" class="btn">Convert to Formats</button>
+            </div>
 
-        <h2>Bold Italic Text:</h2>
-        <div id="outputBoldItalic" class="output"></div>
-        <br /><button id="copyBoldItalicBtn">Copy Bold Italic</button>
+            <div class="output-section">
+                <h2>Bold Text:</h2>
+                <div id="outputBold" class="output"></div>
+                <button id="copyBoldBtn" class="btn btn-success">Copy Bold</button>
+            </div>
 
-        <h2>Italic Text:</h2>
-        <div id="outputItalic" class="output"></div>
-        <br /><button id="copyItalicBtn">Copy Italic</button>
+            <div class="output-section">
+                <h2>Bold Italic Text:</h2>
+                <div id="outputBoldItalic" class="output"></div>
+                <button id="copyBoldItalicBtn" class="btn btn-success">Copy Bold Italic</button>
+            </div>
+
+            <div class="output-section">
+                <h2>Italic Text:</h2>
+                <div id="outputItalic" class="output"></div>
+                <button id="copyItalicBtn" class="btn btn-success">Copy Italic</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Created with 🩵 by <a href="https://www.stefanseegerer.de" style="color: rgb(229, 229, 229);">Stefan Seegerer</a></p>
     </div>
 
     <script src="linkedIn.js"></script>
