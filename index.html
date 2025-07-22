@@ -1,13 +1,225 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Tools</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Tools Collection</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="A collection of useful web tools including a code formatter with syntax highlighting and a LinkedIn formatter.">
+    <meta name="keywords" content="web tools, code formatter, syntax highlighting, LinkedIn formatter, developer tools">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Web Tools Collection">
+    <meta property="og:description"
+        content="A collection of useful web development tools including a code formatter with syntax highlighting and a LinkedIn formatter.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
+
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: rgba(0, 0, 0, 0.05);
+            --accent-color: #0071e3;
+            --text-color: #1d1d1f;
+            --secondary-text: #86868b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .header {
+            width: 100%;
+            padding: 1.5rem 0;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 2rem auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            padding: 2rem;
+        }
+
+        .tools-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .tool-card a {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: var(--text-color);
+            height: 100%;
+        }
+
+        .tool-image {
+            background: linear-gradient(135deg, var(--accent-color), #47a1ff);
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .tool-content {
+            padding: 1.5rem;
+        }
+
+        .tool-title {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .tool-description {
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .footer {
+            width: 100%;
+            padding: 1.5rem 0;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            margin-top: auto;
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1d1d1f;
+                --glass-bg: rgba(30, 30, 32, 0.7);
+                --glass-border: rgba(255, 255, 255, 0.1);
+                --glass-shadow: rgba(0, 0, 0, 0.2);
+                --text-color: #f5f5f7;
+                --secondary-text: #86868b;
+            }
+
+            .tool-card {
+                background: rgba(60, 60, 65, 0.5);
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Tools</h1>
-    <ul>
-        <li><a href="linkedInFormatter.html">LinkedIn Formatter</a></li>
-        <li><a href="bash.html">Code Formatter</a></li>
-    </ul>
+    <div class="header">
+        <h1>Web Developer Tools</h1>
+    </div>
+
+    <div class="container">
+        <div class="glass-panel">
+            <p>Welcome to our collection of web development tools. These tools are designed to help streamline your
+                workflow and enhance productivity.</p>
+
+            <div class="tools-list">
+                <div class="tool-card">
+                    <a href="linkedInFormatter.html">
+                        <div class="tool-image">📋</div>
+                        <div class="tool-content">
+                            <h2 class="tool-title">LinkedIn Formatter</h2>
+                            <p class="tool-description">Format your LinkedIn posts with proper spacing and styling to
+                                make them more engaging and professional.</p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="tool-card">
+                    <a href="bash.html">
+                        <div class="tool-image">💻</div>
+                        <div class="tool-content">
+                            <h2 class="tool-title">Code Formatter</h2>
+                            <p class="tool-description">Create beautiful, shareable code snippets with syntax
+                                highlighting and customizable styling. Ideal for documentation and presentations.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Created with 🩵 by <a href="https://www.stefanseegerer.de" style="color: rgb(229, 229, 229);">Stefan
+                Seegerer</a></p>
+    </div>
+
+    <script>
+        // Optional: Add some subtle animation or interaction
+        document.addEventListener('DOMContentLoaded', () => {
+            // For future enhancements
+        });
+    </script>
+    <script async defer src="https://scripts.withcabin.com/hello.js"></script>
+
 </body>
+
 </html>

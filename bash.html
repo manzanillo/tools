@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Snippets</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
@@ -83,7 +85,8 @@
             color: var(--secondary-text);
         }
 
-        select, input {
+        select,
+        input {
             background: rgba(255, 255, 255, 0.5);
             border: 1px solid var(--glass-border);
             border-radius: 8px;
@@ -173,9 +176,17 @@
             border-radius: 50%;
         }
 
-        .close { background-color: #ff5f57; }
-        .minimize { background-color: #febc2e; }
-        .maximize { background-color: #28c840; }
+        .close {
+            background-color: #ff5f57;
+        }
+
+        .minimize {
+            background-color: #febc2e;
+        }
+
+        .maximize {
+            background-color: #28c840;
+        }
 
         .file-name {
             color: rgba(255, 255, 255, 0.7);
@@ -251,12 +262,12 @@
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
-        
+
         .modal.show {
             opacity: 1;
             pointer-events: auto;
         }
-        
+
         .modal-content {
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
@@ -270,20 +281,20 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-        
+
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
         }
-        
+
         .modal-header h2 {
             margin: 0;
             font-weight: 500;
             font-size: 1.5rem;
         }
-        
+
         .close-modal {
             background: none;
             border: none;
@@ -291,11 +302,11 @@
             cursor: pointer;
             color: var(--secondary-text);
         }
-        
+
         .embed-code-container {
             margin-bottom: 1.5rem;
         }
-        
+
         .embed-code {
             width: 100%;
             height: 80px;
@@ -308,17 +319,17 @@
             font-size: 0.9rem;
             resize: none;
         }
-        
+
         .embed-options {
             margin-top: 1.5rem;
         }
-        
+
         .embed-size {
             display: flex;
             gap: 1rem;
             margin-bottom: 1rem;
         }
-        
+
         .embed-size input {
             width: 80px;
         }
@@ -333,8 +344,9 @@
                 --text-color: #f5f5f7;
                 --secondary-text: #86868b;
             }
-            
-            select, input {
+
+            select,
+            input {
                 background: rgba(60, 60, 65, 0.5);
                 color: var(--text-color);
             }
@@ -347,12 +359,10 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.05) 50%,
+                    rgba(255, 255, 255, 0) 100%);
             pointer-events: none;
             z-index: 1;
         }
@@ -361,30 +371,30 @@
         .hljs {
             background: transparent !important;
         }
-        
+
         /* Embed mode */
         .embed-mode .header,
         .embed-mode .glass-panel:not(.preview-section) {
             display: none;
         }
-        
+
         .embed-mode .container {
             margin: 0;
             width: 100%;
             gap: 0;
         }
-        
+
         .embed-mode .preview-section {
             border-radius: 0;
             margin: 0;
             height: 100vh;
             box-shadow: none;
         }
-        
+
         .embed-mode .action-buttons {
             display: none;
         }
-        
+
         body.embed-mode {
             background: transparent;
             margin: 0;
@@ -393,6 +403,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h1>Code Snippets</h1>
@@ -475,7 +486,8 @@
             </div>
             <div class="action-buttons">
                 <button class="btn" id="downloadBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -483,14 +495,16 @@
                     Download PNG
                 </button>
                 <button class="btn btn-secondary" id="copyBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
                     Copy Code
                 </button>
                 <button class="btn btn-secondary" id="resetBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 2v6h6"></path>
                         <path d="M21 12A9 9 0 0 0 6 5.3L3 8"></path>
                         <path d="M21 22v-6h-6"></path>
@@ -499,7 +513,8 @@
                     Reset
                 </button>
                 <button class="btn btn-secondary" id="embedBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M16 18l6-6-6-6"></path>
                         <path d="M8 6l-6 6 6 6"></path>
                     </svg>
@@ -520,7 +535,8 @@
                 <p>Copy and paste this code into your website:</p>
                 <textarea class="embed-code" id="embedCodeText" readonly></textarea>
                 <button class="btn" id="copyEmbedBtn" style="margin-top: 1rem;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
@@ -549,10 +565,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Load additional languages dynamically
             const languages = [
-                'javascript', 'html', 'css', 'python', 'java', 'csharp', 
+                'javascript', 'html', 'css', 'python', 'java', 'csharp',
                 'cpp', 'go', 'ruby', 'swift', 'bash', 'json', 'typescript', 'php'
             ];
-            
+
             languages.forEach(lang => {
                 if (lang !== 'javascript') { // Already included in the core
                     const script = document.createElement('script');
@@ -563,7 +579,7 @@
 
             // Initialize highlighting
             hljs.highlightAll();
-            
+
             // Parse URL parameters
             parseUrlParams();
         });
@@ -571,7 +587,7 @@
         // Parse URL parameters and set code and other settings
         function parseUrlParams() {
             const urlParams = new URLSearchParams(window.location.search);
-            
+
             // Get code from URL
             if (urlParams.has('code')) {
                 const encodedCode = urlParams.get('code');
@@ -579,7 +595,7 @@
                 codeInput.value = decodedCode;
                 updateCodePreview();
             }
-            
+
             // Get language from URL
             if (urlParams.has('lang')) {
                 const lang = urlParams.get('lang');
@@ -589,7 +605,7 @@
                     updateFilename();
                 }
             }
-            
+
             // Get theme from URL
             if (urlParams.has('theme')) {
                 const theme = urlParams.get('theme');
@@ -598,13 +614,13 @@
                     updateTheme();
                 }
             }
-            
+
             // Get filename from URL
             if (urlParams.has('filename')) {
                 filenameInput.value = urlParams.get('filename');
                 updateFilename();
             }
-            
+
             // Get background color from URL
             if (urlParams.has('bg')) {
                 const bgColor = urlParams.get('bg');
@@ -613,7 +629,7 @@
                     updateBackgroundColor();
                 }
             }
-            
+
             // Get border radius from URL
             if (urlParams.has('radius')) {
                 const radius = parseInt(urlParams.get('radius'));
@@ -622,7 +638,7 @@
                     updateRadius();
                 }
             }
-            
+
             // Get padding from URL
             if (urlParams.has('padding')) {
                 const padding = parseInt(urlParams.get('padding'));
@@ -631,7 +647,7 @@
                     updatePadding();
                 }
             }
-            
+
             // Check if embed mode
             if (urlParams.has('embed') && urlParams.get('embed') === 'true') {
                 document.body.classList.add('embed-mode');
@@ -655,7 +671,7 @@
         const embedBtn = document.getElementById('embedBtn');
         const codeSnippet = document.getElementById('codeSnippet');
         const previewContainer = document.getElementById('previewContainer');
-        
+
         // Modal elements
         const embedModal = document.getElementById('embedModal');
         const closeModal = document.getElementById('closeModal');
@@ -669,10 +685,10 @@
         function updateCodePreview() {
             const code = codeInput.value || '// Your code will appear here';
             const language = languageSelect.value;
-            
+
             highlightedCode.className = language;
             highlightedCode.textContent = code;
-            
+
             hljs.highlightElement(highlightedCode);
         }
 
@@ -687,15 +703,15 @@
             const theme = themeSelect.value;
             const snippetContent = document.querySelector('.snippet-content');
             const snippetHeader = document.querySelector('.snippet-header');
-            
+
             // Reset classes
             codeSnippet.className = 'code-snippet';
-            
+
             // Add theme class
             codeSnippet.classList.add(`theme-${theme}`);
-            
+
             // Apply theme colors
-            switch(theme) {
+            switch (theme) {
                 case 'light':
                     snippetContent.style.background = 'rgba(245, 245, 247, 0.95)';
                     snippetHeader.style.background = 'rgba(220, 220, 225, 0.95)';
@@ -723,7 +739,7 @@
                     fileNameDisplay.style.color = 'rgba(255, 255, 255, 0.7)';
                     bgColorPicker.value = '#252528';
             }
-            
+
             // Update background color text and preview
             bgColorText.value = bgColorPicker.value;
             updateBackgroundColor();
@@ -733,7 +749,7 @@
         function updateRadius() {
             const radius = radiusSlider.value + 'px';
             codeSnippet.style.borderRadius = radius;
-            
+
             // Also update the header radius
             const snippetHeader = document.querySelector('.snippet-header');
             snippetHeader.style.borderTopLeftRadius = radius;
@@ -745,7 +761,7 @@
             const padding = paddingSlider.value + 'px';
             document.querySelector('.snippet-content').style.padding = padding;
         }
-        
+
         // Update background color
         function updateBackgroundColor() {
             const color = bgColorPicker.value;
@@ -758,11 +774,11 @@
             // Add loading state
             downloadBtn.textContent = 'Generating...';
             downloadBtn.disabled = true;
-            
+
             // Check if we're in embed mode
             const urlParams = new URLSearchParams(window.location.search);
             const isEmbed = urlParams.has('embed') && urlParams.get('embed') === 'true';
-            
+
             // Create a temporary container with fixed dimensions
             const tempContainer = document.createElement('div');
             tempContainer.style.position = 'absolute';
@@ -774,12 +790,12 @@
             tempContainer.style.background = isEmbed ? 'transparent' : bgColorPicker.value;
             tempContainer.style.borderRadius = '8px';
             tempContainer.style.zIndex = '-1';
-            
+
             // Clone the code snippet
             const snippetClone = codeSnippet.cloneNode(true);
             tempContainer.appendChild(snippetClone);
             document.body.appendChild(tempContainer);
-            
+
             // Use html2canvas to create an image
             html2canvas(snippetClone, {
                 backgroundColor: null,
@@ -790,7 +806,7 @@
                 link.download = (filenameInput.value || 'code-snippet') + '.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                
+
                 // Clean up
                 document.body.removeChild(tempContainer);
                 downloadBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -810,7 +826,7 @@
                 copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
                 </svg> Copied!`;
-                
+
                 setTimeout(() => {
                     copyBtn.innerHTML = originalText;
                 }, 2000);
@@ -827,7 +843,7 @@
             paddingSlider.value = 16;
             bgColorPicker.value = '#252528';
             bgColorText.value = '#252528';
-            
+
             updateCodePreview();
             updateFilename();
             updateTheme();
@@ -865,71 +881,71 @@
         closeModal.addEventListener('click', () => embedModal.classList.remove('show'));
         copyEmbedBtn.addEventListener('click', copyEmbedCode);
         updateEmbedBtn.addEventListener('click', updateEmbedCode);
-        
+
         // Close modal when clicking outside
         window.addEventListener('click', (e) => {
             if (e.target === embedModal) {
                 embedModal.classList.remove('show');
             }
         });
-        
+
         // Generate embed URL
         function generateEmbedUrl() {
             const code = codeInput.value;
             if (!code) return '';
-            
+
             // Base64 encode the code to handle special characters
             const encodedCode = btoa(encodeURIComponent(code));
-            
+
             // Build URL with parameters
             const url = new URL(window.location.href.split('?')[0]);
             url.searchParams.append('embed', 'true');
             url.searchParams.append('code', encodedCode);
             url.searchParams.append('lang', languageSelect.value);
             url.searchParams.append('theme', themeSelect.value);
-            
+
             if (filenameInput.value) {
                 url.searchParams.append('filename', filenameInput.value);
             }
-            
+
             url.searchParams.append('bg', bgColorPicker.value);
             url.searchParams.append('radius', radiusSlider.value);
             url.searchParams.append('padding', paddingSlider.value);
-            
+
             return url.toString();
         }
-        
+
         // Show embed modal
         function showEmbedModal() {
             if (!codeInput.value) {
                 alert('Please enter some code first.');
                 return;
             }
-            
+
             updateEmbedCode();
             embedModal.classList.add('show');
         }
-        
+
         // Update embed code in the modal
         function updateEmbedCode() {
             const embedUrl = generateEmbedUrl();
             const width = embedWidth.value || '600';
             const height = embedHeight.value || '400';
-            
+
             const embedCode = `<iframe src="${embedUrl}" width="${width}" height="${height}" frameborder="0" allowtransparency="true"></iframe>`;
             embedCodeText.value = embedCode;
         }
-        
+
         // Copy embed code to clipboard
         function copyEmbedCode() {
             embedCodeText.select();
             document.execCommand('copy');
-            
+
             const originalText = copyEmbedBtn.innerHTML;
             copyEmbedBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
             </svg> Copied!`;
-            
+
             setTimeout(() => {
                 copyEmbedBtn.innerHTML = originalText;
             }, 2000);
@@ -949,7 +965,7 @@
             const rect = previewContainer.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            
+
             // Update shimmer effect based on mouse position
             shimmer.style.background = `radial-gradient(
                 circle at ${x}px ${y}px,
@@ -958,5 +974,8 @@
             )`;
         });
     </script>
+    <script async defer src="https://scripts.withcabin.com/hello.js"></script>
+
 </body>
+
 </html>
