@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meeting Updates</title>
-    
+
     <!-- SEO Meta Tags -->
     <meta name="description"
         content="Track and organize meeting updates with speech recognition. Automatically categorize what was done last week, what will be done this week, and positive/negative mentions.">
@@ -22,7 +22,7 @@
     <!-- Favicon -->
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
-    
+
     <style>
         :root {
             --bg-color: #f5f5f7;
@@ -132,7 +132,9 @@
             color: var(--secondary-text);
         }
 
-        input, select, textarea {
+        input,
+        select,
+        textarea {
             background: rgba(255, 255, 255, 0.5);
             border: 1px solid var(--glass-border);
             border-radius: 8px;
@@ -228,8 +230,13 @@
         }
 
         @keyframes pulse {
-            from { opacity: 1; }
-            to { opacity: 0.3; }
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0.3;
+            }
         }
 
         .speech-input {
@@ -241,6 +248,47 @@
             border: 1px solid var(--glass-border);
             font-size: 1rem;
             line-height: 1.5;
+        }
+
+        .person-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .person-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .person-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .category-section {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-color);
         }
 
         .updates-grid {
@@ -363,6 +411,78 @@
             margin-top: 0.25rem;
         }
 
+        /* Timer styles */
+        .timer-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .timer-display {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            min-width: 200px;
+        }
+
+        .timer-time {
+            font-size: 3rem;
+            font-weight: 600;
+            font-family: 'SF Mono', Menlo, Monaco, 'Courier New', monospace;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .timer-time.warning {
+            color: var(--warning-color);
+        }
+
+        .timer-time.danger {
+            color: var(--danger-color);
+            animation: pulse-timer 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-timer {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0.6;
+            }
+        }
+
+        .timer-person {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--secondary-text);
+        }
+
+        .timer-settings {
+            display: flex;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .timer-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .person-indicator {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
         /* Dark mode */
         @media (prefers-color-scheme: dark) {
             :root {
@@ -378,12 +498,15 @@
                 background: rgba(255, 255, 255, 0.1);
             }
 
-            input, select, textarea {
+            input,
+            select,
+            textarea {
                 background: rgba(60, 60, 65, 0.5);
                 color: var(--text-color);
             }
 
-            .update-category, .stat-card {
+            .update-category,
+            .stat-card {
                 background: rgba(60, 60, 65, 0.3);
             }
 
@@ -402,7 +525,8 @@
     <div class="header">
         <div class="nav-container">
             <a href="index.html" class="home-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                     <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
@@ -413,6 +537,68 @@
     </div>
 
     <div class="container">
+        <!-- Timer Controls -->
+        <div class="glass-panel">
+            <h2 style="margin: 0 0 1rem 0;">Speaking Timer</h2>
+            <div class="timer-controls">
+                <div class="timer-display">
+                    <div class="timer-time" id="timerDisplay">2:00</div>
+                    <div class="timer-person">
+                        Person <span id="currentPerson">1</span>
+                    </div>
+                </div>
+                <div class="timer-settings">
+                    <div class="control-group">
+                        <label for="timerDuration">Timer Duration</label>
+                        <select id="timerDuration">
+                            <option value="60">1 minute</option>
+                            <option value="90">1.5 minutes</option>
+                            <option value="120" selected>2 minutes</option>
+                            <option value="150">2.5 minutes</option>
+                            <option value="180">3 minutes</option>
+                            <option value="240">4 minutes</option>
+                            <option value="300">5 minutes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="timer-buttons">
+                    <button id="startTimer" class="btn btn-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        Start Timer
+                    </button>
+                    <button id="pauseTimer" class="btn btn-warning" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                        Pause
+                    </button>
+                    <button id="nextPerson" class="btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                            <line x1="19" y1="5" x2="19" y2="19"></line>
+                        </svg>
+                        Next Person
+                    </button>
+                    <button id="resetTimer" class="btn btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 2v6h6"></path>
+                            <path d="M21 12A9 9 0 0 0 6 5.3L3 8"></path>
+                            <path d="M21 22v-6h-6"></path>
+                            <path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"></path>
+                        </svg>
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Counter Statistics -->
         <div class="glass-panel">
             <h2 style="margin: 0 0 1rem 0;">Meeting Statistics</h2>
@@ -420,6 +606,10 @@
                 <div class="stat-card">
                     <div class="stat-number" id="totalUpdates">0</div>
                     <div class="stat-label">Total Updates</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalPersons">1</div>
+                    <div class="stat-label">Total Persons</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="lastWeekCount">0</div>
@@ -445,7 +635,8 @@
             <h2 style="margin: 0 0 1rem 0;">Voice Recording</h2>
             <div class="recording-controls">
                 <button id="startRecording" class="btn btn-success">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
                         <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
                         <line x1="12" y1="19" x2="12" y2="23"></line>
@@ -454,7 +645,8 @@
                     Start Recording
                 </button>
                 <button id="stopRecording" class="btn btn-danger" disabled>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     </svg>
                     Stop Recording
@@ -467,12 +659,14 @@
 
             <div class="control-group">
                 <label for="speechInput">Speech Input / Manual Entry</label>
-                <textarea id="speechInput" class="speech-input" placeholder="Speak or type your updates here. The system will automatically categorize them based on keywords like 'last week', 'this week', 'completed', 'will do', etc."></textarea>
+                <textarea id="speechInput" class="speech-input"
+                    placeholder="Speak or type your updates here. The system will automatically categorize them based on keywords like 'last week', 'this week', 'completed', 'will do', etc."></textarea>
             </div>
 
             <div class="recording-controls">
                 <button id="processUpdates" class="btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
                         <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -481,7 +675,8 @@
                     Process Updates
                 </button>
                 <button id="clearInput" class="btn btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 6h18"></path>
                         <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
                         <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
@@ -493,55 +688,9 @@
 
         <!-- Updates Display -->
         <div class="glass-panel">
-            <h2 style="margin: 0 0 1rem 0;">Categorized Updates</h2>
-            <div class="updates-grid">
-                <!-- Last Week Updates -->
-                <div class="update-category">
-                    <h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 11l3 3L22 4"></path>
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                        </svg>
-                        Last Week Completed
-                    </h3>
-                    <ul class="update-list" id="lastWeekUpdates"></ul>
-                </div>
-
-                <!-- This Week Plans -->
-                <div class="update-category">
-                    <h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                        </svg>
-                        This Week Plans
-                    </h3>
-                    <ul class="update-list" id="thisWeekUpdates"></ul>
-                </div>
-
-                <!-- Positive Mentions -->
-                <div class="update-category">
-                    <h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 9V5a3 3 0 0 0-6 0v4"></path>
-                            <rect x="2" y="9" width="20" height="12" rx="2" ry="2"></rect>
-                        </svg>
-                        Positive Mentions (+)
-                    </h3>
-                    <ul class="update-list" id="positiveUpdates"></ul>
-                </div>
-
-                <!-- Negative Mentions -->
-                <div class="update-category">
-                    <h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                            <line x1="12" y1="9" x2="12" y2="13"></line>
-                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                        </svg>
-                        Issues & Blockers (-)
-                    </h3>
-                    <ul class="update-list" id="negativeUpdates"></ul>
-                </div>
+            <h2 style="margin: 0 0 1rem 0;">Updates by Person</h2>
+            <div id="updatesContainer">
+                <!-- Updates will be dynamically generated by person -->
             </div>
         </div>
 
@@ -550,7 +699,8 @@
             <h2 style="margin: 0 0 1rem 0;">Export & Actions</h2>
             <div class="export-section">
                 <button id="exportText" class="btn btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                         <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -560,7 +710,8 @@
                     Export as Text
                 </button>
                 <button id="exportJSON" class="btn btn-secondary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                         <line x1="12" y1="18" x2="12" y2="12"></line>
@@ -569,7 +720,8 @@
                     Export as JSON
                 </button>
                 <button id="clearAll" class="btn btn-warning">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     </svg>
@@ -580,19 +732,23 @@
     </div>
 
     <div class="footer">
-        <p>Created with 🩵 by <a href="https://www.stefanseegerer.de" style="color: rgb(229, 229, 229);">Stefan Seegerer</a></p>
+        <p>Created with 🩵 by <a href="https://www.stefanseegerer.de" style="color: rgb(229, 229, 229);">Stefan
+                Seegerer</a></p>
     </div>
 
     <script>
         // Global variables
         let recognition;
         let isRecording = false;
-        let updates = {
-            lastWeek: [],
-            thisWeek: [],
-            positive: [],
-            negative: []
-        };
+        let updates = {}; // Will store updates by person: { 1: { lastWeek: [], thisWeek: [], positive: [], negative: [] }, ... }
+
+        // Timer variables
+        let timerInterval;
+        let isTimerRunning = false;
+        let currentPerson = 1;
+        let totalPersons = 1;
+        let remainingTime = 120; // Default 2 minutes in seconds
+        let timerAudio;
 
         // DOM elements
         const startRecordingBtn = document.getElementById('startRecording');
@@ -604,6 +760,16 @@
         const clearAllBtn = document.getElementById('clearAll');
         const exportTextBtn = document.getElementById('exportText');
         const exportJSONBtn = document.getElementById('exportJSON');
+
+        // Timer elements
+        const timerDisplay = document.getElementById('timerDisplay');
+        const currentPersonSpan = document.getElementById('currentPerson');
+        const timerDurationSelect = document.getElementById('timerDuration');
+        const startTimerBtn = document.getElementById('startTimer');
+        const pauseTimerBtn = document.getElementById('pauseTimer');
+        const nextPersonBtn = document.getElementById('nextPerson');
+        const resetTimerBtn = document.getElementById('resetTimer');
+        const totalPersonsSpan = document.getElementById('totalPersons');
 
         // Initialize speech recognition
         function initSpeechRecognition() {
@@ -660,6 +826,189 @@
             return true;
         }
 
+        // Timer functions
+        function initTimer() {
+            // Create audio context for timer sound
+            try {
+                timerAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+D1vGkoCSB+0fLZfjEIGGS+7aOQEw1Loe+jWW+eWITL9N2IQHV5xPDgkEJLKKOk7KNYuMGo4PW/ZtxKQxaWyzH8FJqnIGHAmm+6wWzVTwQNUIbj7MdUqWkYZjSu6iSTuHhqxP8TJ4l1ZGqCy4q0vL5A/0SLwK5MJ2+x1fX7VHg9qL1XJWp7q4C/1Ll6UoZjz4v7KrTEJJr7Y5YaE5l6zLKiNAjYKSbRWFEpK+jYi8Ij8SaIx4Xb4x5Ycpw=');
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+
+            remainingTime = parseInt(timerDurationSelect.value);
+            updateTimerDisplay();
+        }
+
+        function startTimer() {
+            if (!isTimerRunning) {
+                isTimerRunning = true;
+                startTimerBtn.disabled = true;
+                pauseTimerBtn.disabled = false;
+                nextPersonBtn.disabled = false;
+
+                timerInterval = setInterval(() => {
+                    remainingTime--;
+                    updateTimerDisplay();
+
+                    if (remainingTime <= 0) {
+                        timerFinished();
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            if (isTimerRunning) {
+                isTimerRunning = false;
+                clearInterval(timerInterval);
+                startTimerBtn.disabled = false;
+                pauseTimerBtn.disabled = true;
+                startTimerBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Resume Timer
+                `;
+            }
+        }
+
+        function nextPerson() {
+            // Stop current timer
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+            }
+
+            const wasRecording = isRecording;
+            
+            // Stop recording if it's active and process updates
+            if (isRecording) {
+                // Stop recording gracefully
+                recognition.stop();
+                isRecording = false;
+                startRecordingBtn.disabled = false;
+                stopRecordingBtn.disabled = true;
+                recordingStatus.style.display = 'none';
+                speechInput.placeholder = 'Speak or type your updates here...';
+            }
+
+            // Process current input (always process to ensure voice recording is captured)
+            processUpdates();
+
+            // Move to next person
+            currentPerson++;
+            if (currentPerson > totalPersons) {
+                totalPersons = currentPerson;
+            }
+
+            // Reset timer
+            remainingTime = parseInt(timerDurationSelect.value);
+            isTimerRunning = false;
+
+            // Update UI
+            updatePersonDisplay();
+            updateTimerDisplay();
+            resetTimerButtons();
+
+            // Auto-start timer for next person
+            startTimer();
+
+            // Restart recording if it was active before
+            if (wasRecording && recognition) {
+                setTimeout(() => {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.log('Could not restart recording:', e);
+                        // If there's an error, reset the recording state
+                        isRecording = false;
+                        startRecordingBtn.disabled = false;
+                        stopRecordingBtn.disabled = true;
+                        recordingStatus.style.display = 'none';
+                    }
+                }, 500); // Wait 500ms before restarting
+            }
+        }
+
+        function resetTimer() {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+            }
+
+            remainingTime = parseInt(timerDurationSelect.value);
+            isTimerRunning = false;
+            currentPerson = 1;
+            totalPersons = 1;
+
+            updatePersonDisplay();
+            updateTimerDisplay();
+            resetTimerButtons();
+        }
+
+        function timerFinished() {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+
+            // Play sound if available
+            if (timerAudio) {
+                try {
+                    timerAudio.play().catch(e => console.log('Could not play audio'));
+                } catch (e) {
+                    console.log('Audio playback failed');
+                }
+            }
+
+            // Show notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(`Person ${currentPerson}'s time is up!`, {
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⏰</text></svg>'
+                });
+            }
+
+            resetTimerButtons();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            timerDisplay.textContent = timeStr;
+
+            // Change color based on remaining time
+            timerDisplay.className = 'timer-time';
+            const totalTime = parseInt(timerDurationSelect.value);
+            const percentRemaining = (remainingTime / totalTime) * 100;
+
+            if (percentRemaining <= 10 && remainingTime > 0) {
+                timerDisplay.classList.add('danger');
+            } else if (percentRemaining <= 25) {
+                timerDisplay.classList.add('warning');
+            }
+        }
+
+        function updatePersonDisplay() {
+            currentPersonSpan.textContent = currentPerson;
+            totalPersonsSpan.textContent = totalPersons;
+        }
+
+        function resetTimerButtons() {
+            startTimerBtn.disabled = false;
+            pauseTimerBtn.disabled = true;
+            nextPersonBtn.disabled = true;
+            startTimerBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Start Timer
+            `;
+        }
+
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
         // Start recording
         function startRecording() {
             if (recognition && !isRecording) {
@@ -682,10 +1031,24 @@
         // Process and categorize updates
         function processUpdates() {
             const text = speechInput.value.trim();
-            if (!text) return;
+            if (!text) {
+                // Still clear the input even if empty
+                speechInput.value = '';
+                return;
+            }
 
             const sentences = text.split(/[.!?]+/).filter(s => s.trim());
-            
+
+            // Initialize person's updates if not exists
+            if (!updates[currentPerson]) {
+                updates[currentPerson] = {
+                    lastWeek: [],
+                    thisWeek: [],
+                    positive: [],
+                    negative: []
+                };
+            }
+
             sentences.forEach(sentence => {
                 const lowerSentence = sentence.toLowerCase().trim();
                 if (!lowerSentence) return;
@@ -698,56 +1061,36 @@
 
                 let categorized = false;
 
+                // Create update object with person info
+                const updateObj = {
+                    text: sentence.trim(),
+                    timestamp: new Date().toISOString(),
+                    id: Date.now() + Math.random(),
+                    person: currentPerson
+                };
+
                 // Check for explicit + and - markers
                 if (lowerSentence.includes('+') || lowerSentence.includes('positive')) {
-                    updates.positive.push({
-                        text: sentence.trim(),
-                        timestamp: new Date().toISOString(),
-                        id: Date.now() + Math.random()
-                    });
+                    updates[currentPerson].positive.push(updateObj);
                     categorized = true;
                 } else if (lowerSentence.includes('-') || lowerSentence.includes('negative')) {
-                    updates.negative.push({
-                        text: sentence.trim(),
-                        timestamp: new Date().toISOString(),
-                        id: Date.now() + Math.random()
-                    });
+                    updates[currentPerson].negative.push(updateObj);
                     categorized = true;
                 }
 
                 // If not explicitly marked, use keyword detection
                 if (!categorized) {
                     if (lastWeekKeywords.some(keyword => lowerSentence.includes(keyword))) {
-                        updates.lastWeek.push({
-                            text: sentence.trim(),
-                            timestamp: new Date().toISOString(),
-                            id: Date.now() + Math.random()
-                        });
+                        updates[currentPerson].lastWeek.push(updateObj);
                     } else if (thisWeekKeywords.some(keyword => lowerSentence.includes(keyword))) {
-                        updates.thisWeek.push({
-                            text: sentence.trim(),
-                            timestamp: new Date().toISOString(),
-                            id: Date.now() + Math.random()
-                        });
+                        updates[currentPerson].thisWeek.push(updateObj);
                     } else if (positiveKeywords.some(keyword => lowerSentence.includes(keyword))) {
-                        updates.positive.push({
-                            text: sentence.trim(),
-                            timestamp: new Date().toISOString(),
-                            id: Date.now() + Math.random()
-                        });
+                        updates[currentPerson].positive.push(updateObj);
                     } else if (negativeKeywords.some(keyword => lowerSentence.includes(keyword))) {
-                        updates.negative.push({
-                            text: sentence.trim(),
-                            timestamp: new Date().toISOString(),
-                            id: Date.now() + Math.random()
-                        });
+                        updates[currentPerson].negative.push(updateObj);
                     } else {
                         // Default to this week if no clear category
-                        updates.thisWeek.push({
-                            text: sentence.trim(),
-                            timestamp: new Date().toISOString(),
-                            id: Date.now() + Math.random()
-                        });
+                        updates[currentPerson].thisWeek.push(updateObj);
                     }
                 }
             });
@@ -759,40 +1102,135 @@
         // Update the display
         function updateDisplay() {
             updateStats();
-            updateUpdatesList('lastWeekUpdates', updates.lastWeek);
-            updateUpdatesList('thisWeekUpdates', updates.thisWeek);
-            updateUpdatesList('positiveUpdates', updates.positive, 'positive');
-            updateUpdatesList('negativeUpdates', updates.negative, 'negative');
+            updateUpdatesDisplay();
         }
 
         // Update statistics
         function updateStats() {
-            document.getElementById('totalUpdates').textContent = 
-                updates.lastWeek.length + updates.thisWeek.length + updates.positive.length + updates.negative.length;
-            document.getElementById('lastWeekCount').textContent = updates.lastWeek.length;
-            document.getElementById('thisWeekCount').textContent = updates.thisWeek.length;
-            document.getElementById('positiveCount').textContent = updates.positive.length;
-            document.getElementById('negativeCount').textContent = updates.negative.length;
+            let totalCount = 0;
+            let lastWeekCount = 0;
+            let thisWeekCount = 0;
+            let positiveCount = 0;
+            let negativeCount = 0;
+
+            Object.values(updates).forEach(personUpdates => {
+                lastWeekCount += personUpdates.lastWeek?.length || 0;
+                thisWeekCount += personUpdates.thisWeek?.length || 0;
+                positiveCount += personUpdates.positive?.length || 0;
+                negativeCount += personUpdates.negative?.length || 0;
+            });
+
+            totalCount = lastWeekCount + thisWeekCount + positiveCount + negativeCount;
+
+            document.getElementById('totalUpdates').textContent = totalCount;
+            document.getElementById('lastWeekCount').textContent = lastWeekCount;
+            document.getElementById('thisWeekCount').textContent = thisWeekCount;
+            document.getElementById('positiveCount').textContent = positiveCount;
+            document.getElementById('negativeCount').textContent = negativeCount;
         }
 
-        // Update updates list
-        function updateUpdatesList(containerId, updatesList, type = '') {
+        // Update updates display
+        function updateUpdatesDisplay() {
+            const container = document.getElementById('updatesContainer');
+            container.innerHTML = '';
+
+            if (Object.keys(updates).length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--secondary-text); font-style: italic; padding: 2rem;">No updates yet. Start recording or type some updates!</div>';
+                return;
+            }
+
+            // Sort persons by number
+            const sortedPersons = Object.keys(updates).sort((a, b) => parseInt(a) - parseInt(b));
+
+            sortedPersons.forEach(personNum => {
+                const personUpdates = updates[personNum];
+                const personSection = document.createElement('div');
+                personSection.className = 'person-section';
+
+                personSection.innerHTML = `
+                    <div class="person-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Person ${personNum}
+                    </div>
+                    <div class="person-categories">
+                        <div class="category-section">
+                            <div class="category-header">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 11l3 3L22 4"></path>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                </svg>
+                                Last Week (${personUpdates.lastWeek?.length || 0})
+                            </div>
+                            <ul class="update-list" id="person${personNum}LastWeek"></ul>
+                        </div>
+                        <div class="category-section">
+                            <div class="category-header">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                                </svg>
+                                This Week (${personUpdates.thisWeek?.length || 0})
+                            </div>
+                            <ul class="update-list" id="person${personNum}ThisWeek"></ul>
+                        </div>
+                        <div class="category-section">
+                            <div class="category-header">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 9V5a3 3 0 0 0-6 0v4"></path>
+                                    <rect x="2" y="9" width="20" height="12" rx="2" ry="2"></rect>
+                                </svg>
+                                Positive (${personUpdates.positive?.length || 0})
+                            </div>
+                            <ul class="update-list" id="person${personNum}Positive"></ul>
+                        </div>
+                        <div class="category-section">
+                            <div class="category-header">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                Issues (${personUpdates.negative?.length || 0})
+                            </div>
+                            <ul class="update-list" id="person${personNum}Negative"></ul>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(personSection);
+
+                // Populate each category
+                updateCategoryList(`person${personNum}LastWeek`, personUpdates.lastWeek || [], personNum);
+                updateCategoryList(`person${personNum}ThisWeek`, personUpdates.thisWeek || [], personNum);
+                updateCategoryList(`person${personNum}Positive`, personUpdates.positive || [], personNum, 'positive');
+                updateCategoryList(`person${personNum}Negative`, personUpdates.negative || [], personNum, 'negative');
+            });
+        }
+
+        // Update category list
+        function updateCategoryList(containerId, updatesList, personNum, type = '') {
             const container = document.getElementById(containerId);
+            if (!container) return;
+
             container.innerHTML = '';
 
             updatesList.forEach(update => {
                 const li = document.createElement('li');
                 li.className = `update-item ${type}`;
                 li.innerHTML = `
-                    <div class="update-text">${update.text}</div>
+                    <div class="update-text">
+                        ${update.text}
+                    </div>
                     <div class="update-actions">
-                        <button onclick="editUpdate('${containerId}', '${update.id}')" title="Edit">
+                        <button onclick="editUpdate(${personNum}, '${getCategoryFromContainerId(containerId)}', '${update.id}')" title="Edit">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                 <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                             </svg>
                         </button>
-                        <button onclick="deleteUpdate('${containerId}', '${update.id}')" title="Delete">
+                        <button onclick="deleteUpdate(${personNum}, '${getCategoryFromContainerId(containerId)}', '${update.id}')" title="Delete">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="3 6 5 6 21 6"></polyline>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -806,52 +1244,60 @@
             if (updatesList.length === 0) {
                 const li = document.createElement('li');
                 li.className = 'update-item';
-                li.innerHTML = '<div class="update-text" style="font-style: italic; color: var(--secondary-text);">No updates yet</div>';
+                li.innerHTML = '<div class="update-text" style="font-style: italic; color: var(--secondary-text);">No updates</div>';
                 container.appendChild(li);
             }
         }
 
         // Delete update
-        function deleteUpdate(containerId, updateId) {
-            const category = getCategoryFromContainerId(containerId);
-            updates[category] = updates[category].filter(update => update.id != updateId);
-            updateDisplay();
+        function deleteUpdate(personNum, category, updateId) {
+            if (updates[personNum] && updates[personNum][category]) {
+                updates[personNum][category] = updates[personNum][category].filter(update => update.id != updateId);
+                updateDisplay();
+            }
         }
 
         // Edit update
-        function editUpdate(containerId, updateId) {
-            const category = getCategoryFromContainerId(containerId);
-            const update = updates[category].find(update => update.id == updateId);
-            if (update) {
-                const newText = prompt('Edit update:', update.text);
-                if (newText !== null && newText.trim() !== '') {
-                    update.text = newText.trim();
-                    updateDisplay();
+        function editUpdate(personNum, category, updateId) {
+            if (updates[personNum] && updates[personNum][category]) {
+                const update = updates[personNum][category].find(update => update.id == updateId);
+                if (update) {
+                    const newText = prompt('Edit update:', update.text);
+                    if (newText !== null && newText.trim() !== '') {
+                        update.text = newText.trim();
+                        updateDisplay();
+                    }
                 }
             }
         }
 
         // Get category from container ID
         function getCategoryFromContainerId(containerId) {
-            switch (containerId) {
-                case 'lastWeekUpdates': return 'lastWeek';
-                case 'thisWeekUpdates': return 'thisWeek';
-                case 'positiveUpdates': return 'positive';
-                case 'negativeUpdates': return 'negative';
-                default: return 'thisWeek';
-            }
+            if (containerId.includes('LastWeek')) return 'lastWeek';
+            if (containerId.includes('ThisWeek')) return 'thisWeek';
+            if (containerId.includes('Positive')) return 'positive';
+            if (containerId.includes('Negative')) return 'negative';
+            return 'thisWeek';
         }
 
         // Clear all updates
         function clearAll() {
-            if (confirm('Are you sure you want to clear all updates?')) {
-                updates = {
-                    lastWeek: [],
-                    thisWeek: [],
-                    positive: [],
-                    negative: []
-                };
+            if (confirm('Are you sure you want to clear all updates and reset the meeting?')) {
+                updates = {};
+
+                // Reset timer and person tracking
+                if (isTimerRunning) {
+                    clearInterval(timerInterval);
+                }
+                currentPerson = 1;
+                totalPersons = 1;
+                remainingTime = parseInt(timerDurationSelect.value);
+                isTimerRunning = false;
+
                 updateDisplay();
+                updatePersonDisplay();
+                updateTimerDisplay();
+                resetTimerButtons();
             }
         }
 
@@ -859,18 +1305,41 @@
         function exportAsText() {
             let text = 'Meeting Updates Export\n';
             text += '======================\n\n';
-            
-            text += 'LAST WEEK COMPLETED:\n';
-            updates.lastWeek.forEach(update => text += `• ${update.text}\n`);
-            
-            text += '\nTHIS WEEK PLANS:\n';
-            updates.thisWeek.forEach(update => text += `• ${update.text}\n`);
-            
-            text += '\nPOSITIVE MENTIONS:\n';
-            updates.positive.forEach(update => text += `+ ${update.text}\n`);
-            
-            text += '\nISSUES & BLOCKERS:\n';
-            updates.negative.forEach(update => text += `- ${update.text}\n`);
+
+            // Export by person
+            const sortedPersons = Object.keys(updates).sort((a, b) => parseInt(a) - parseInt(b));
+
+            sortedPersons.forEach(personNum => {
+                const personUpdates = updates[personNum];
+                text += `PERSON ${personNum}:\n`;
+                text += '-------------\n';
+
+                if (personUpdates.lastWeek && personUpdates.lastWeek.length > 0) {
+                    text += 'Last Week Completed:\n';
+                    personUpdates.lastWeek.forEach(update => text += `• ${update.text}\n`);
+                    text += '\n';
+                }
+
+                if (personUpdates.thisWeek && personUpdates.thisWeek.length > 0) {
+                    text += 'This Week Plans:\n';
+                    personUpdates.thisWeek.forEach(update => text += `• ${update.text}\n`);
+                    text += '\n';
+                }
+
+                if (personUpdates.positive && personUpdates.positive.length > 0) {
+                    text += 'Positive Mentions:\n';
+                    personUpdates.positive.forEach(update => text += `+ ${update.text}\n`);
+                    text += '\n';
+                }
+
+                if (personUpdates.negative && personUpdates.negative.length > 0) {
+                    text += 'Issues & Blockers:\n';
+                    personUpdates.negative.forEach(update => text += `- ${update.text}\n`);
+                    text += '\n';
+                }
+
+                text += '\n';
+            });
 
             const blob = new Blob([text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
@@ -883,14 +1352,30 @@
 
         // Export as JSON
         function exportAsJSON() {
+            let totalCount = 0;
+            let lastWeekCount = 0;
+            let thisWeekCount = 0;
+            let positiveCount = 0;
+            let negativeCount = 0;
+
+            Object.values(updates).forEach(personUpdates => {
+                lastWeekCount += personUpdates.lastWeek?.length || 0;
+                thisWeekCount += personUpdates.thisWeek?.length || 0;
+                positiveCount += personUpdates.positive?.length || 0;
+                negativeCount += personUpdates.negative?.length || 0;
+            });
+
+            totalCount = lastWeekCount + thisWeekCount + positiveCount + negativeCount;
+
             const exportData = {
                 exportDate: new Date().toISOString(),
                 statistics: {
-                    total: updates.lastWeek.length + updates.thisWeek.length + updates.positive.length + updates.negative.length,
-                    lastWeek: updates.lastWeek.length,
-                    thisWeek: updates.thisWeek.length,
-                    positive: updates.positive.length,
-                    negative: updates.negative.length
+                    total: totalCount,
+                    lastWeek: lastWeekCount,
+                    thisWeek: thisWeekCount,
+                    positive: positiveCount,
+                    negative: negativeCount,
+                    totalPersons: Object.keys(updates).length
                 },
                 updates: updates
             };
@@ -915,6 +1400,18 @@
         exportTextBtn.addEventListener('click', exportAsText);
         exportJSONBtn.addEventListener('click', exportAsJSON);
 
+        // Timer event listeners
+        startTimerBtn.addEventListener('click', startTimer);
+        pauseTimerBtn.addEventListener('click', pauseTimer);
+        nextPersonBtn.addEventListener('click', nextPerson);
+        resetTimerBtn.addEventListener('click', resetTimer);
+        timerDurationSelect.addEventListener('change', () => {
+            if (!isTimerRunning) {
+                remainingTime = parseInt(timerDurationSelect.value);
+                updateTimerDisplay();
+            }
+        });
+
         // Allow processing updates with Enter key
         speechInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && e.ctrlKey) {
@@ -925,7 +1422,10 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initSpeechRecognition();
+            initTimer();
             updateDisplay();
+            updatePersonDisplay();
+            requestNotificationPermission();
         });
     </script>
     <script async defer src="https://scripts.withcabin.com/hello.js"></script>
