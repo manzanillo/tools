@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Updates</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Track and organize meeting updates with speech recognition. Automatically categorize what was done last week, what will be done this week, and positive/negative mentions.">
+    <meta name="keywords" content="meeting counter, updates tracker, speech recognition, meeting notes, team updates">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Meeting Counter - Quick Updates">
+    <meta property="og:description"
+        content="Track and organize meeting updates with speech recognition. Automatically categorize team updates and mentions.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/meetingCounter.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎤</text></svg>">
+    
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: rgba(0, 0, 0, 0.05);
+            --accent-color: #0071e3;
+            --text-color: #1d1d1f;
+            --secondary-text: #86868b;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .header {
+            width: 100%;
+            padding: 1.5rem 0;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .home-link {
+            position: absolute;
+            left: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .home-link:hover {
+            background: rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            padding: 1.5rem;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+        }
+
+        input, select, textarea {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-family: inherit;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 113, 227, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: var(--text-color);
+        }
+
+        .btn-warning:hover {
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(60, 60, 65, 0.1);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(60, 60, 65, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .recording-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .recording-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .recording-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--danger-color);
+            animation: pulse 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { opacity: 1; }
+            to { opacity: 0.3; }
+        }
+
+        .speech-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--glass-border);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .updates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .update-category {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .update-category h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.2rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .update-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .update-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .update-item.positive {
+            border-left-color: var(--success-color);
+        }
+
+        .update-item.negative {
+            border-left-color: var(--danger-color);
+        }
+
+        .update-text {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .update-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .update-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            color: var(--secondary-text);
+            transition: all 0.2s ease;
+        }
+
+        .update-actions button:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-color);
+        }
+
+        .footer {
+            width: 100%;
+            padding: 1.5rem 0;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            margin-top: auto;
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+        }
+
+        .export-section {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .counter-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            margin-top: 0.25rem;
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1d1d1f;
+                --glass-bg: rgba(30, 30, 32, 0.7);
+                --glass-border: rgba(255, 255, 255, 0.1);
+                --glass-shadow: rgba(0, 0, 0, 0.2);
+                --text-color: #f5f5f7;
+                --secondary-text: #86868b;
+            }
+
+            .home-link:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            input, select, textarea {
+                background: rgba(60, 60, 65, 0.5);
+                color: var(--text-color);
+            }
+
+            .update-category, .stat-card {
+                background: rgba(60, 60, 65, 0.3);
+            }
+
+            .update-item {
+                background: rgba(60, 60, 65, 0.5);
+            }
+
+            .update-actions button:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Home</span>
+            </a>
+            <h1>Meeting Counter</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Counter Statistics -->
+        <div class="glass-panel">
+            <h2 style="margin: 0 0 1rem 0;">Meeting Statistics</h2>
+            <div class="counter-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUpdates">0</div>
+                    <div class="stat-label">Total Updates</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="lastWeekCount">0</div>
+                    <div class="stat-label">Last Week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="thisWeekCount">0</div>
+                    <div class="stat-label">This Week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="positiveCount">0</div>
+                    <div class="stat-label">Positive (+)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="negativeCount">0</div>
+                    <div class="stat-label">Negative (-)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recording Controls -->
+        <div class="glass-panel">
+            <h2 style="margin: 0 0 1rem 0;">Voice Recording</h2>
+            <div class="recording-controls">
+                <button id="startRecording" class="btn btn-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                    Start Recording
+                </button>
+                <button id="stopRecording" class="btn btn-danger" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    </svg>
+                    Stop Recording
+                </button>
+                <div id="recordingStatus" class="recording-status" style="display: none;">
+                    <div class="recording-indicator"></div>
+                    <span>Recording...</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="speechInput">Speech Input / Manual Entry</label>
+                <textarea id="speechInput" class="speech-input" placeholder="Speak or type your updates here. The system will automatically categorize them based on keywords like 'last week', 'this week', 'completed', 'will do', etc."></textarea>
+            </div>
+
+            <div class="recording-controls">
+                <button id="processUpdates" class="btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Process Updates
+                </button>
+                <button id="clearInput" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"></path>
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    </svg>
+                    Clear Input
+                </button>
+            </div>
+        </div>
+
+        <!-- Updates Display -->
+        <div class="glass-panel">
+            <h2 style="margin: 0 0 1rem 0;">Categorized Updates</h2>
+            <div class="updates-grid">
+                <!-- Last Week Updates -->
+                <div class="update-category">
+                    <h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 11l3 3L22 4"></path>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                        </svg>
+                        Last Week Completed
+                    </h3>
+                    <ul class="update-list" id="lastWeekUpdates"></ul>
+                </div>
+
+                <!-- This Week Plans -->
+                <div class="update-category">
+                    <h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                        </svg>
+                        This Week Plans
+                    </h3>
+                    <ul class="update-list" id="thisWeekUpdates"></ul>
+                </div>
+
+                <!-- Positive Mentions -->
+                <div class="update-category">
+                    <h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 9V5a3 3 0 0 0-6 0v4"></path>
+                            <rect x="2" y="9" width="20" height="12" rx="2" ry="2"></rect>
+                        </svg>
+                        Positive Mentions (+)
+                    </h3>
+                    <ul class="update-list" id="positiveUpdates"></ul>
+                </div>
+
+                <!-- Negative Mentions -->
+                <div class="update-category">
+                    <h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        Issues & Blockers (-)
+                    </h3>
+                    <ul class="update-list" id="negativeUpdates"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="glass-panel">
+            <h2 style="margin: 0 0 1rem 0;">Export & Actions</h2>
+            <div class="export-section">
+                <button id="exportText" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Export as Text
+                </button>
+                <button id="exportJSON" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                    Export as JSON
+                </button>
+                <button id="clearAll" class="btn btn-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Clear All Updates
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Created with 🩵 by <a href="https://www.stefanseegerer.de" style="color: rgb(229, 229, 229);">Stefan Seegerer</a></p>
+    </div>
+
+    <script>
+        // Global variables
+        let recognition;
+        let isRecording = false;
+        let updates = {
+            lastWeek: [],
+            thisWeek: [],
+            positive: [],
+            negative: []
+        };
+
+        // DOM elements
+        const startRecordingBtn = document.getElementById('startRecording');
+        const stopRecordingBtn = document.getElementById('stopRecording');
+        const recordingStatus = document.getElementById('recordingStatus');
+        const speechInput = document.getElementById('speechInput');
+        const processUpdatesBtn = document.getElementById('processUpdates');
+        const clearInputBtn = document.getElementById('clearInput');
+        const clearAllBtn = document.getElementById('clearAll');
+        const exportTextBtn = document.getElementById('exportText');
+        const exportJSONBtn = document.getElementById('exportJSON');
+
+        // Initialize speech recognition
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+            } else if ('SpeechRecognition' in window) {
+                recognition = new SpeechRecognition();
+            } else {
+                console.log('Speech recognition not supported');
+                startRecordingBtn.disabled = true;
+                startRecordingBtn.textContent = 'Speech Recognition Not Supported';
+                return false;
+            }
+
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isRecording = true;
+                startRecordingBtn.disabled = true;
+                stopRecordingBtn.disabled = false;
+                recordingStatus.style.display = 'flex';
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                speechInput.value = speechInput.value + finalTranscript;
+                if (interimTranscript) {
+                    speechInput.placeholder = interimTranscript;
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                stopRecording();
+            };
+
+            recognition.onend = () => {
+                stopRecording();
+            };
+
+            return true;
+        }
+
+        // Start recording
+        function startRecording() {
+            if (recognition && !isRecording) {
+                recognition.start();
+            }
+        }
+
+        // Stop recording
+        function stopRecording() {
+            if (recognition && isRecording) {
+                recognition.stop();
+            }
+            isRecording = false;
+            startRecordingBtn.disabled = false;
+            stopRecordingBtn.disabled = true;
+            recordingStatus.style.display = 'none';
+            speechInput.placeholder = 'Speak or type your updates here...';
+        }
+
+        // Process and categorize updates
+        function processUpdates() {
+            const text = speechInput.value.trim();
+            if (!text) return;
+
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim());
+            
+            sentences.forEach(sentence => {
+                const lowerSentence = sentence.toLowerCase().trim();
+                if (!lowerSentence) return;
+
+                // Keywords for categorization
+                const lastWeekKeywords = ['last week', 'previous week', 'completed', 'finished', 'done', 'accomplished'];
+                const thisWeekKeywords = ['this week', 'next week', 'will do', 'planning', 'going to', 'working on'];
+                const positiveKeywords = ['good', 'great', 'excellent', 'success', 'achieved', 'positive', 'well'];
+                const negativeKeywords = ['issue', 'problem', 'blocker', 'stuck', 'delayed', 'concern', 'challenge'];
+
+                let categorized = false;
+
+                // Check for explicit + and - markers
+                if (lowerSentence.includes('+') || lowerSentence.includes('positive')) {
+                    updates.positive.push({
+                        text: sentence.trim(),
+                        timestamp: new Date().toISOString(),
+                        id: Date.now() + Math.random()
+                    });
+                    categorized = true;
+                } else if (lowerSentence.includes('-') || lowerSentence.includes('negative')) {
+                    updates.negative.push({
+                        text: sentence.trim(),
+                        timestamp: new Date().toISOString(),
+                        id: Date.now() + Math.random()
+                    });
+                    categorized = true;
+                }
+
+                // If not explicitly marked, use keyword detection
+                if (!categorized) {
+                    if (lastWeekKeywords.some(keyword => lowerSentence.includes(keyword))) {
+                        updates.lastWeek.push({
+                            text: sentence.trim(),
+                            timestamp: new Date().toISOString(),
+                            id: Date.now() + Math.random()
+                        });
+                    } else if (thisWeekKeywords.some(keyword => lowerSentence.includes(keyword))) {
+                        updates.thisWeek.push({
+                            text: sentence.trim(),
+                            timestamp: new Date().toISOString(),
+                            id: Date.now() + Math.random()
+                        });
+                    } else if (positiveKeywords.some(keyword => lowerSentence.includes(keyword))) {
+                        updates.positive.push({
+                            text: sentence.trim(),
+                            timestamp: new Date().toISOString(),
+                            id: Date.now() + Math.random()
+                        });
+                    } else if (negativeKeywords.some(keyword => lowerSentence.includes(keyword))) {
+                        updates.negative.push({
+                            text: sentence.trim(),
+                            timestamp: new Date().toISOString(),
+                            id: Date.now() + Math.random()
+                        });
+                    } else {
+                        // Default to this week if no clear category
+                        updates.thisWeek.push({
+                            text: sentence.trim(),
+                            timestamp: new Date().toISOString(),
+                            id: Date.now() + Math.random()
+                        });
+                    }
+                }
+            });
+
+            updateDisplay();
+            speechInput.value = '';
+        }
+
+        // Update the display
+        function updateDisplay() {
+            updateStats();
+            updateUpdatesList('lastWeekUpdates', updates.lastWeek);
+            updateUpdatesList('thisWeekUpdates', updates.thisWeek);
+            updateUpdatesList('positiveUpdates', updates.positive, 'positive');
+            updateUpdatesList('negativeUpdates', updates.negative, 'negative');
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalUpdates').textContent = 
+                updates.lastWeek.length + updates.thisWeek.length + updates.positive.length + updates.negative.length;
+            document.getElementById('lastWeekCount').textContent = updates.lastWeek.length;
+            document.getElementById('thisWeekCount').textContent = updates.thisWeek.length;
+            document.getElementById('positiveCount').textContent = updates.positive.length;
+            document.getElementById('negativeCount').textContent = updates.negative.length;
+        }
+
+        // Update updates list
+        function updateUpdatesList(containerId, updatesList, type = '') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            updatesList.forEach(update => {
+                const li = document.createElement('li');
+                li.className = `update-item ${type}`;
+                li.innerHTML = `
+                    <div class="update-text">${update.text}</div>
+                    <div class="update-actions">
+                        <button onclick="editUpdate('${containerId}', '${update.id}')" title="Edit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button onclick="deleteUpdate('${containerId}', '${update.id}')" title="Delete">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(li);
+            });
+
+            if (updatesList.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'update-item';
+                li.innerHTML = '<div class="update-text" style="font-style: italic; color: var(--secondary-text);">No updates yet</div>';
+                container.appendChild(li);
+            }
+        }
+
+        // Delete update
+        function deleteUpdate(containerId, updateId) {
+            const category = getCategoryFromContainerId(containerId);
+            updates[category] = updates[category].filter(update => update.id != updateId);
+            updateDisplay();
+        }
+
+        // Edit update
+        function editUpdate(containerId, updateId) {
+            const category = getCategoryFromContainerId(containerId);
+            const update = updates[category].find(update => update.id == updateId);
+            if (update) {
+                const newText = prompt('Edit update:', update.text);
+                if (newText !== null && newText.trim() !== '') {
+                    update.text = newText.trim();
+                    updateDisplay();
+                }
+            }
+        }
+
+        // Get category from container ID
+        function getCategoryFromContainerId(containerId) {
+            switch (containerId) {
+                case 'lastWeekUpdates': return 'lastWeek';
+                case 'thisWeekUpdates': return 'thisWeek';
+                case 'positiveUpdates': return 'positive';
+                case 'negativeUpdates': return 'negative';
+                default: return 'thisWeek';
+            }
+        }
+
+        // Clear all updates
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all updates?')) {
+                updates = {
+                    lastWeek: [],
+                    thisWeek: [],
+                    positive: [],
+                    negative: []
+                };
+                updateDisplay();
+            }
+        }
+
+        // Export as text
+        function exportAsText() {
+            let text = 'Meeting Updates Export\n';
+            text += '======================\n\n';
+            
+            text += 'LAST WEEK COMPLETED:\n';
+            updates.lastWeek.forEach(update => text += `• ${update.text}\n`);
+            
+            text += '\nTHIS WEEK PLANS:\n';
+            updates.thisWeek.forEach(update => text += `• ${update.text}\n`);
+            
+            text += '\nPOSITIVE MENTIONS:\n';
+            updates.positive.forEach(update => text += `+ ${update.text}\n`);
+            
+            text += '\nISSUES & BLOCKERS:\n';
+            updates.negative.forEach(update => text += `- ${update.text}\n`);
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `meeting-updates-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Export as JSON
+        function exportAsJSON() {
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                statistics: {
+                    total: updates.lastWeek.length + updates.thisWeek.length + updates.positive.length + updates.negative.length,
+                    lastWeek: updates.lastWeek.length,
+                    thisWeek: updates.thisWeek.length,
+                    positive: updates.positive.length,
+                    negative: updates.negative.length
+                },
+                updates: updates
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `meeting-updates-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Event listeners
+        startRecordingBtn.addEventListener('click', startRecording);
+        stopRecordingBtn.addEventListener('click', stopRecording);
+        processUpdatesBtn.addEventListener('click', processUpdates);
+        clearInputBtn.addEventListener('click', () => {
+            speechInput.value = '';
+        });
+        clearAllBtn.addEventListener('click', clearAll);
+        exportTextBtn.addEventListener('click', exportAsText);
+        exportJSONBtn.addEventListener('click', exportAsJSON);
+
+        // Allow processing updates with Enter key
+        speechInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                processUpdates();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initSpeechRecognition();
+            updateDisplay();
+        });
+    </script>
+    <script async defer src="https://scripts.withcabin.com/hello.js"></script>
+
+</body>
+
+</html>
