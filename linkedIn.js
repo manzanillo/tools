@@ -34,8 +34,8 @@ function convertText(text, map) {
     return text.split('').map(char => map[char] || char).join('');
 }
 
-// Handle button click to convert text
-document.getElementById('convertBtn').addEventListener('click', function () {
+// Auto-update text formatting as user types
+function updateFormattedText() {
     const inputText = document.getElementById('inputText').value;
 
     const boldText = convertText(inputText, boldMap);
@@ -45,7 +45,10 @@ document.getElementById('convertBtn').addEventListener('click', function () {
     document.getElementById('outputBold').textContent = boldText;
     document.getElementById('outputBoldItalic').textContent = boldItalicText;
     document.getElementById('outputItalic').textContent = italicText;
-});
+}
+
+// Add event listener for real-time updates
+document.getElementById('inputText').addEventListener('input', updateFormattedText);
 
 // Handle clipboard copy
 function copyToClipboard(outputId) {
