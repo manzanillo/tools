@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Training Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #000000 0%, #0a3d1f 30%, #000000 70%, #0a3d1f 100%);
+            color: #ffffff;
+            font-family: 'Consolas', 'Monaco', 'Lucida Console', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #20eb80, #ffffff, #20eb80);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.8rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+
+        .model-name {
+            font-size: 2.2rem;
+            color: #20eb80;
+            font-weight: bold;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-panel {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(10, 61, 31, 0.6) 100%);
+            border: 2px solid #20eb80;
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(32, 235, 128, 0.1);
+        }
+
+        .panel-title {
+            font-size: 1.8rem;
+            color: #20eb80;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            border-bottom: 2px solid #20eb80;
+            padding-bottom: 0.5rem;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-size: 1.4rem;
+            color: #ccc;
+        }
+
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .progress-container {
+            margin: 1rem 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #20eb80, #FF5A4F);
+            border-radius: 12px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .training { background: #20eb80; }
+        .warning { background: #FF5A4F; }
+        .error { background: #FF5A4F; }
+
+        .logs-panel {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(10, 61, 31, 0.7) 100%);
+            border: 2px solid #20eb80;
+            border-radius: 15px;
+            padding: 2rem;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(32, 235, 128, 0.1);
+        }
+
+        .log-entry {
+            padding: 0.5rem 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .log-time {
+            color: #888;
+            margin-right: 1rem;
+        }
+
+        .log-level-INFO { color: #20eb80; }
+        .log-level-WARN { color: #FF5A4F; }
+        .log-level-ERROR { color: #FF5A4F; }
+
+        .chart-container {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(10, 61, 31, 0.6) 100%);
+            border: 2px solid #20eb80;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(32, 235, 128, 0.1);
+        }
+
+        .chart-placeholder {
+            height: 200px;
+            background: linear-gradient(45deg, 
+                rgba(32, 235, 128, 0.1) 0%, 
+                rgba(255, 90, 79, 0.1) 50%, 
+                rgba(32, 235, 128, 0.1) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #888;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-placeholder::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: scan 3s infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .gpu-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .gpu-card {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(10, 61, 31, 0.4) 100%);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #20eb80;
+        }
+
+        .alert-banner {
+            background: linear-gradient(135deg, rgba(255, 90, 79, 0.2) 0%, rgba(32, 235, 128, 0.1) 100%);
+            border: 2px solid #FF5A4F;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 1.3rem;
+            animation: pulse 2s infinite;
+            box-shadow: 0 4px 16px rgba(255, 90, 79, 0.2);
+        }
+
+        .greenhats-button {
+            background: #FF5A4F;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .greenhats-button:hover {
+            background: #e54b40;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 90, 79, 0.4);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            border-top: 2px solid #20eb80;
+        }
+
+        .footer-logo {
+            background: #20eb80;
+            color: black;
+            padding: 0.8rem 2rem;
+            border-radius: 25px;
+            display: inline-block;
+            font-weight: bold;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 2rem;">
+                <div style="background: #20eb80; padding: 0.5rem 2rem; border-radius: 25px; margin-right: 2rem;">
+                    <span style="color: black; font-weight: bold; font-size: 1.5rem;">greenhats</span>
+                </div>
+                <div style="color: #20eb80; font-size: 1.3rem;">CI/CD Pipeline</div>
+            </div>
+            <h1 class="title">NEURAL NETWORK TRAINING</h1>
+            <div class="subtitle">Deep Learning Model Training Interface</div>
+            <div class="model-name">ResNet-152 Transformer Hybrid</div>
+        </div>
+
+        <div class="alert-banner">
+            <span class="status-indicator training"></span>
+            Training in progress - Epoch 47/100 - ETA: 2h 34m
+        </div>
+
+        <div class="main-grid">
+            <div class="status-panel">
+                <h2 class="panel-title">Training Metrics</h2>
+                <div class="metric-row">
+                    <span class="metric-label">Current Epoch:</span>
+                    <span class="metric-value" id="epoch">47</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Training Loss:</span>
+                    <span class="metric-value" id="train-loss">0.2847</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Validation Loss:</span>
+                    <span class="metric-value" id="val-loss">0.3156</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Training Accuracy:</span>
+                    <span class="metric-value" id="train-acc">89.4%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Validation Accuracy:</span>
+                    <span class="metric-value" id="val-acc">87.2%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Learning Rate:</span>
+                    <span class="metric-value" id="lr">2.5e-4</span>
+                </div>
+            </div>
+
+            <div class="status-panel">
+                <h2 class="panel-title">System Status</h2>
+                <div class="metric-row">
+                    <span class="metric-label">Batch Size:</span>
+                    <span class="metric-value">32</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Data Processed:</span>
+                    <span class="metric-value" id="data-processed">1.2M samples</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">GPU Memory:</span>
+                    <span class="metric-value" id="gpu-memory">14.8GB / 24GB</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">GPU Utilization:</span>
+                    <span class="metric-value" id="gpu-util">98%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Training Speed:</span>
+                    <span class="metric-value" id="speed">2.34 it/s</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Time Elapsed:</span>
+                    <span class="metric-value" id="elapsed">3h 42m 18s</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-panel">
+            <h2 class="panel-title">Neural Network Training Progress</h2>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Epoch Progress</span>
+                    <span id="epoch-progress-text">78%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="epoch-progress" style="width: 78%"></div>
+                </div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Overall Training</span>
+                    <span id="overall-progress-text">42%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="overall-progress" style="width: 42%"></div>
+                </div>
+            </div>
+            <div class="gpu-info">
+                <div class="gpu-card">
+                    <div class="metric-row">
+                        <span class="metric-label">GPU 0 (RTX 4090):</span>
+                        <span class="metric-value" id="gpu0-temp">76°C</span>
+                    </div>
+                </div>
+                <div class="gpu-card">
+                    <div class="metric-row">
+                        <span class="metric-label">GPU 1 (RTX 4090):</span>
+                        <span class="metric-value" id="gpu1-temp">78°C</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="logs-panel">
+            <h2 class="panel-title">Training Logs</h2>
+            <div id="logs-container">
+                <div class="log-entry">
+                    <span class="log-time">[2024-11-18 14:32:45]</span>
+                    <span class="log-level-INFO">[INFO]</span>
+                    Epoch 47/100 - Loss: 0.2847 - Accuracy: 89.4% - Val_loss: 0.3156 - Val_accuracy: 87.2%
+                </div>
+                <div class="log-entry">
+                    <span class="log-time">[2024-11-18 14:31:23]</span>
+                    <span class="log-level-INFO">[INFO]</span>
+                    Learning rate adjusted to 2.5e-4
+                </div>
+                <div class="log-entry">
+                    <span class="log-time">[2024-11-18 14:30:12]</span>
+                    <span class="log-level-WARN">[WARN]</span>
+                    GPU temperature rising - Current: 78°C
+                </div>
+                <div class="log-entry">
+                    <span class="log-time">[2024-11-18 14:29:45]</span>
+                    <span class="log-level-INFO">[INFO]</span>
+                    Checkpoint saved: model_epoch_46.pth
+                </div>
+                <div class="log-entry">
+                    <span class="log-time">[2024-11-18 14:28:33]</span>
+                    <span class="log-level-INFO">[INFO]</span>
+                    Batch 1500/1563 processed
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2 class="panel-title">Loss Convergence Visualization</h2>
+            <div class="chart-placeholder">
+                Real-time training metrics visualization
+                <br>
+                Training Loss: 0.285 ↓ | Validation Loss: 0.316 ↑
+            </div>
+            <div style="margin-top: 2rem;">
+                <button class="greenhats-button">Export Model</button>
+                <button class="greenhats-button">Save Checkpoint</button>
+                <button class="greenhats-button">View Logs</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-logo">greenhats</div>
+            <div style="color: #888; font-size: 1.1rem;">
+                Automated CI/CD Pipeline • Neural Network Training Monitor
+            </div>
+            <div style="color: #20eb80; margin-top: 0.5rem;">
+                Powered by greenhats.com
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate real-time updates
+        function updateMetrics() {
+            const epoch = document.getElementById('epoch');
+            const trainLoss = document.getElementById('train-loss');
+            const valLoss = document.getElementById('val-loss');
+            const trainAcc = document.getElementById('train-acc');
+            const valAcc = document.getElementById('val-acc');
+            const lr = document.getElementById('lr');
+            const gpuMemory = document.getElementById('gpu-memory');
+            const gpuUtil = document.getElementById('gpu-util');
+            const speed = document.getElementById('speed');
+            const elapsed = document.getElementById('elapsed');
+            const gpu0Temp = document.getElementById('gpu0-temp');
+            const gpu1Temp = document.getElementById('gpu1-temp');
+
+            // Simulate small changes in metrics
+            const currentEpoch = parseInt(epoch.textContent);
+            if (Math.random() < 0.1) { // 10% chance to increment epoch
+                epoch.textContent = Math.min(currentEpoch + 1, 100);
+            }
+
+            // Simulate loss decrease
+            const currentTrainLoss = parseFloat(trainLoss.textContent);
+            const newTrainLoss = Math.max(0.1, currentTrainLoss - Math.random() * 0.001);
+            trainLoss.textContent = newTrainLoss.toFixed(4);
+
+            // Simulate accuracy increase
+            const currentTrainAcc = parseFloat(trainAcc.textContent.replace('%', ''));
+            const newTrainAcc = Math.min(95, currentTrainAcc + Math.random() * 0.05);
+            trainAcc.textContent = newTrainAcc.toFixed(1) + '%';
+
+            // Update GPU temperatures
+            const temp0 = 74 + Math.random() * 8;
+            const temp1 = 76 + Math.random() * 6;
+            gpu0Temp.textContent = Math.round(temp0) + '°C';
+            gpu1Temp.textContent = Math.round(temp1) + '°C';
+
+            // Simulate new log entries occasionally
+            if (Math.random() < 0.05) { // 5% chance to add log
+                addLogEntry();
+            }
+        }
+
+        // Progress tracking variables
+        let epochProgress = 78; // Starting at 78%
+        let overallProgress = 42; // Starting at 42%
+        
+        // Function to update progress bars
+        function updateProgress() {
+            // Increment epoch progress by 1% every 5 seconds
+            epochProgress += 1;
+            
+            // Check if epoch is complete (100%)
+            if (epochProgress >= 100) {
+                epochProgress = 0; // Reset epoch progress
+                overallProgress += 1; // Increment overall progress by 1%
+                
+                // Log epoch completion
+                addLogEntry('Epoch completed! Starting next epoch...', 'INFO');
+                
+                // Update current epoch number
+                const epochElement = document.getElementById('epoch');
+                const currentEpoch = parseInt(epochElement.textContent);
+                epochElement.textContent = Math.min(currentEpoch + 1, 100);
+            }
+            
+            // Cap overall progress at 100%
+            if (overallProgress > 100) {
+                overallProgress = 100;
+            }
+
+            // Update progress bars
+            document.getElementById('epoch-progress').style.width = epochProgress + '%';
+            document.getElementById('overall-progress').style.width = overallProgress + '%';
+            document.getElementById('epoch-progress-text').textContent = Math.round(epochProgress) + '%';
+            document.getElementById('overall-progress-text').textContent = Math.round(overallProgress) + '%';
+        }
+
+        function addLogEntry(customMessage = null, customLevel = null) {
+            const logsContainer = document.getElementById('logs-container');
+            const now = new Date();
+            const timestamp = now.toISOString().slice(0, 19).replace('T', ' ');
+            
+            let logData;
+            if (customMessage && customLevel) {
+                logData = { level: customLevel, message: customMessage, class: `log-level-${customLevel}` };
+            } else {
+                const logTypes = [
+                    { level: 'INFO', message: 'Batch processed successfully', class: 'log-level-INFO' },
+                    { level: 'INFO', message: 'Validation accuracy improved', class: 'log-level-INFO' },
+                    { level: 'WARN', message: 'GPU memory usage high', class: 'log-level-WARN' }
+                ];
+                logData = logTypes[Math.floor(Math.random() * logTypes.length)];
+            }
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-time">[${timestamp}]</span>
+                <span class="${logData.class}">[${logData.level}]</span>
+                ${logData.message}
+            `;
+            
+            logsContainer.insertBefore(logEntry, logsContainer.firstChild);
+            
+            // Keep only last 10 log entries
+            const entries = logsContainer.children;
+            if (entries.length > 10) {
+                logsContainer.removeChild(entries[entries.length - 1]);
+            }
+        }
+
+        // Update metrics every 2 seconds
+        setInterval(updateMetrics, 2000);
+        
+        // Update progress every 3 seconds (1% increment)
+        setInterval(updateProgress, 1000);
+
+        // Initial calls
+        updateMetrics();
+        updateProgress(); // Set initial values
+
+        // Add some visual feedback on interaction
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('status-panel')) {
+                e.target.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    e.target.style.transform = 'scale(1)';
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
