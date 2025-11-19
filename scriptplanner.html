@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Word Counter & Speech Timer</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Real-time word counter and speech time calculator with text editor functionality for writers and speakers.">
+    <meta name="keywords" content="word counter, speech timer, text editor, writing tools, speech calculator">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Word Counter & Speech Timer">
+    <meta property="og:description"
+        content="Real-time word counter and speech time calculator with text editor functionality for writers and speakers.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/scriptplanner.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>�</text></svg>">
+
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: rgba(0, 0, 0, 0.05);
+            --accent-color: #0071e3;
+            --text-color: #1d1d1f;
+            --secondary-text: #86868b;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .header {
+            width: 100%;
+            padding: 1rem 0;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .home-link {
+            position: absolute;
+            left: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .home-link:hover {
+            background: rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 1.5rem auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        @media screen and (min-width: 1024px) {
+            .container {
+                max-width: 1000px;
+            }
+            
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            padding: 1.5rem;
+        }
+
+        .drop-zone {
+            border: 3px dashed var(--accent-color);
+            border-radius: 12px;
+            padding: 3rem 1rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stats-panel {
+            margin-bottom: 1.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.6rem;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            font-weight: 500;
+        }
+
+        .editor-panel {
+            flex: 1;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .editor-header h3 {
+            margin: 0;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .editor-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .wpm-control {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            min-width: 120px;
+        }
+
+        .wpm-control label {
+            font-size: 0.85rem;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .wpm-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 120px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            outline: none;
+            transition: background 0.2s ease;
+        }
+
+        .wpm-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 113, 227, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .wpm-slider::-webkit-slider-thumb:hover {
+            background: #005bb5;
+            box-shadow: 0 3px 8px rgba(0, 113, 227, 0.4);
+        }
+
+        .wpm-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 113, 227, 0.3);
+        }
+
+        .text-editor {
+            width: 100%;
+            min-height: 400px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--text-color);
+            resize: vertical;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            overflow: auto;
+        }
+
+        .text-editor:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 0.75rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .editor-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .editor-controls {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .wpm-control {
+                text-align: center;
+            }
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: #005bb5;
+            background: rgba(0, 113, 227, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 5px 15px rgba(0, 113, 227, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: var(--secondary-text);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(60, 60, 65, 0.1);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(60, 60, 65, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer {
+            width: 100%;
+            padding: 1rem 0;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            margin-top: auto;
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1d1d1f;
+                --glass-bg: rgba(30, 30, 32, 0.7);
+                --glass-border: rgba(255, 255, 255, 0.1);
+                --glass-shadow: rgba(0, 0, 0, 0.2);
+                --text-color: #f5f5f7;
+                --secondary-text: #86868b;
+            }
+
+            .home-link:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .stat-item, .text-editor {
+                background: rgba(60, 60, 65, 0.5);
+                color: var(--text-color);
+            }
+
+            .wpm-slider {
+                background: rgba(60, 60, 65, 0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Home</span>
+            </a>
+            <h1>Word Counter & Speech Timer</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Panel -->
+        <div class="glass-panel stats-panel">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="word-count">0</div>
+                    <div class="stat-label">Words</div>
+                </div>
+<!--                <div class="stat-item">
+                    <div class="stat-value" id="char-count">0</div>
+                    <div class="stat-label">Characters</div>
+                </div>-->
+                <div class="stat-item">
+                    <div class="stat-value" id="char-no-spaces">0</div>
+                    <div class="stat-label">Characters (no spaces)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="speech-time">0:00</div>
+                    <div class="stat-label" id="speech-time-label">Speech Time (140 wpm)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="reading-time">0:00</div>
+                    <div class="stat-label">Reading Time (200 wpm)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="paragraph-count">0</div>
+                    <div class="stat-label">Paragraphs</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Text Editor Panel -->
+        <div class="glass-panel editor-panel">
+            <div class="editor-header">
+                <h3>Text Editor</h3>
+                <div class="editor-controls">
+                    <div class="wpm-control">
+                        <label for="wpm-slider">Speech WPM: <span id="wpm-value">140</span></label>
+                        <input type="range" id="wpm-slider" min="80" max="200" value="140" class="wpm-slider">
+                    </div>
+                    <button class="btn btn-secondary" id="clear-text">Clear</button>
+                    <button class="btn btn-primary" id="export-text">Export Text</button>
+                </div>
+            </div>
+            <textarea id="text-editor" class="text-editor" placeholder="Start typing or paste your text here to see real-time statistics..."></textarea>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Created with 🩵 by <a href="https://www.stefanseegerer.de" style="color: rgb(229, 229, 229);">Stefan Seegerer</a></p>
+    </div>
+
+    <script>
+        class WordCounter {
+            constructor() {
+                this.textEditor = document.getElementById('text-editor');
+                this.wordCountElement = document.getElementById('word-count');
+                this.charCountElement = document.getElementById('char-count');
+                this.charNoSpacesElement = document.getElementById('char-no-spaces');
+                this.speechTimeElement = document.getElementById('speech-time');
+                this.speechTimeLabel = document.getElementById('speech-time-label');
+                this.readingTimeElement = document.getElementById('reading-time');
+                this.paragraphCountElement = document.getElementById('paragraph-count');
+                this.clearButton = document.getElementById('clear-text');
+                this.exportButton = document.getElementById('export-text');
+                this.wpmSlider = document.getElementById('wpm-slider');
+                this.wpmValue = document.getElementById('wpm-value');
+
+                this.speechWordsPerMinute = 140;
+                this.readingWordsPerMinute = 200;
+
+                this.attachEventListeners();
+                this.updateStats();
+                this.loadSavedText();
+                this.loadSavedWPM();
+            }
+
+            attachEventListeners() {
+                // Real-time text analysis
+                this.textEditor.addEventListener('input', () => {
+                    this.updateStats();
+                    this.saveText();
+                });
+
+                this.textEditor.addEventListener('keyup', () => {
+                    this.updateStats();
+                });
+
+                this.textEditor.addEventListener('paste', () => {
+                    // Small delay to allow paste to complete
+                    setTimeout(() => this.updateStats(), 10);
+                });
+
+                // Button events
+                this.clearButton.addEventListener('click', () => {
+                    if (confirm('Are you sure you want to clear all text?')) {
+                        this.clearText();
+                    }
+                });
+
+                this.exportButton.addEventListener('click', () => {
+                    this.exportText();
+                });
+
+                // WPM slider events
+                this.wpmSlider.addEventListener('input', (e) => {
+                    this.speechWordsPerMinute = parseInt(e.target.value);
+                    this.wpmValue.textContent = this.speechWordsPerMinute;
+                    this.updateStats();
+                    this.saveWPM();
+                });
+
+                // Auto-save functionality
+                window.addEventListener('beforeunload', () => {
+                    this.saveText();
+                });
+            }
+
+            updateStats() {
+                const text = this.textEditor.value;
+                
+                // Calculate statistics
+                const wordCount = this.countWords(text);
+                const charCount = text.length;
+                const charNoSpaces = text.replace(/\s/g, '').length;
+                const paragraphCount = this.countParagraphs(text);
+                
+                // Calculate time estimates
+                const speechTime = this.calculateTime(wordCount, this.speechWordsPerMinute);
+                const readingTime = this.calculateTime(wordCount, this.readingWordsPerMinute);
+
+                // Update UI
+                this.wordCountElement.textContent = wordCount.toLocaleString();
+                //this.charCountElement.textContent = charCount.toLocaleString();
+                this.charNoSpacesElement.textContent = charNoSpaces.toLocaleString();
+                this.speechTimeElement.textContent = speechTime;
+                this.speechTimeLabel.textContent = `Speech Time (${this.speechWordsPerMinute} wpm)`;
+                this.readingTimeElement.textContent = readingTime;
+                this.paragraphCountElement.textContent = paragraphCount.toLocaleString();
+
+                // Update export button state
+                this.exportButton.disabled = text.trim().length === 0;
+            }
+
+            countWords(text) {
+                if (!text.trim()) return 0;
+                
+                // Split by whitespace and filter out empty strings
+                const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+                return words.length;
+            }
+
+            countParagraphs(text) {
+                if (!text.trim()) return 0;
+                
+                // Split by double newlines or single newlines, filter empty paragraphs
+                const paragraphs = text.trim().split(/\n\s*\n|\n/).filter(para => para.trim().length > 0);
+                return paragraphs.length;
+            }
+
+            calculateTime(words, wordsPerMinute) {
+                if (words === 0) return '0:00';
+                
+                const totalMinutes = words / wordsPerMinute;
+                const minutes = Math.floor(totalMinutes);
+                const seconds = Math.round((totalMinutes - minutes) * 60);
+                
+                if (minutes === 0) {
+                    return `0:${seconds.toString().padStart(2, '0')}`;
+                } else if (minutes < 60) {
+                    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    const hours = Math.floor(minutes / 60);
+                    const remainingMinutes = minutes % 60;
+                    return `${hours}:${remainingMinutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }
+
+            clearText() {
+                this.textEditor.value = '';
+                this.updateStats();
+                this.saveText();
+                this.textEditor.focus();
+            }
+
+            exportText() {
+                const text = this.textEditor.value;
+                if (!text.trim()) return;
+
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'text-document.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                URL.revokeObjectURL(url);
+            }
+
+            saveText() {
+                // Save text to localStorage for persistence
+                try {
+                    localStorage.setItem('wordCounterText', this.textEditor.value);
+                } catch (e) {
+                    // Handle localStorage quota exceeded or unavailable
+                    console.warn('Could not save text to localStorage:', e);
+                }
+            }
+
+            loadSavedText() {
+                // Load previously saved text from localStorage
+                try {
+                    const savedText = localStorage.getItem('wordCounterText');
+                    if (savedText) {
+                        this.textEditor.value = savedText;
+                        this.updateStats();
+                    }
+                } catch (e) {
+                    console.warn('Could not load text from localStorage:', e);
+                }
+            }
+
+            saveWPM() {
+                // Save WPM setting to localStorage
+                try {
+                    localStorage.setItem('wordCounterWPM', this.speechWordsPerMinute.toString());
+                } catch (e) {
+                    console.warn('Could not save WPM to localStorage:', e);
+                }
+            }
+
+            loadSavedWPM() {
+                // Load previously saved WPM from localStorage
+                try {
+                    const savedWPM = localStorage.getItem('wordCounterWPM');
+                    if (savedWPM) {
+                        this.speechWordsPerMinute = parseInt(savedWPM);
+                        this.wpmSlider.value = this.speechWordsPerMinute;
+                        this.wpmValue.textContent = this.speechWordsPerMinute;
+                        this.updateStats();
+                    }
+                } catch (e) {
+                    console.warn('Could not load WPM from localStorage:', e);
+                }
+            }
+        }
+
+        // Initialize the Word Counter when the page loads
+        let wordCounter;
+        document.addEventListener('DOMContentLoaded', () => {
+            wordCounter = new WordCounter();
+        });
+    </script>
+    <script async defer src="https://scripts.withcabin.com/hello.js"></script>
+</body>
+</html>
