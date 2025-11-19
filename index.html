@@ -65,7 +65,7 @@
 
         .container {
             width: 90%;
-            max-width: 800px;
+            max-width: 1200px;
             margin: 2rem auto;
             display: flex;
             flex-direction: column;
@@ -87,8 +87,27 @@
             padding: 0;
             margin: 0;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
+        }
+
+        /* Responsive grid for better layout on different screen sizes */
+        @media (min-width: 1024px) {
+            .tools-list {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .tools-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 767px) {
+            .tools-list {
+                grid-template-columns: 1fr;
+            }
         }
 
         .tool-card {
@@ -222,6 +241,17 @@
                             <h2 class="tool-title">ICS File Merger</h2>
                             <p class="tool-description">Merge multiple ICS calendar files into one with drag and drop functionality. 
                                 Perfect for combining calendars from different sources into a unified file.</p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="tool-card">
+                    <a href="scriptplanner.html">
+                        <div class="tool-image">📝</div>
+                        <div class="tool-content">
+                            <h2 class="tool-title">Word Counter & Speech Timer</h2>
+                            <p class="tool-description">Real-time word counter and speech time calculator with adjustable WPM settings. 
+                                Perfect for writers, speakers, and content creators planning their work.</p>
                         </div>
                     </a>
                 </div>
