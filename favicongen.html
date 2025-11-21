@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Favicon Generator</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Convert PNG images to ICO favicon files in your browser with drag and drop functionality.">
+    <meta name="keywords" content="favicon generator, PNG to ICO, favicon converter, ICO file, favicon tool">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Favicon Generator">
+    <meta property="og:description"
+        content="Convert PNG images to ICO favicon files in your browser with drag and drop functionality.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/favicongen.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
+
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: rgba(0, 0, 0, 0.05);
+            --accent-color: #0071e3;
+            --text-color: #1d1d1f;
+            --secondary-text: #86868b;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .header {
+            width: 100%;
+            padding: 1rem 0;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .home-link {
+            position: absolute;
+            left: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .home-link:hover {
+            background: rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 1.5rem auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            padding: 1.5rem;
+        }
+
+        .drop-zone {
+            border: 3px dashed var(--accent-color);
+            border-radius: 12px;
+            padding: 3rem 1rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: #005bb5;
+            background: rgba(0, 113, 227, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .drop-zone-content {
+            pointer-events: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .drop-zone h3 {
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        .drop-zone p {
+            color: var(--secondary-text);
+            font-size: 1rem;
+        }
+
+        .preview-section {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .preview-container {
+            position: relative;
+            display: inline-block;
+            margin: 1rem 0;
+        }
+
+        .preview-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            cursor: crosshair;
+            display: block;
+        }
+
+        .crop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            border-radius: 8px;
+        }
+
+        .center-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-color);
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .crop-preview {
+            position: absolute;
+            border: 2px solid var(--accent-color);
+            border-radius: 4px;
+            background: rgba(0, 113, 227, 0.1);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .file-info {
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .size-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .size-option {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .size-option:hover {
+            background: rgba(0, 113, 227, 0.1);
+            border-color: var(--accent-color);
+        }
+
+        .size-option.selected {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 5px 15px rgba(0, 113, 227, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: var(--secondary-text);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(60, 60, 65, 0.1);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(60, 60, 65, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .status-success {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-error {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            color: var(--error-color);
+        }
+
+        .status-info {
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid rgba(23, 162, 184, 0.2);
+            color: var(--info-color);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .footer {
+            width: 100%;
+            padding: 1rem 0;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            margin-top: auto;
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1d1d1f;
+                --glass-bg: rgba(30, 30, 32, 0.7);
+                --glass-border: rgba(255, 255, 255, 0.1);
+                --glass-shadow: rgba(0, 0, 0, 0.2);
+                --text-color: #f5f5f7;
+                --secondary-text: #86868b;
+            }
+
+            .home-link:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .drop-zone, .preview-section, .size-option {
+                background: rgba(60, 60, 65, 0.5);
+                color: var(--text-color);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Home</span>
+            </a>
+            <h1>Favicon Generator</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="glass-panel">
+            <p>Upload a PNG image to convert it to an ICO favicon file:</p>
+
+            <div id="status-message" class="status-message hidden"></div>
+
+            <div class="drop-zone" id="drop-zone">
+                <div class="drop-zone-content">
+                    <div class="upload-icon">🎨</div>
+                    <h3>Drop PNG file here</h3>
+                    <p>or click to select file</p>
+                </div>
+            </div>
+
+            <input type="file" id="file-input" accept=".png,image/png" style="display: none;">
+        </div>
+
+        <div class="glass-panel hidden" id="preview-section">
+            <h3>Image Preview</h3>
+            <div class="preview-section">
+                <p>Click on the image to select the center point for cropping:</p>
+                <div class="preview-container" id="preview-container">
+                    <img id="preview-image" class="preview-image" alt="Preview">
+                    <div id="crop-overlay" class="crop-overlay">
+                        <div id="center-point" class="center-point hidden"></div>
+                        <div id="crop-preview" class="crop-preview hidden"></div>
+                    </div>
+                </div>
+                <div id="file-info" class="file-info"></div>
+                
+                <h4>Select Favicon Sizes:</h4>
+                <div class="size-options">
+                    <div class="size-option selected" data-size="16">16x16</div>
+                    <div class="size-option selected" data-size="24">24x24</div>
+                    <div class="size-option selected" data-size="32">32x32</div>
+                    <div class="size-option selected" data-size="48">48x48</div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="generate-btn" class="btn btn-primary">Generate ICO</button>
+                    <button id="clear-btn" class="btn btn-secondary">Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel hidden" id="result-section">
+            <h3>Generated Favicon</h3>
+            <div style="text-align: center;">
+                <p>Your favicon has been generated successfully!</p>
+                <button id="download-btn" class="btn btn-success">Download favicon.ico</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Created with 🩵 by <a href="https://www.stefanseegerer.de" style="color: rgb(229, 229, 229);">Stefan Seegerer</a></p>
+    </div>
+
+    <script>
+        class FaviconGenerator {
+            constructor() {
+                this.currentFile = null;
+                this.selectedSizes = [16, 24, 32, 48];
+                this.centerPoint = { x: 0.5, y: 0.5 }; // Default center (relative coordinates)
+                this.originalImage = null;
+                this.initializeElements();
+                this.attachEventListeners();
+            }
+
+            initializeElements() {
+                this.dropZone = document.getElementById('drop-zone');
+                this.fileInput = document.getElementById('file-input');
+                this.previewSection = document.getElementById('preview-section');
+                this.previewContainer = document.getElementById('preview-container');
+                this.previewImage = document.getElementById('preview-image');
+                this.cropOverlay = document.getElementById('crop-overlay');
+                this.centerPointElement = document.getElementById('center-point');
+                this.cropPreviewElement = document.getElementById('crop-preview');
+                this.fileInfo = document.getElementById('file-info');
+                this.sizeOptions = document.querySelectorAll('.size-option');
+                this.generateBtn = document.getElementById('generate-btn');
+                this.clearBtn = document.getElementById('clear-btn');
+                this.resultSection = document.getElementById('result-section');
+                this.downloadBtn = document.getElementById('download-btn');
+                this.statusMessage = document.getElementById('status-message');
+            }
+
+            attachEventListeners() {
+                // Drop zone events
+                this.dropZone.addEventListener('dragover', this.handleDragOver.bind(this));
+                this.dropZone.addEventListener('dragleave', this.handleDragLeave.bind(this));
+                this.dropZone.addEventListener('drop', this.handleDrop.bind(this));
+                this.dropZone.addEventListener('click', () => this.fileInput.click());
+
+                // File input events
+                this.fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+
+                // Preview image click for center point selection
+                this.previewImage.addEventListener('click', this.handleImageClick.bind(this));
+                this.previewImage.addEventListener('load', this.updateCropOverlay.bind(this));
+
+                // Size option events
+                this.sizeOptions.forEach(option => {
+                    option.addEventListener('click', this.toggleSizeOption.bind(this));
+                });
+
+                // Button events
+                this.generateBtn.addEventListener('click', this.generateFavicon.bind(this));
+                this.clearBtn.addEventListener('click', this.clearAll.bind(this));
+                this.downloadBtn.addEventListener('click', this.downloadFavicon.bind(this));
+            }
+
+            handleDragOver(e) {
+                e.preventDefault();
+                this.dropZone.classList.add('drag-over');
+            }
+
+            handleDragLeave(e) {
+                e.preventDefault();
+                this.dropZone.classList.remove('drag-over');
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                this.dropZone.classList.remove('drag-over');
+                
+                const files = Array.from(e.dataTransfer.files);
+                this.processFile(files[0]);
+            }
+
+            handleFileSelect(e) {
+                const file = e.target.files[0];
+                this.processFile(file);
+            }
+
+            processFile(file) {
+                if (!file) return;
+
+                if (!file.type.includes('png')) {
+                    this.showStatus('Please select a PNG file.', 'error');
+                    return;
+                }
+
+                this.currentFile = file;
+                this.showPreview();
+                this.showStatus('PNG file loaded successfully!', 'success');
+            }
+
+            showPreview() {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.previewImage.src = e.target.result;
+                    
+                    // Create original image for processing
+                    this.originalImage = new Image();
+                    this.originalImage.onload = () => {
+                        this.updateCropOverlay();
+                        this.showStatus('Click on the image to select center point for cropping!', 'info');
+                    };
+                    this.originalImage.src = e.target.result;
+                    
+                    this.previewSection.classList.remove('hidden');
+                    this.resultSection.classList.add('hidden');
+                    
+                    this.fileInfo.innerHTML = `
+                        <strong>${this.currentFile.name}</strong><br>
+                        Size: ${this.formatFileSize(this.currentFile.size)}<br>
+                        Dimensions: ${this.originalImage ? `${this.originalImage.width}x${this.originalImage.height}` : 'Loading...'}
+                    `;
+                };
+                reader.readAsDataURL(this.currentFile);
+            }
+
+            handleImageClick(e) {
+                const rect = this.previewImage.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Convert to relative coordinates (0-1)
+                this.centerPoint.x = x / rect.width;
+                this.centerPoint.y = y / rect.height;
+                
+                this.updateCropOverlay();
+                this.showStatus('Center point updated! Generate ICO to apply cropping.', 'success');
+            }
+
+            updateCropOverlay() {
+                if (!this.originalImage || !this.previewImage.complete) return;
+
+                const rect = this.previewImage.getBoundingClientRect();
+                const containerRect = this.previewContainer.getBoundingClientRect();
+                
+                // Update overlay size to match image
+                this.cropOverlay.style.width = rect.width + 'px';
+                this.cropOverlay.style.height = rect.height + 'px';
+                
+                // Position center point
+                const centerX = this.centerPoint.x * rect.width;
+                const centerY = this.centerPoint.y * rect.height;
+                
+                this.centerPointElement.style.left = centerX + 'px';
+                this.centerPointElement.style.top = centerY + 'px';
+                this.centerPointElement.classList.remove('hidden');
+                
+                // Calculate and show crop preview
+                this.updateCropPreview(rect.width, rect.height, centerX, centerY);
+            }
+
+            updateCropPreview(displayWidth, displayHeight, centerX, centerY) {
+                // Calculate the square crop area that will be used
+                const originalAspect = this.originalImage.width / this.originalImage.height;
+                let cropSize;
+                
+                if (originalAspect >= 1) {
+                    // Landscape or square - crop based on height
+                    cropSize = Math.min(this.originalImage.height, this.originalImage.width);
+                } else {
+                    // Portrait - crop based on width
+                    cropSize = Math.min(this.originalImage.width, this.originalImage.height);
+                }
+                
+                // Convert crop size to display coordinates
+                const scale = Math.min(displayWidth / this.originalImage.width, displayHeight / this.originalImage.height);
+                const displayCropSize = cropSize * scale;
+                
+                // Center the crop preview around the selected point
+                const previewLeft = Math.max(0, Math.min(displayWidth - displayCropSize, centerX - displayCropSize / 2));
+                const previewTop = Math.max(0, Math.min(displayHeight - displayCropSize, centerY - displayCropSize / 2));
+                
+                this.cropPreviewElement.style.left = previewLeft + 'px';
+                this.cropPreviewElement.style.top = previewTop + 'px';
+                this.cropPreviewElement.style.width = displayCropSize + 'px';
+                this.cropPreviewElement.style.height = displayCropSize + 'px';
+                this.cropPreviewElement.classList.remove('hidden');
+            }
+
+            toggleSizeOption(e) {
+                const option = e.target;
+                const size = parseInt(option.dataset.size);
+                
+                option.classList.toggle('selected');
+                
+                if (this.selectedSizes.includes(size)) {
+                    this.selectedSizes = this.selectedSizes.filter(s => s !== size);
+                } else {
+                    this.selectedSizes.push(size);
+                }
+                
+                this.selectedSizes.sort((a, b) => a - b);
+            }
+
+            async generateFavicon() {
+                if (!this.currentFile) {
+                    this.showStatus('Please select a PNG file first.', 'error');
+                    return;
+                }
+
+                if (this.selectedSizes.length === 0) {
+                    this.showStatus('Please select at least one favicon size.', 'error');
+                    return;
+                }
+
+                this.showStatus('Generating favicon...', 'info');
+
+                try {
+                    const icoData = await this.createIcoFile();
+                    this.icoBlob = new Blob([icoData], { type: 'image/x-icon' });
+                    
+                    this.resultSection.classList.remove('hidden');
+                    this.showStatus(`Favicon generated with ${this.selectedSizes.length} sizes!`, 'success');
+                } catch (error) {
+                    this.showStatus(`Error generating favicon: ${error.message}`, 'error');
+                }
+            }
+
+            async createIcoFile() {
+                const images = [];
+                
+                // Generate images for each selected size
+                for (const size of this.selectedSizes) {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.width = size;
+                    canvas.height = size;
+                    
+                    // Calculate crop area in original image coordinates
+                    const cropSize = Math.min(this.originalImage.width, this.originalImage.height);
+                    
+                    // Calculate crop position based on center point
+                    const centerX = this.centerPoint.x * this.originalImage.width;
+                    const centerY = this.centerPoint.y * this.originalImage.height;
+                    
+                    const cropX = Math.max(0, Math.min(this.originalImage.width - cropSize, centerX - cropSize / 2));
+                    const cropY = Math.max(0, Math.min(this.originalImage.height - cropSize, centerY - cropSize / 2));
+                    
+                    // Draw cropped and resized image
+                    ctx.drawImage(
+                        this.originalImage,
+                        cropX, cropY, cropSize, cropSize,  // Source crop area
+                        0, 0, size, size                    // Destination (full canvas)
+                    );
+                    
+                    // Get image data
+                    const imageData = ctx.getImageData(0, 0, size, size);
+                    const bmpData = this.createBmpData(imageData, size);
+                    
+                    images.push({
+                        size: size,
+                        data: bmpData
+                    });
+                }
+
+                // Create ICO file
+                return this.createIcoData(images);
+            }
+
+            createBmpData(imageData, size) {
+                const data = imageData.data;
+                const bmpData = new Uint8Array(40 + size * size * 4 + Math.ceil(size / 8) * size);
+                let offset = 0;
+
+                // BMP Info Header (40 bytes)
+                this.writeUint32(bmpData, offset, 40); // Header size
+                offset += 4;
+                this.writeUint32(bmpData, offset, size); // Width
+                offset += 4;
+                this.writeUint32(bmpData, offset, size * 2); // Height (doubled for ICO)
+                offset += 4;
+                this.writeUint16(bmpData, offset, 1); // Planes
+                offset += 2;
+                this.writeUint16(bmpData, offset, 32); // Bits per pixel
+                offset += 2;
+                this.writeUint32(bmpData, offset, 0); // Compression
+                offset += 4;
+                this.writeUint32(bmpData, offset, 0); // Image size
+                offset += 4;
+                this.writeUint32(bmpData, offset, 0); // X pixels per meter
+                offset += 4;
+                this.writeUint32(bmpData, offset, 0); // Y pixels per meter
+                offset += 4;
+                this.writeUint32(bmpData, offset, 0); // Colors used
+                offset += 4;
+                this.writeUint32(bmpData, offset, 0); // Important colors
+                offset += 4;
+
+                // XOR mask (BGRA format, bottom-up)
+                for (let y = size - 1; y >= 0; y--) {
+                    for (let x = 0; x < size; x++) {
+                        const i = (y * size + x) * 4;
+                        bmpData[offset++] = data[i + 2]; // B
+                        bmpData[offset++] = data[i + 1]; // G
+                        bmpData[offset++] = data[i];     // R
+                        bmpData[offset++] = data[i + 3]; // A
+                    }
+                }
+
+                // AND mask (1 bit per pixel, bottom-up)
+                const maskRowSize = Math.ceil(size / 8);
+                for (let y = size - 1; y >= 0; y--) {
+                    for (let x = 0; x < maskRowSize; x++) {
+                        bmpData[offset++] = 0; // Fully opaque
+                    }
+                }
+
+                return bmpData;
+            }
+
+            createIcoData(images) {
+                let totalSize = 6 + (images.length * 16); // Header + directory entries
+                
+                for (const img of images) {
+                    totalSize += img.data.length;
+                }
+
+                const icoData = new Uint8Array(totalSize);
+                let offset = 0;
+
+                // ICO Header
+                this.writeUint16(icoData, offset, 0); // Reserved
+                offset += 2;
+                this.writeUint16(icoData, offset, 1); // Type (1 = ICO)
+                offset += 2;
+                this.writeUint16(icoData, offset, images.length); // Number of images
+                offset += 2;
+
+                // Directory entries
+                let dataOffset = 6 + (images.length * 16);
+                
+                for (const img of images) {
+                    icoData[offset++] = img.size === 256 ? 0 : img.size; // Width (0 = 256)
+                    icoData[offset++] = img.size === 256 ? 0 : img.size; // Height (0 = 256)
+                    icoData[offset++] = 0; // Color palette
+                    icoData[offset++] = 0; // Reserved
+                    this.writeUint16(icoData, offset, 1); // Planes
+                    offset += 2;
+                    this.writeUint16(icoData, offset, 32); // Bits per pixel
+                    offset += 2;
+                    this.writeUint32(icoData, offset, img.data.length); // Data size
+                    offset += 4;
+                    this.writeUint32(icoData, offset, dataOffset); // Data offset
+                    offset += 4;
+                    
+                    dataOffset += img.data.length;
+                }
+
+                // Image data
+                for (const img of images) {
+                    icoData.set(img.data, offset);
+                    offset += img.data.length;
+                }
+
+                return icoData;
+            }
+
+            writeUint16(buffer, offset, value) {
+                buffer[offset] = value & 0xFF;
+                buffer[offset + 1] = (value >> 8) & 0xFF;
+            }
+
+            writeUint32(buffer, offset, value) {
+                buffer[offset] = value & 0xFF;
+                buffer[offset + 1] = (value >> 8) & 0xFF;
+                buffer[offset + 2] = (value >> 16) & 0xFF;
+                buffer[offset + 3] = (value >> 24) & 0xFF;
+            }
+
+            downloadFavicon() {
+                if (!this.icoBlob) return;
+
+                const url = URL.createObjectURL(this.icoBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'favicon.ico';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showStatus('Favicon downloaded successfully!', 'success');
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            clearAll() {
+                this.currentFile = null;
+                this.originalImage = null;
+                this.centerPoint = { x: 0.5, y: 0.5 };
+                this.previewSection.classList.add('hidden');
+                this.resultSection.classList.add('hidden');
+                this.centerPointElement.classList.add('hidden');
+                this.cropPreviewElement.classList.add('hidden');
+                this.fileInput.value = '';
+                this.hideStatus();
+                
+                // Reset size selections to default
+                this.selectedSizes = [16, 24, 32, 48];
+                this.sizeOptions.forEach(option => {
+                    const size = parseInt(option.dataset.size);
+                    if (this.selectedSizes.includes(size)) {
+                        option.classList.add('selected');
+                    } else {
+                        option.classList.remove('selected');
+                    }
+                });
+            }
+
+            showStatus(message, type) {
+                this.statusMessage.textContent = message;
+                this.statusMessage.className = `status-message status-${type}`;
+                this.statusMessage.classList.remove('hidden');
+            }
+
+            hideStatus() {
+                this.statusMessage.classList.add('hidden');
+            }
+        }
+
+        // Initialize the Favicon Generator when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new FaviconGenerator();
+        });
+    </script>
+    <script async defer src="https://scripts.withcabin.com/hello.js"></script>
+</body>
+</html>
