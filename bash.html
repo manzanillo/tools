@@ -5,49 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Code Snippets</title>
+    <link rel="stylesheet" href="shared-styles.css">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
-        :root {
-            --bg-color: #f5f5f7;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --glass-shadow: rgba(0, 0, 0, 0.05);
-            --accent-color: #0071e3;
-            --text-color: #1d1d1f;
-            --secondary-text: #86868b;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-color);
-        }
-
-        .header {
-            width: 100%;
-            padding: 1.5rem 0;
-            text-align: center;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .header h1 {
-            margin: 0;
-            font-weight: 500;
-            font-size: 1.8rem;
-            letter-spacing: -0.5px;
-        }
+        /* Code snippet specific styles */
 
         .container {
             width: 90%;
@@ -116,6 +80,7 @@
             cursor: pointer;
         }
 
+        /* Code snippet specific styles */
         .code-input {
             width: 100%;
             height: 200px;
@@ -211,98 +176,6 @@
             font-family: 'SF Mono', Menlo, Monaco, 'Courier New', monospace;
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .btn {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 0.6rem 1.2rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 113, 227, 0.3);
-        }
-
-        .btn-secondary {
-            background: rgba(60, 60, 65, 0.1);
-            color: var(--text-color);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(60, 60, 65, 0.2);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Modal styling */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal-content {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 16px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px var(--glass-shadow);
-            padding: 2rem;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-weight: 500;
-            font-size: 1.5rem;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--secondary-text);
-        }
-
         .embed-code-container {
             margin-bottom: 1.5rem;
         }
@@ -334,76 +207,25 @@
             width: 80px;
         }
 
-        /* Dark mode */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #1d1d1f;
-                --glass-bg: rgba(30, 30, 32, 0.7);
-                --glass-border: rgba(255, 255, 255, 0.1);
-                --glass-shadow: rgba(0, 0, 0, 0.2);
-                --text-color: #f5f5f7;
-                --secondary-text: #86868b;
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
             }
 
-            select,
-            input {
-                background: rgba(60, 60, 65, 0.5);
-                color: var(--text-color);
+            .code-snippet {
+                min-width: 90%;
+                max-width: 95%;
             }
-        }
 
-        /* Navigation */
-        .nav-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .home-link {
-            position: absolute;
-            left: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--text-color);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.5rem 0.75rem;
-            border-radius: 20px;
-            transition: all 0.2s ease;
-        }
-
-        .home-link:hover {
-            background: rgba(0, 0, 0, 0.05);
-            transform: translateY(-2px);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .home-link:hover {
-                background: rgba(255, 255, 255, 0.1);
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
             }
         }
 
-        /* Shimmer effect */
-        .shimmer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg,
-                    rgba(255, 255, 255, 0) 0%,
-                    rgba(255, 255, 255, 0.05) 50%,
-                    rgba(255, 255, 255, 0) 100%);
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* For language specific styling */
+        /* Embed mode specific styles */
+        /* Language highlighting override */
         .hljs {
             background: transparent !important;
         }
