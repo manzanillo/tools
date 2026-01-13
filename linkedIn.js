@@ -1,3 +1,87 @@
+// Tab switching functionality
+function switchTab(tabName) {
+    // Hide all tabs
+    document.getElementById('unicode-tab').classList.remove('active');
+    document.getElementById('formatted-tab').classList.remove('active');
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    
+    // Show selected tab and activate button
+    if (tabName === 'unicode') {
+        document.getElementById('unicode-tab').classList.add('active');
+        document.querySelectorAll('.tab-button')[0].classList.add('active');
+    } else if (tabName === 'formatted') {
+        document.getElementById('formatted-tab').classList.add('active');
+        document.querySelectorAll('.tab-button')[1].classList.add('active');
+    }
+}
+
+// Make switchTab available globally
+window.switchTab = switchTab;
+
+// Process formatted text from Word/Outlook
+function processFormattedText(element) {
+    let processedText = '';
+    
+    // Process each child node
+    for (let node of element.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            // Regular text node
+            processedText += node.textContent;
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            const tagName = node.tagName.toLowerCase();
+            const text = node.textContent;
+            
+            // Convert formatting based on HTML tags
+            if (tagName === 'b' || tagName === 'strong') {
+                // Convert to LinkedIn bold
+                processedText += convertText(text, boldMap);
+            } else if (tagName === 'i' || tagName === 'em') {
+                // Convert to LinkedIn italic
+                processedText += convertText(text, italicMap);
+            } else if (tagName === 'br') {
+                // Preserve line breaks
+                processedText += '\n';
+            } else if (tagName === 'p' || tagName === 'div') {
+                // Process paragraph content and add line breaks
+                processedText += processFormattedText(node) + '\n';
+                continue; // Skip the regular processing below
+            } else {
+                // For other tags, process their content recursively
+                processedText += processFormattedText(node);
+                continue;
+            }
+        }
+    }
+    
+    return processedText;
+}
+
+// Update formatted text output
+function updateFormattedText() {
+    const inputElement = document.getElementById('formattedInput');
+    const outputElement = document.getElementById('formattedOutput');
+    
+    // Get the HTML content to preserve formatting
+    const htmlContent = inputElement.innerHTML;
+    
+    // Create a temporary element to process the content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    
+    // Process the formatted content
+    let processedText = processFormattedText(tempDiv);
+    
+    // Clean up extra line breaks
+    processedText = processedText
+        .replace(/\n\s*\n\s*\n/g, '\n\n') // Replace multiple line breaks with double
+        .replace(/^\s+|\s+$/g, ''); // Trim whitespace
+    
+    // Update output
+    outputElement.textContent = processedText;
+}
+
 // Mapping regular characters to bold, bold italics, and italics Unicode equivalents
 const boldMap = {
     'A': '𝗔', 'B': '𝗕', 'C': '𝗖', 'D': '𝗗', 'E': '𝗘', 'F': '𝗙', 'G': '𝗚', 'H': '𝗛', 'I': '𝗜', 'J': '𝗝', 'K': '𝗞',
@@ -35,7 +119,7 @@ function convertText(text, map) {
 }
 
 // Auto-update text formatting as user types
-function updateFormattedText() {
+function updateUnicodeText() {
     const inputText = document.getElementById('inputText').value;
 
     const boldText = convertText(inputText, boldMap);
@@ -48,7 +132,19 @@ function updateFormattedText() {
 }
 
 // Add event listener for real-time updates
-document.getElementById('inputText').addEventListener('input', updateFormattedText);
+document.getElementById('inputText').addEventListener('input', updateUnicodeText);
+
+// Add event listener for formatted text input
+document.addEventListener('DOMContentLoaded', function() {
+    const formattedInput = document.getElementById('formattedInput');
+    if (formattedInput) {
+        formattedInput.addEventListener('input', updateFormattedText);
+        formattedInput.addEventListener('paste', function(e) {
+            // Allow the paste to happen, then process after a short delay
+            setTimeout(updateFormattedText, 10);
+        });
+    }
+});
 
 // Handle clipboard copy
 function copyToClipboard(outputId) {
@@ -74,4 +170,14 @@ document.getElementById('copyBoldItalicBtn').addEventListener('click', function 
 
 document.getElementById('copyItalicBtn').addEventListener('click', function () {
     copyToClipboard('outputItalic');
+});
+
+// Add copy button for formatted text
+document.addEventListener('DOMContentLoaded', function() {
+    const copyFormattedBtn = document.getElementById('copyFormattedBtn');
+    if (copyFormattedBtn) {
+        copyFormattedBtn.addEventListener('click', function () {
+            copyToClipboard('formattedOutput');
+        });
+    }
 });
