@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Einführung in KI-Spielexperimente</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Einführung in interaktive KI-Experimente: Schlag die Roboter mit klassischer KI und Reinforcement Learning">
+    <meta name="keywords" content="künstliche intelligenz, machine learning, reinforcement learning, spiele, AI, KI">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Einführung in KI-Spielexperimente">
+    <meta property="og:description"
+        content="Interaktive Experimente mit klassischer KI und Reinforcement Learning">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/01intro.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <style>
+        .content-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .game-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .game-section:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(255, 229, 92, 0.1);
+        }
+
+        .game-title {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .game-description {
+            color: var(--text-color);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .game-features {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+        }
+
+        .game-features li {
+            color: var(--secondary-text);
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .game-features li::before {
+            content: "🔸";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+
+        .play-button {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: var(--accent-color);
+            color: black;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            margin-right: 1rem;
+        }
+
+        .play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 229, 92, 0.3);
+            text-decoration: none;
+            color: black;
+        }
+
+        .intro-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .intro-title {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .intro-description {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .next-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--accent-color), #f39c12);
+            color: black;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .next-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 229, 92, 0.4);
+            text-decoration: none;
+            color: black;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .comparison-table th {
+            background: var(--accent-color);
+            color: black;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            color: var(--text-color);
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .content-container {
+                padding: 1rem;
+            }
+            
+            .game-section {
+                padding: 1.5rem;
+            }
+            
+            .intro-title {
+                font-size: 1.8rem;
+            }
+            
+            .comparison-table {
+                font-size: 0.9rem;
+            }
+            
+            .comparison-table th,
+            .comparison-table td {
+                padding: 0.7rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>Überblick</span>
+            </a>
+            <h1>KI-Spielexperimente</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="content-container">
+            <!-- Einführung -->
+            <div class="intro-section">
+                <h1 class="intro-title">Willkommen zu den KI-Experimenten</h1>
+                <p class="intro-description">
+                    Entdecken Sie die Welt der Künstlichen Intelligenz durch interaktive Spiele! 
+                    Diese beiden Experimente zeigen verschiedene Ansätze des maschinellen Lernens in Aktion.
+                    Treten Sie gegen intelligente Algorithmen an und erleben Sie, wie Computer lernen und Entscheidungen treffen.
+                </p>
+            </div>
+
+            <!-- Vergleichstabelle -->
+            <div class="game-section">
+                <h2 class="game-title">Überblick: Klassische KI vs. Reinforcement Learning</h2>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Aspekt</th>
+                            <th>Klassische KI</th>
+                            <th>Reinforcement Learning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Lernansatz</strong></td>
+                            <td>Vorprogrammierte Regeln und Algorithmen</td>
+                            <td>Lernen durch Trial-and-Error</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Anpassungsfähigkeit</strong></td>
+                            <td>Statisch, basiert auf festen Strategien</td>
+                            <td>Dynamisch, passt sich an Spielerverhalten an</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Vorhersagbarkeit</strong></td>
+                            <td>Sehr vorhersagbar</td>
+                            <td>Unvorhersagbar, entwickelt eigene Strategien</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Klassische KI Spiel -->
+            <div class="game-section">
+                <h2 class="game-title">🤖 Schlag die Roboter - Klassische KI</h2>
+                <p class="game-description">
+                    Erleben Sie klassische Künstliche Intelligenz in Aktion! Dieses Spiel verwendet traditionelle 
+                    regelbasierte KI. 
+                </p>
+
+                <p class="game-description">
+                    <strong>Spielregeln:</strong> Sie spielen die Affen (🐒). Jede Figur bewegt sich wie ein Bauer - 
+                    vorwärts laufen, diagonal schlagen. Gewinnen Sie, indem Sie das gegenüberliegende Ende erreichen, 
+                    den Gegner bewegungsunfähig machen oder alle gegnerischen Figuren schlagen. Vorher müssen Sie jedoch die Regeln des Computers definieren.
+                </p>
+
+                <a href="https://www.stefanseegerer.de/schlag-die-roboter-classic/?robots=true" 
+                   class="play-button" target="_blank">
+                    🎮 Gegen Klassische KI spielen
+                </a>
+            </div>
+
+            <!-- Reinforcement Learning Spiel -->
+            <div class="game-section">
+                <h2 class="game-title">🧠 Schlag das Krokodil - Reinforcement Learning</h2>
+                <p class="game-description">
+                    Treten Sie gegen einen selbstlernenden Algorithmus an! Dieser Gegner nutzt Reinforcement Learning 
+                    und entwickelt seine Strategien durch kontinuierliches Spielen. Je mehr Partien gespielt werden, 
+                    desto besser wird der Algorithmus durch Belohnungen und Bestrafungen.
+                </p>
+
+                <p class="game-description">
+                    <strong>Besonderheit:</strong> Der Algorithmus "merkt" sich erfolgreiche Spielzüge und wendet sie 
+                    in ähnlichen Situationen erneut an. Dadurch entwickelt er mit der Zeit eine Spielstrategie.
+                </p>
+
+                <a href="https://www.stefanseegerer.de/schlag-das-krokodil/?robots=true" 
+                   class="play-button" target="_blank">
+                    🎮 Gegen Reinforcement Learning spielen
+                </a>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>

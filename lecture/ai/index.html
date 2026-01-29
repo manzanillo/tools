@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>AI for the Web - Begleitmaterial</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Begleitmaterial zur Vorlesung 'AI for the Web' - Interaktive Tools und Experimente zu KI-Themen">
+    <meta name="keywords" content="AI for the Web, Vorlesung, Begleitmaterial, machine learning, interaktiv, KI">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="AI for the Web - Begleitmaterial">
+    <meta property="og:description"
+        content="Interaktive Tools und Experimente zur Vorlesung AI for the Web">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <style>
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .course-intro {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .course-title {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .course-description {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .progress-info {
+            color: var(--secondary-text);
+            font-size: 0.95rem;
+            margin-top: 1rem;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .module-tile {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-tile.available {
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .module-tile.available:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(255, 229, 92, 0.15);
+            border-color: var(--accent-color);
+        }
+
+        .module-tile.available:hover .module-title {
+            color: var(--accent-color);
+        }
+
+        .module-tile.unavailable {
+            opacity: 0.5;
+            background: rgba(255, 255, 255, 0.02);
+            cursor: not-allowed;
+        }
+
+        .module-tile.unavailable::after {
+            content: "🔒";
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+
+        .module-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .module-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .module-description {
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            line-height: 1.4;
+            margin-bottom: 0.8rem;
+        }
+
+        .module-topics {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--accent-color);
+            color: black;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.coming-soon {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--secondary-text);
+        }
+
+        @media (max-width: 1024px) {
+            .modules-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .modules-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .content-container {
+                padding: 1rem;
+            }
+            
+            .course-intro {
+                padding: 1.5rem;
+            }
+            
+            .course-title {
+                font-size: 2rem;
+            }
+            
+            .module-tile {
+                padding: 1.2rem;
+            }
+        }
+
+        /* Special styling for first module */
+        .module-tile.module-01 {
+            border: 2px solid var(--accent-color);
+            background: linear-gradient(135deg, var(--glass-bg), rgba(255, 229, 92, 0.1));
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="../../index.html" class="home-link">
+                <span>🏠</span>
+                <span>Home</span>
+            </a>
+            <h1>AI for the Web - Begleitmaterial</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="content-container">
+            <!-- Begleitmatierial Einführung -->
+            <div class="course-intro">
+                <h1 class="course-title">AI for the Web - Begleitmaterial</h1>
+                <p class="course-description">
+                    Interaktive Tools und Experimente zur Vorlesung "AI for the Web". 
+                    Diese Materialien unterstützen das Verständnis der Konzepte durch praktische Anwendungen 
+                    und Visualisierungen.
+                </p>
+                <div class="progress-info">
+                    <strong>Status:</strong> 2 von 12 Modulen verfügbar
+                </div>
+            </div>
+
+            <!-- Module Grid -->
+            <div class="modules-grid">
+                <!-- Modul 1 - Einführung -->
+                <a href="01intro.html" class="module-tile available module-01">
+                    <div class="status-badge">Verfügbar</div>
+                    <span class="module-number">01</span>
+                    <h3 class="module-title">KI-Einführung</h3>
+                    <p class="module-description">
+                        Erste Schritte in die Welt der Künstlichen Intelligenz. 
+                        Spielen Sie gegen verschiedene KI-Algorithmen.
+                    </p>
+                    <div class="module-topics">
+                        Klassische KI • Reinforcement Learning • Interaktive Spiele
+                    </div>
+                </a>
+
+                <!-- Modul 2 - Supervised Learning -->
+                <a href="02supervised.html" class="module-tile available">
+                    <div class="status-badge">Verfügbar</div>
+                    <span class="module-number">02</span>
+                    <h3 class="module-title">Supervised Learning</h3>
+                    <p class="module-description">
+                        Lernen Sie Klassifikationsalgorithmen kennen und visualisieren Sie 
+                        Decision Boundaries interaktiv.
+                    </p>
+                    <div class="module-topics">
+                        k-NN • SVM • Decision Trees • Klassifikation
+                    </div>
+                </a>
+
+                <!-- Modul 3 - Unsupervised Learning -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">03</span>
+                    <h3 class="module-title">Unsupervised Learning</h3>
+                    <p class="module-description">
+                        Entdecken Sie Clustering-Algorithmen und Dimensionsreduktion 
+                        für ungelabelte Daten.
+                    </p>
+                    <div class="module-topics">
+                        K-Means • DBSCAN • PCA • t-SNE
+                    </div>
+                </div>
+
+                <!-- Modul 4 - Regression -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">04</span>
+                    <h3 class="module-title">Regression</h3>
+                    <p class="module-description">
+                        Lernen Sie kontinuierliche Werte vorherzusagen mit 
+                        verschiedenen Regressionsmodellen.
+                    </p>
+                    <div class="module-topics">
+                        Lineare Regression • Polynomial • Ridge • Lasso
+                    </div>
+                </div>
+
+                <!-- Modul 5 - Neural Networks -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">05</span>
+                    <h3 class="module-title">Neuronale Netze</h3>
+                    <p class="module-description">
+                        Grundlagen von Neuronen, Schichten und Backpropagation 
+                        in interaktiven Visualisierungen.
+                    </p>
+                    <div class="module-topics">
+                        Perceptron • MLP • Backpropagation • Aktivierungsfunktionen
+                    </div>
+                </div>
+
+                <!-- Modul 6 - Deep Learning -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">06</span>
+                    <h3 class="module-title">Deep Learning</h3>
+                    <p class="module-description">
+                        Tauchen Sie ein in tiefe neuronale Netze und 
+                        moderne Architekturen.
+                    </p>
+                    <div class="module-topics">
+                        CNN • RNN • LSTM • Transfer Learning
+                    </div>
+                </div>
+
+                <!-- Modul 7 - Computer Vision -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">07</span>
+                    <h3 class="module-title">Computer Vision</h3>
+                    <p class="module-description">
+                        Bildverarbeitung und -erkennung mit modernen 
+                        Deep Learning Techniken.
+                    </p>
+                    <div class="module-topics">
+                        CNN • Image Classification • Object Detection • Segmentation
+                    </div>
+                </div>
+
+                <!-- Modul 8 - Natural Language Processing -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">08</span>
+                    <h3 class="module-title">Natural Language Processing</h3>
+                    <p class="module-description">
+                        Verarbeitung und Verstehen natürlicher Sprache 
+                        mit KI-Modellen.
+                    </p>
+                    <div class="module-topics">
+                        Tokenization • Word Embeddings • Transformers • BERT
+                    </div>
+                </div>
+
+                <!-- Modul 9 - Reinforcement Learning -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">09</span>
+                    <h3 class="module-title">Reinforcement Learning</h3>
+                    <p class="module-description">
+                        Lernen durch Belohnung und Bestrafung - 
+                        vom Q-Learning zu Deep RL.
+                    </p>
+                    <div class="module-topics">
+                        Q-Learning • Policy Gradients • DQN • Actor-Critic
+                    </div>
+                </div>
+
+                <!-- Modul 10 - Generative AI -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">10</span>
+                    <h3 class="module-title">Generative AI</h3>
+                    <p class="module-description">
+                        Erstellen Sie neue Inhalte mit GANs, VAEs 
+                        und Diffusion Models.
+                    </p>
+                    <div class="module-topics">
+                        GANs • VAEs • Diffusion Models • Style Transfer
+                    </div>
+                </div>
+
+                <!-- Modul 11 - AI Ethics & Fairness -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">11</span>
+                    <h3 class="module-title">KI-Ethik & Fairness</h3>
+                    <p class="module-description">
+                        Verantwortliche KI-Entwicklung, Bias-Erkennung 
+                        und ethische Überlegungen.
+                    </p>
+                    <div class="module-topics">
+                        Algorithmic Bias • Fairness Metrics • Explainable AI • Privacy
+                    </div>
+                </div>
+
+                <!-- Modul 12 - AI in Practice -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">12</span>
+                    <h3 class="module-title">KI in der Praxis</h3>
+                    <p class="module-description">
+                        Deployment, MLOps und Produktionalisierung 
+                        von KI-Modellen.
+                    </p>
+                    <div class="module-topics">
+                        MLOps • Model Serving • Monitoring • A/B Testing
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
