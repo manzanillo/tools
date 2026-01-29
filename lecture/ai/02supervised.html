@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Supervised Learning Classification</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Interactive machine learning classification tool with k-NN, SVM, and Decision Tree algorithms. Visualize decision boundaries on 2D datasets.">
+    <meta name="keywords" content="machine learning, classification, k-NN, SVM, decision tree, visualization">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Supervised Learning Classification">
+    <meta property="og:description"
+        content="Interactive machine learning classification tool with k-NN, SVM, and Decision Tree algorithms. Visualize decision boundaries on 2D datasets.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/02supervised.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <!-- External Libraries -->
+    <script src="https://unpkg.com/ml-js@6.0.1/lib/index.min.js"></script>
+    <script src="https://unpkg.com/danfojs@1.1.2/lib/bundle.min.js"></script>
+    <script src="https://unpkg.com/plotly.js@2.28.0/dist/plotly.min.js"></script>
+    
+    <style>
+        /* ML Classification specific styles */
+        .controls-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .controls-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .visualization-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            min-height: 600px;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-input[type="range"] {
+            appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 3px;
+        }
+
+        .form-input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .form-input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .range-value {
+            display: inline-block;
+            margin-left: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            font-weight: 500;
+        }
+
+        .algorithm-params {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .algorithm-params.active {
+            display: block;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent-color);
+            color: black;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 229, 92, 0.3);
+        }
+
+        .status-info {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid rgba(23, 162, 184, 0.2);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-color);
+        }
+
+        .plot-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .controls-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+
+        /* Dark mode adjustments for form elements */
+        @media (prefers-color-scheme: dark) {
+            .form-select, .form-input {
+                background: rgba(30, 30, 32, 0.5);
+                border-color: rgba(255, 255, 255, 0.1);
+            }
+
+            .form-select:focus, .form-input:focus {
+                background: rgba(30, 30, 32, 0.8);
+            }
+
+            .form-input[type="range"] {
+                background: rgba(255, 255, 255, 0.2);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="../../index.html" class="home-link">
+                <span>🏠</span>
+                <span>Home</span>
+            </a>
+            <h1>Supervised Learning Classification</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="controls-container">
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <div class="control-group">
+                    <label class="control-label" for="dataset">Dataset</label>
+                    <select id="dataset" class="form-select">
+                        <option value="iris">Iris Dataset</option>
+                        <option value="titanic">Titanic Dataset</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="algorithm">Algorithm</label>
+                    <select id="algorithm" class="form-select">
+                        <option value="knn">k-Nearest Neighbors</option>
+                        <option value="svm">Support Vector Machine</option>
+                        <option value="cart">Decision Tree (CART)</option>
+                    </select>
+                </div>
+
+                <!-- k-NN Parameters -->
+                <div id="knn-params" class="algorithm-params active">
+                    <div class="control-group">
+                        <label class="control-label" for="knn-k">k (Number of Neighbors)</label>
+                        <input type="range" id="knn-k" class="form-input" min="1" max="50" value="3" step="1">
+                        <span class="range-value">3</span>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="knn-distance">Distance Metric</label>
+                        <select id="knn-distance" class="form-select">
+                            <option value="euclidean">Euclidean</option>
+                            <option value="manhattan">Manhattan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SVM Parameters -->
+                <div id="svm-params" class="algorithm-params">
+                    <div class="control-group">
+                        <label class="control-label" for="svm-c">C (Regularization)</label>
+                        <input type="range" id="svm-c" class="form-input" min="0.01" max="10" value="1" step="0.01">
+                        <span class="range-value">1</span>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="svm-kernel">Kernel</label>
+                        <select id="svm-kernel" class="form-select">
+                            <option value="linear">Linear</option>
+                            <option value="rbf">RBF (Gaussian)</option>
+                            <option value="poly">Polynomial</option>
+                        </select>
+                    </div>
+                    <div class="control-group" id="svm-gamma-group">
+                        <label class="control-label" for="svm-gamma">Gamma (RBF/Poly)</label>
+                        <input type="range" id="svm-gamma" class="form-input" min="0.001" max="10" value="0.1" step="0.001">
+                        <span class="range-value">0.1</span>
+                    </div>
+                    <div class="control-group" id="svm-degree-group" style="display: none;">
+                        <label class="control-label" for="svm-degree">Degree (Polynomial)</label>
+                        <input type="range" id="svm-degree" class="form-input" min="2" max="5" value="3" step="1">
+                        <span class="range-value">3</span>
+                    </div>
+                </div>
+
+                <!-- Decision Tree Parameters -->
+                <div id="cart-params" class="algorithm-params">
+                    <div class="control-group">
+                        <label class="control-label" for="cart-max-depth">Max Depth</label>
+                        <input type="range" id="cart-max-depth" class="form-input" min="1" max="20" value="5" step="1">
+                        <span class="range-value">5</span>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="cart-min-samples">Min Samples Split</label>
+                        <input type="range" id="cart-min-samples" class="form-input" min="2" max="20" value="2" step="1">
+                        <span class="range-value">2</span>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="cart-criterion">Splitting Criterion</label>
+                        <select id="cart-criterion" class="form-select">
+                            <option value="gini">Gini Impurity</option>
+                            <option value="entropy">Entropy</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="classify-btn" class="btn-primary">Train & Visualize</button>
+
+                <div id="status-info" class="status-info" style="display: none;">
+                    <div id="accuracy"></div>
+                    <div id="training-time"></div>
+                </div>
+            </div>
+
+            <!-- Visualization Panel -->
+            <div class="visualization-panel">
+                <div id="plot-container" class="plot-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentData = null;
+        let currentModel = null;
+        
+        // Sample datasets
+        const datasets = {
+            iris: {
+                name: 'Iris Dataset',
+                data: null, // Will be loaded
+                features: ['sepal_length', 'sepal_width'],
+                target: 'species'
+            },
+            titanic: {
+                name: 'Titanic Dataset',
+                data: null, // Will be loaded
+                features: ['age', 'fare'],
+                target: 'survived'
+            }
+        };
+
+        // Initialize the application
+        async function init() {
+            await loadDatasets();
+            setupEventListeners();
+            loadDataset('iris');
+        }
+
+        // Load sample datasets
+        async function loadDatasets() {
+            // Iris dataset (simplified)
+            datasets.iris.data = {
+                sepal_length: [5.1, 4.9, 4.7, 4.6, 5.0, 5.4, 4.6, 5.0, 4.4, 4.9, 5.4, 4.8, 4.8, 4.3, 5.8, 5.7, 5.4, 5.1, 5.7, 5.1, 5.4, 5.1, 4.6, 5.1, 4.8, 5.0, 5.0, 5.2, 5.2, 4.7, 4.8, 5.4, 5.2, 5.5, 4.9, 5.0, 5.5, 4.9, 4.4, 5.1, 5.0, 4.5, 4.4, 5.0, 5.1, 4.8, 5.1, 4.6, 5.3, 5.0, 7.0, 6.4, 6.9, 5.5, 6.5, 5.7, 6.3, 4.9, 6.6, 5.2, 5.0, 5.9, 6.0, 6.1, 5.6, 6.7, 5.6, 5.8, 6.2, 5.6, 5.9, 6.1, 6.3, 6.1, 6.4, 6.6, 6.8, 6.7, 6.0, 5.7, 5.5, 5.5, 5.8, 6.0, 5.4, 6.0, 6.7, 6.3, 5.6, 5.5, 5.5, 6.1, 5.8, 5.0, 5.6, 5.7, 5.7, 6.2, 5.1, 5.7, 6.3, 5.8, 7.1, 6.3, 6.5, 7.6, 4.9, 7.3, 6.7, 7.2, 6.5, 6.4, 6.8, 5.7, 5.8, 6.4, 6.5, 7.7, 7.7, 6.0, 6.9, 5.6, 7.7, 6.3, 6.7, 7.2, 6.2, 6.1, 6.4, 7.2, 7.4, 7.9, 6.4, 6.3, 6.1, 7.7, 6.3, 6.4, 6.0, 6.9, 6.7, 6.9, 5.8, 6.8, 6.7, 6.7, 6.3, 6.5, 6.2, 5.9],
+                sepal_width: [3.5, 3.0, 3.2, 3.1, 3.6, 3.9, 3.4, 3.4, 2.9, 3.1, 3.7, 3.4, 3.0, 3.0, 4.0, 4.4, 3.9, 3.5, 3.8, 3.8, 3.4, 3.7, 3.6, 3.3, 3.4, 3.0, 3.4, 3.5, 3.4, 3.2, 3.1, 3.4, 4.1, 4.2, 3.1, 3.2, 3.5, 3.6, 3.0, 3.4, 3.5, 2.3, 3.2, 3.5, 3.8, 3.0, 3.8, 3.2, 3.7, 3.3, 3.2, 3.2, 3.1, 2.3, 2.8, 2.8, 3.3, 2.4, 2.9, 2.7, 2.0, 3.0, 2.2, 2.9, 2.9, 3.1, 3.0, 2.7, 2.2, 2.5, 3.2, 2.8, 2.5, 2.8, 2.9, 3.0, 2.8, 3.0, 2.9, 2.6, 2.4, 2.4, 2.7, 2.7, 3.0, 3.4, 3.1, 2.3, 3.0, 2.5, 2.6, 3.0, 2.6, 2.3, 2.7, 3.0, 2.9, 2.9, 2.5, 2.8, 3.3, 2.7, 3.0, 2.9, 3.0, 3.0, 2.5, 2.9, 2.5, 3.6, 3.2, 2.7, 3.0, 2.5, 2.8, 3.2, 3.0, 3.8, 2.6, 2.2, 3.2, 2.8, 2.8, 2.7, 3.3, 3.2, 2.8, 3.0, 2.8, 3.0, 2.8, 3.8, 2.8, 2.8, 2.6, 3.0, 3.4, 3.1, 3.0, 3.1, 3.1, 3.1, 2.7, 3.2, 3.3, 3.0, 2.5, 3.0, 3.4, 3.0],
+                species: ['setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'setosa', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'versicolor', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica', 'virginica']
+            };
+
+            // Titanic dataset (simplified)
+            datasets.titanic.data = {
+                age: [22, 38, 26, 35, 35, 27, 54, 2, 27, 14, 4, 58, 20, 39, 14, 55, 2, 31, 35, 34, 15, 28, 8, 38, 19, 40, 66, 28, 42, 21, 18, 14, 40, 27, 3, 19, 18, 7, 21, 49, 29, 65, 21, 28.5, 5, 11, 22, 38, 45, 4, 29, 19, 17, 26, 32, 16, 21, 26, 32, 25, 0.83, 30, 22, 29, 28, 17, 33, 16, 23, 24, 29, 20, 46, 26, 59, 71, 23, 34, 34, 28, 21, 33, 37, 28, 21, 38, 47, 14.5, 22, 20, 17, 21, 70.5, 29, 24, 2, 21, 32.5, 32.5, 54, 12, 24],
+                fare: [7.25, 71.2833, 7.925, 53.1, 8.05, 8.4583, 51.8625, 21.075, 11.1333, 30.0708, 16.7, 26.55, 8.05, 31.275, 7.8542, 16, 29.125, 13, 30, 21.075, 7.05, 7.25, 29, 7.8958, 7.8958, 7.8542, 10.5, 82.1708, 52, 7.75, 8.05, 18, 7.775, 6.975, 7.775, 12.475, 9.5, 7.0458, 7.25, 0, 7.8958, 26, 13, 8.0292, 35.5, 21.075, 31.3875, 7.05, 39.6875, 7.925, 80, 14.4542, 11.5, 26.25, 10.5, 26, 13, 13, 13, 13, 29.125, 6.975, 11.5, 10.5, 7.775, 26.25, 13, 35.5, 21.075, 31.3875, 6.4375, 8.05, 61.9792, 7.75, 7.8542, 24.15, 7.8958, 6.85, 7.8958, 7.8958, 24.15, 12.35, 7.8958, 151.55, 26.25, 49.5, 12.475, 76.2917, 9.2167, 7.2292, 11.2417, 36.75, 7.4958, 34.375, 26, 13, 12.875, 151.55, 26.25, 7.8958, 93.5, 7.8958],
+                survived: [0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1]
+            };
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('dataset').addEventListener('change', (e) => {
+                loadDataset(e.target.value);
+            });
+
+            document.getElementById('algorithm').addEventListener('change', (e) => {
+                showAlgorithmParams(e.target.value);
+            });
+
+            // Range input value updates
+            document.querySelectorAll('input[type="range"]').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const valueSpan = e.target.nextElementSibling;
+                    if (valueSpan && valueSpan.classList.contains('range-value')) {
+                        valueSpan.textContent = e.target.value;
+                    }
+                });
+            });
+
+            // SVM kernel change
+            document.getElementById('svm-kernel').addEventListener('change', (e) => {
+                const gammaGroup = document.getElementById('svm-gamma-group');
+                const degreeGroup = document.getElementById('svm-degree-group');
+                
+                if (e.target.value === 'linear') {
+                    gammaGroup.style.display = 'none';
+                    degreeGroup.style.display = 'none';
+                } else if (e.target.value === 'poly') {
+                    gammaGroup.style.display = 'block';
+                    degreeGroup.style.display = 'block';
+                } else {
+                    gammaGroup.style.display = 'block';
+                    degreeGroup.style.display = 'none';
+                }
+            });
+
+            document.getElementById('classify-btn').addEventListener('click', trainAndVisualize);
+        }
+
+        // Show algorithm-specific parameters
+        function showAlgorithmParams(algorithm) {
+            document.querySelectorAll('.algorithm-params').forEach(param => {
+                param.classList.remove('active');
+            });
+            document.getElementById(`${algorithm}-params`).classList.add('active');
+        }
+
+        // Load dataset
+        function loadDataset(datasetName) {
+            currentData = datasets[datasetName];
+            visualizeDataset();
+        }
+
+        // Visualize dataset
+        function visualizeDataset() {
+            if (!currentData) return;
+
+            const data = currentData.data;
+            const features = currentData.features;
+            const target = currentData.target;
+
+            // Get unique classes with consistent ordering
+            let uniqueClasses;
+            if (currentData.name.includes('Iris')) {
+                uniqueClasses = ['setosa', 'versicolor', 'virginica'];
+            } else {
+                uniqueClasses = ['died', 'survived']; // For Titanic display names
+            }
+            
+            const colors = ['#E74C3C', '#F1C40F', '#3498DB', '#F39C12', '#9B59B6'];
+
+            const traces = uniqueClasses.map((className, index) => {
+                let classIndices;
+                if (currentData.name.includes('Iris')) {
+                    classIndices = data[target].map((val, idx) => val === className ? idx : -1).filter(idx => idx !== -1);
+                } else {
+                    // For Titanic, map 0->died, 1->survived
+                    const targetValue = index;
+                    classIndices = data[target].map((val, idx) => val === targetValue ? idx : -1).filter(idx => idx !== -1);
+                }
+                
+                return {
+                    x: classIndices.map(i => data[features[0]][i]),
+                    y: classIndices.map(i => data[features[1]][i]),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: className,
+                    marker: {
+                        color: colors[index % colors.length],
+                        size: 8,
+                        opacity: 0.8
+                    }
+                };
+            });
+
+            const layout = {
+                title: {
+                    text: `${currentData.name} - ${features[0]} vs ${features[1]}`,
+                    font: { size: 16 }
+                },
+                xaxis: { title: features[0] },
+                yaxis: { title: features[1] },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: getComputedStyle(document.body).getPropertyValue('--text-color') },
+                showlegend: true,
+                margin: { t: 50, r: 20, b: 50, l: 50 }
+            };
+
+            const config = {
+                displayModeBar: false,
+                responsive: true
+            };
+
+            Plotly.newPlot('plot-container', traces, layout, config);
+        }
+
+        // Train model and visualize decision boundaries
+        async function trainAndVisualize() {
+            if (!currentData) return;
+
+            const startTime = performance.now();
+            const algorithm = document.getElementById('algorithm').value;
+            
+            try {
+                // Prepare data
+                const X = prepareFeatures();
+                const y = prepareTargets();
+                
+                // Train model
+                currentModel = await trainModel(algorithm, X, y);
+                
+                // Calculate accuracy
+                const predictions = predict(currentModel, algorithm, X);
+                const accuracy = calculateAccuracy(y, predictions);
+                
+                const endTime = performance.now();
+                const trainingTime = (endTime - startTime).toFixed(2);
+                
+                // Update status
+                document.getElementById('accuracy').textContent = `Accuracy: ${(accuracy * 100).toFixed(2)}%`;
+                document.getElementById('training-time').textContent = `Training Time: ${trainingTime}ms`;
+                document.getElementById('status-info').style.display = 'block';
+                
+                // Visualize decision boundaries
+                await visualizeDecisionBoundaries(algorithm);
+                
+            } catch (error) {
+                console.error('Training error:', error);
+                alert('Error during training: ' + error.message);
+            }
+        }
+
+        // Prepare feature matrix
+        function prepareFeatures() {
+            const data = currentData.data;
+            const features = currentData.features;
+            const n = data[features[0]].length;
+            
+            const X = [];
+            for (let i = 0; i < n; i++) {
+                X.push([data[features[0]][i], data[features[1]][i]]);
+            }
+            return X;
+        }
+
+        // Prepare target vector
+        function prepareTargets() {
+            const data = currentData.data;
+            const target = currentData.target;
+            
+            // Ensure consistent class ordering
+            let uniqueClasses;
+            if (currentData.name.includes('Iris')) {
+                uniqueClasses = ['setosa', 'versicolor', 'virginica'];
+            } else {
+                uniqueClasses = [0, 1]; // For Titanic (survived: 0, 1)
+            }
+            
+            return data[target].map(label => uniqueClasses.indexOf(label));
+        }
+
+        // Train model based on algorithm
+        async function trainModel(algorithm, X, y) {
+            switch (algorithm) {
+                case 'knn':
+                    return trainKNN(X, y);
+                case 'svm':
+                    return trainSVM(X, y);
+                case 'cart':
+                    return trainCART(X, y);
+                default:
+                    throw new Error('Unknown algorithm');
+            }
+        }
+
+        // Train k-NN
+        function trainKNN(X, y) {
+            const k = parseInt(document.getElementById('knn-k').value);
+            const distance = document.getElementById('knn-distance').value;
+            
+            return {
+                type: 'knn',
+                X: X,
+                y: y,
+                k: k,
+                distance: distance
+            };
+        }
+
+        // Train SVM (simplified implementation)
+        function trainSVM(X, y) {
+            const C = parseFloat(document.getElementById('svm-c').value);
+            const kernel = document.getElementById('svm-kernel').value;
+            const gamma = parseFloat(document.getElementById('svm-gamma').value);
+            const degree = parseInt(document.getElementById('svm-degree').value);
+            
+            // For simplicity, using a basic linear separator
+            // In a real implementation, you'd use a proper SVM library
+            return {
+                type: 'svm',
+                X: X,
+                y: y,
+                C: C,
+                kernel: kernel,
+                gamma: gamma,
+                degree: degree
+            };
+        }
+
+        // Train Decision Tree (simplified CART implementation)
+        function trainCART(X, y) {
+            const maxDepth = parseInt(document.getElementById('cart-max-depth').value);
+            const minSamples = parseInt(document.getElementById('cart-min-samples').value);
+            const criterion = document.getElementById('cart-criterion').value;
+            
+            // Build a simple decision tree
+            const tree = buildTree(X, y, 0, maxDepth, minSamples, criterion);
+            
+            return {
+                type: 'cart',
+                tree: tree,
+                maxDepth: maxDepth,
+                minSamples: minSamples,
+                criterion: criterion
+            };
+        }
+
+        // Simple decision tree builder
+        function buildTree(X, y, depth, maxDepth, minSamples, criterion) {
+            if (depth >= maxDepth || X.length < minSamples || new Set(y).size === 1) {
+                // Leaf node
+                const classCount = {};
+                y.forEach(label => {
+                    classCount[label] = (classCount[label] || 0) + 1;
+                });
+                const prediction = Object.keys(classCount).reduce((a, b) => 
+                    classCount[a] > classCount[b] ? a : b
+                );
+                return { prediction: parseInt(prediction) };
+            }
+
+            let bestSplit = null;
+            let bestScore = Infinity;
+
+            // Try different splits
+            for (let feature = 0; feature < 2; feature++) {
+                const values = X.map(row => row[feature]);
+                const uniqueValues = [...new Set(values)].sort((a, b) => a - b);
+                
+                for (let i = 0; i < uniqueValues.length - 1; i++) {
+                    const threshold = (uniqueValues[i] + uniqueValues[i + 1]) / 2;
+                    const { leftIndices, rightIndices } = splitData(X, feature, threshold);
+                    
+                    if (leftIndices.length === 0 || rightIndices.length === 0) continue;
+                    
+                    const leftY = leftIndices.map(i => y[i]);
+                    const rightY = rightIndices.map(i => y[i]);
+                    
+                    const score = calculateSplitScore(leftY, rightY, criterion);
+                    
+                    if (score < bestScore) {
+                        bestScore = score;
+                        bestSplit = { feature, threshold, leftIndices, rightIndices };
+                    }
+                }
+            }
+
+            if (!bestSplit) {
+                // Fallback to leaf node
+                const classCount = {};
+                y.forEach(label => {
+                    classCount[label] = (classCount[label] || 0) + 1;
+                });
+                const prediction = Object.keys(classCount).reduce((a, b) => 
+                    classCount[a] > classCount[b] ? a : b
+                );
+                return { prediction: parseInt(prediction) };
+            }
+
+            // Recursive split
+            const leftX = bestSplit.leftIndices.map(i => X[i]);
+            const leftY = bestSplit.leftIndices.map(i => y[i]);
+            const rightX = bestSplit.rightIndices.map(i => X[i]);
+            const rightY = bestSplit.rightIndices.map(i => y[i]);
+
+            return {
+                feature: bestSplit.feature,
+                threshold: bestSplit.threshold,
+                left: buildTree(leftX, leftY, depth + 1, maxDepth, minSamples, criterion),
+                right: buildTree(rightX, rightY, depth + 1, maxDepth, minSamples, criterion)
+            };
+        }
+
+        // Split data based on feature and threshold
+        function splitData(X, feature, threshold) {
+            const leftIndices = [];
+            const rightIndices = [];
+            
+            X.forEach((row, index) => {
+                if (row[feature] <= threshold) {
+                    leftIndices.push(index);
+                } else {
+                    rightIndices.push(index);
+                }
+            });
+            
+            return { leftIndices, rightIndices };
+        }
+
+        // Calculate split score (impurity)
+        function calculateSplitScore(leftY, rightY, criterion) {
+            const totalSize = leftY.length + rightY.length;
+            const leftWeight = leftY.length / totalSize;
+            const rightWeight = rightY.length / totalSize;
+            
+            const leftImpurity = calculateImpurity(leftY, criterion);
+            const rightImpurity = calculateImpurity(rightY, criterion);
+            
+            return leftWeight * leftImpurity + rightWeight * rightImpurity;
+        }
+
+        // Calculate impurity (Gini or Entropy)
+        function calculateImpurity(y, criterion) {
+            if (y.length === 0) return 0;
+            
+            const classCount = {};
+            y.forEach(label => {
+                classCount[label] = (classCount[label] || 0) + 1;
+            });
+            
+            const probabilities = Object.values(classCount).map(count => count / y.length);
+            
+            if (criterion === 'gini') {
+                return 1 - probabilities.reduce((sum, p) => sum + p * p, 0);
+            } else { // entropy
+                return -probabilities.reduce((sum, p) => sum + p * Math.log2(p || 1e-10), 0);
+            }
+        }
+
+        // Make predictions
+        function predict(model, algorithm, X) {
+            switch (algorithm) {
+                case 'knn':
+                    return predictKNN(model, X);
+                case 'svm':
+                    return predictSVM(model, X);
+                case 'cart':
+                    return predictCART(model, X);
+                default:
+                    throw new Error('Unknown algorithm');
+            }
+        }
+
+        // k-NN prediction
+        function predictKNN(model, X) {
+            return X.map(point => {
+                const distances = model.X.map((trainPoint, i) => ({
+                    distance: calculateDistance(point, trainPoint, model.distance),
+                    label: model.y[i]
+                }));
+                
+                distances.sort((a, b) => a.distance - b.distance);
+                const kNearest = distances.slice(0, model.k);
+                
+                // Majority vote
+                const votes = {};
+                kNearest.forEach(neighbor => {
+                    votes[neighbor.label] = (votes[neighbor.label] || 0) + 1;
+                });
+                
+                return parseInt(Object.keys(votes).reduce((a, b) => 
+                    votes[a] > votes[b] ? a : b
+                ));
+            });
+        }
+
+        // Calculate distance
+        function calculateDistance(p1, p2, metric) {
+            if (metric === 'euclidean') {
+                return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
+            } else { // manhattan
+                return Math.abs(p1[0] - p2[0]) + Math.abs(p1[1] - p2[1]);
+            }
+        }
+
+        // SVM prediction (simplified)
+        function predictSVM(model, X) {
+            // Simplified SVM - using distance to class centroids
+            const classes = [...new Set(model.y)];
+            const centroids = classes.map(cls => {
+                const classPoints = model.X.filter((_, i) => model.y[i] === cls);
+                const centroidX = classPoints.reduce((sum, p) => sum + p[0], 0) / classPoints.length;
+                const centroidY = classPoints.reduce((sum, p) => sum + p[1], 0) / classPoints.length;
+                return { class: cls, center: [centroidX, centroidY] };
+            });
+            
+            return X.map(point => {
+                const distances = centroids.map(centroid => ({
+                    class: centroid.class,
+                    distance: calculateDistance(point, centroid.center, 'euclidean')
+                }));
+                
+                distances.sort((a, b) => a.distance - b.distance);
+                return distances[0].class;
+            });
+        }
+
+        // Decision Tree prediction
+        function predictCART(model, X) {
+            return X.map(point => predictTreePoint(model.tree, point));
+        }
+
+        // Predict single point with decision tree
+        function predictTreePoint(node, point) {
+            if (node.prediction !== undefined) {
+                return node.prediction;
+            }
+            
+            if (point[node.feature] <= node.threshold) {
+                return predictTreePoint(node.left, point);
+            } else {
+                return predictTreePoint(node.right, point);
+            }
+        }
+
+        // Calculate accuracy
+        function calculateAccuracy(yTrue, yPred) {
+            if (yTrue.length !== yPred.length) return 0;
+            
+            let correct = 0;
+            for (let i = 0; i < yTrue.length; i++) {
+                if (yTrue[i] === yPred[i]) correct++;
+            }
+            
+            return correct / yTrue.length;
+        }
+
+        // Visualize decision boundaries
+        async function visualizeDecisionBoundaries(algorithm) {
+            if (!currentData || !currentModel) return;
+
+            const data = currentData.data;
+            const features = currentData.features;
+            const target = currentData.target;
+
+            // Get data bounds with padding
+            const xMin = Math.min(...data[features[0]]) - 0.5;
+            const xMax = Math.max(...data[features[0]]) + 0.5;
+            const yMin = Math.min(...data[features[1]]) - 0.5;
+            const yMax = Math.max(...data[features[1]]) + 0.5;
+
+            // Create grid for decision boundary
+            const gridSize = 50;
+            const xStep = (xMax - xMin) / gridSize;
+            const yStep = (yMax - yMin) / gridSize;
+
+            // Create coordinate arrays
+            const gridX = [];
+            const gridY = [];
+            for (let i = 0; i <= gridSize; i++) {
+                gridX.push(xMin + i * xStep);
+                gridY.push(yMin + i * yStep);
+            }
+
+            // Create all grid points for prediction
+            const gridPoints = [];
+            for (let i = 0; i <= gridSize; i++) {
+                for (let j = 0; j <= gridSize; j++) {
+                    gridPoints.push([gridX[i], gridY[j]]);
+                }
+            }
+
+            // Predict on grid
+            const gridPredictions = predict(currentModel, algorithm, gridPoints);
+
+            // Convert flat predictions to 2D grid (transpose for correct orientation)
+            const predictionGrid = [];
+            for (let j = 0; j <= gridSize; j++) {
+                predictionGrid.push([]);
+                for (let i = 0; i <= gridSize; i++) {
+                    predictionGrid[j].push(gridPredictions[i * (gridSize + 1) + j]);
+                }
+            }
+
+            // Get unique classes and colors
+            let uniqueClasses;
+            if (currentData.name.includes('Iris')) {
+                uniqueClasses = ['setosa', 'versicolor', 'virginica'];
+            } else {
+                uniqueClasses = ['died', 'survived']; // For Titanic display names
+            }
+            const colors = ['#E74C3C', '#F1C40F', '#3498DB', '#F39C12', '#9B59B6'];
+
+            // Create heatmap for decision boundaries instead of contour
+            const boundaryTrace = {
+                x: gridX,
+                y: gridY,
+                z: predictionGrid,
+                type: 'heatmap',
+                colorscale: [
+                    [0, colors[0]],
+                    [0.5, colors[1]],
+                    [1, colors[2]]
+                ],
+                opacity: 0.4,
+                showscale: false,
+                hoverinfo: 'none'
+            };
+
+            // Create scatter plot for data points
+            const scatterTraces = uniqueClasses.map((className, index) => {
+                let classIndices;
+                if (currentData.name.includes('Iris')) {
+                    classIndices = data[target].map((val, idx) => val === className ? idx : -1).filter(idx => idx !== -1);
+                } else {
+                    // For Titanic, map 0->died, 1->survived
+                    const targetValue = index;
+                    classIndices = data[target].map((val, idx) => val === targetValue ? idx : -1).filter(idx => idx !== -1);
+                }
+                
+                return {
+                    x: classIndices.map(i => data[features[0]][i]),
+                    y: classIndices.map(i => data[features[1]][i]),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: className,
+                    marker: {
+                        color: colors[index % colors.length],
+                        size: 10,
+                        opacity: 1.0,
+                        line: { width: 2, color: 'white' }
+                    }
+                };
+            });
+
+            const allTraces = [boundaryTrace, ...scatterTraces];
+
+            const layout = {
+                title: {
+                    text: `${currentData.name} - ${algorithm.toUpperCase()} Decision Boundaries`,
+                    font: { size: 16 }
+                },
+                xaxis: { 
+                    title: features[0],
+                    range: [xMin, xMax]
+                },
+                yaxis: { 
+                    title: features[1],
+                    range: [yMin, yMax]
+                },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: getComputedStyle(document.body).getPropertyValue('--text-color') },
+                showlegend: true,
+                margin: { t: 50, r: 20, b: 50, l: 50 }
+            };
+
+            const config = {
+                displayModeBar: false,
+                responsive: true
+            };
+
+            Plotly.newPlot('plot-container', allTraces, layout, config);
+        }
+
+        // Initialize the application when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+
+</html>
