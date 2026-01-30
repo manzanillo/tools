@@ -328,8 +328,9 @@
                 <span>🏠</span>
                 <span>Überblick</span>
             </a>
-            <h1>Evaluation Metrics Explorer</h1>
-        </div>
+            <h1>Evaluation Metrics Explorer</h1>            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>        </div>
     </div>
 
     <div class="container">
@@ -909,6 +910,38 @@
 
         // Initialize when page loads
         window.addEventListener('load', init);
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        const root = document.documentElement;
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('ai-lecture-theme');
+            if (savedTheme) {
+                root.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = prefersDark ? 'dark' : 'light';
+                root.setAttribute('data-theme', theme);
+                updateThemeIcon(theme);
+            }
+        }
+
+        function updateThemeIcon(theme) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('ai-lecture-theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        initTheme();
     </script>
 </body>
 

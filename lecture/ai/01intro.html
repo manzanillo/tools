@@ -211,6 +211,9 @@
                 <span>Überblick</span>
             </a>
             <h1>KI-Spielexperimente</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
         </div>
     </div>
 
@@ -299,6 +302,45 @@
 
         </div>
     </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        const root = document.documentElement;
+
+        // Initialize theme from localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('ai-lecture-theme');
+            if (savedTheme) {
+                root.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else {
+                // Check system preference
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = prefersDark ? 'dark' : 'light';
+                root.setAttribute('data-theme', theme);
+                updateThemeIcon(theme);
+            }
+        }
+
+        // Update theme icon based on current theme
+        function updateThemeIcon(theme) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('ai-lecture-theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        // Initialize theme on page load
+        initTheme();
+    </script>
 </body>
 
 </html>
