@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Evaluation Metrics Explorer</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Interaktiver Metrics Explorer - Verstehen Sie Accuracy, F1-Score, ROC, Precision, Recall und weitere Evaluationsmetriken">
+    <meta name="keywords" content="machine learning, metrics, evaluation, accuracy, precision, recall, F1, ROC, AUC">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Evaluation Metrics Explorer">
+    <meta property="og:description"
+        content="Interaktiver Explorer für ML-Evaluationsmetriken mit verschiedenen Datensätzen">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/03metrics.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <!-- External Libraries -->
+    <script src="https://unpkg.com/plotly.js@2.28.0/dist/plotly.min.js"></script>
+    
+    <style>
+        /* Metrics Explorer specific styles */
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .controls-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 1rem;
+        }
+
+        .visualization-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .metrics-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .confusion-matrix-panel,
+        .metrics-panel,
+        .curves-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .curves-panel {
+            grid-column: 1 / -1;
+            min-height: 500px;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-input[type="range"] {
+            appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 3px;
+        }
+
+        .form-input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .form-input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .threshold-value {
+            display: inline-block;
+            margin-left: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            font-weight: 500;
+            background: var(--accent-color);
+            color: black;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .confusion-matrix {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr;
+            grid-template-rows: auto 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+        }
+
+        .cm-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .cm-cell {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .cm-cell.correct {
+            background: rgba(46, 204, 113, 0.2);
+            border-color: #2ecc71;
+        }
+
+        .cm-cell.incorrect {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: #e74c3c;
+        }
+
+        .cm-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-color);
+            display: block;
+        }
+
+        .cm-label-text {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            margin-top: 0.5rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .metric-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+        }
+
+        .metric-name {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .metric-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--accent-color);
+        }
+
+        .metric-description {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            margin-top: 0.3rem;
+        }
+
+        .dataset-info {
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid rgba(23, 162, 184, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .dataset-title {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .dataset-description {
+            font-size: 0.85rem;
+            color: var(--secondary-text);
+            line-height: 1.4;
+        }
+
+        .plot-container {
+            width: 100%;
+            height: 400px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .curves-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .curve-plot {
+            height: 350px;
+        }
+
+        .important-metric {
+            border-left: 3px solid var(--accent-color);
+            background: rgba(255, 229, 92, 0.1);
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 280px 1fr;
+            }
+        }
+
+        @media (max-width: 968px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .controls-panel {
+                position: static;
+            }
+            
+            .curves-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Dark mode adjustments */
+        @media (prefers-color-scheme: dark) {
+            .form-select, .form-input {
+                background: rgba(30, 30, 32, 0.5);
+                border-color: rgba(255, 255, 255, 0.1);
+            }
+
+            .form-select:focus, .form-input:focus {
+                background: rgba(30, 30, 32, 0.8);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>Überblick</span>
+            </a>
+            <h1>Evaluation Metrics Explorer</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-container">
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <div class="control-group">
+                    <label class="control-label" for="dataset">Datensatz</label>
+                    <select id="dataset" class="form-select">
+                        <option value="balanced">Ausgewogene Diagnose</option>
+                        <option value="spam">Unausgewogene Spam-Erkennung</option>
+                        <option value="fraud">Hochunausgewogene Betrug-Erkennung</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="model">Modell-Qualität</label>
+                    <select id="model" class="form-select">
+                        <option value="good">Gutes Modell</option>
+                        <option value="bad">Schlechtes Modell</option>
+                    </select>
+                </div>
+
+                <div id="dataset-info" class="dataset-info">
+                    <div class="dataset-title">Medizinische Diagnose - Gutes Modell</div>
+                    <div class="dataset-description">
+                        Ausgewogener Datensatz mit 50% gesunden und 50% kranken Patienten. 
+                        Hier ist eine hohe Recall wichtig - kranke Patienten dürfen nicht übersehen werden.
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="threshold">
+                        Klassifikationsschwelle
+                        <span id="threshold-value" class="threshold-value">0.5</span>
+                    </label>
+                    <input type="range" id="threshold" class="form-input" 
+                           min="0.1" max="0.9" value="0.5" step="0.01">
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Wichtige Metriken für diesen Fall:</label>
+                    <div id="important-metrics" style="font-size: 0.85rem; color: var(--secondary-text); margin-top: 0.5rem;">
+                        • Recall (Sensitivität)<br>
+                        • F1-Score<br>
+                        • Spezifität
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualization Container -->
+            <div class="visualization-container">
+                <!-- Metrics Dashboard -->
+                <div class="metrics-dashboard">
+                    <!-- Confusion Matrix -->
+                    <div class="confusion-matrix-panel">
+                        <h3 style="color: var(--text-color); margin-bottom: 1rem;">Confusion Matrix</h3>
+                        <div class="confusion-matrix">
+                            <div></div>
+                            <div class="cm-label">Vorhergesagt: Positiv</div>
+                            <div class="cm-label">Vorhergesagt: Negativ</div>
+                            
+                            <div class="cm-label">Tatsächlich: Positiv</div>
+                            <div class="cm-cell correct" id="tp">
+                                <span class="cm-value">0</span>
+                                <div class="cm-label-text">True Positive (TP)</div>
+                            </div>
+                            <div class="cm-cell incorrect" id="fn">
+                                <span class="cm-value">0</span>
+                                <div class="cm-label-text">False Negative (FN)</div>
+                            </div>
+                            
+                            <div class="cm-label">Tatsächlich: Negativ</div>
+                            <div class="cm-cell incorrect" id="fp">
+                                <span class="cm-value">0</span>
+                                <div class="cm-label-text">False Positive (FP)</div>
+                            </div>
+                            <div class="cm-cell correct" id="tn">
+                                <span class="cm-value">0</span>
+                                <div class="cm-label-text">True Negative (TN)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Panel -->
+                    <div class="metrics-panel">
+                        <h3 style="color: var(--text-color); margin-bottom: 1rem;">Evaluationsmetriken</h3>
+                        <div class="metrics-grid" id="metrics-grid">
+                            <!-- Metrics will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROC and PR Curves -->
+                <div class="curves-panel">
+                    <h3 style="color: var(--text-color); margin-bottom: 1rem;">ROC und Precision-Recall Kurven</h3>
+                    <div class="curves-container">
+                        <div id="roc-plot" class="curve-plot"></div>
+                        <div id="pr-plot" class="curve-plot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentDataset = 'balanced';
+        let currentModel = 'good';
+        let currentThreshold = 0.5;
+        
+        // Dataset configurations
+        const datasets = {
+            balanced: {
+                name: 'Medizinische Diagnose',
+                description: {
+                    good: 'Gutes Modell mit hoher Recall - erkennt die meisten kranken Patienten. Nur wenige false negatives.',
+                    bad: 'Schlechtes Modell mit niedriger Recall - übersieht viele kranke Patienten, obwohl Precision hoch ist.'
+                },
+                totalSamples: 1000,
+                positiveRatio: 0.5,
+                probabilities: {good: null, bad: null},
+                trueLabels: null,
+                importantMetrics: ['Recall (Sensitivität)', 'F1-Score', 'Spezifität'],
+                context: 'medical'
+            },
+            spam: {
+                name: 'Spam-Erkennung',
+                description: {
+                    good: 'Gutes Modell mit ausgewogenem Precision/Recall - erkennt Spam ohne zu viele normale E-Mails zu blockieren.',
+                    bad: 'Schlechtes Modell mit niedriger Precision - blockiert viele normale E-Mails als "Spam".'
+                },
+                totalSamples: 1000,
+                positiveRatio: 0.05,
+                probabilities: {good: null, bad: null},
+                trueLabels: null,
+                importantMetrics: ['Precision', 'F1-Score', 'Accuracy'],
+                context: 'spam'
+            },
+            fraud: {
+                name: 'Betrugs-Erkennung',
+                description: {
+                    good: 'Gutes Modell mit hoher Precision - wenn es Betrug erkennt, ist es meist korrekt. Wenige false positives.',
+                    bad: 'Schlechtes Modell mit niedriger Precision - flaggt zu viele legitime Transaktionen als Betrug.'
+                },
+                totalSamples: 2000,
+                positiveRatio: 0.005,
+                probabilities: {good: null, bad: null},
+                trueLabels: null,
+                importantMetrics: ['Precision', 'AUC-PR', 'MCC'],
+                context: 'fraud'
+            }
+        };
+
+        // Generate realistic classifier probabilities
+        function generateProbabilities(dataset, modelType) {
+            const config = datasets[dataset];
+            const n = config.totalSamples;
+            const positiveCount = Math.floor(n * config.positiveRatio);
+            const negativeCount = n - positiveCount;
+            
+            const probabilities = [];
+            const trueLabels = [];
+            
+            // Generate probabilities for positive samples
+            for (let i = 0; i < positiveCount; i++) {
+                let prob;
+                
+                if (dataset === 'balanced' && modelType === 'good') {
+                    // Medical: Good model has high recall (finds most sick patients)
+                    prob = Math.random() < 0.85 ? 0.6 + Math.random() * 0.4 : Math.random() * 0.5;
+                } else if (dataset === 'balanced' && modelType === 'bad') {
+                    // Medical: Bad model has low recall (misses many sick patients)
+                    prob = Math.random() < 0.4 ? 0.7 + Math.random() * 0.3 : Math.random() * 0.3;
+                } else if (dataset === 'spam' && modelType === 'good') {
+                    // Spam: Good model balanced precision/recall - well calibrated around 0.5
+                    prob = Math.random() < 0.80 ? 0.55 + Math.random() * 0.45 : Math.random() * 0.45;
+                } else if (dataset === 'spam' && modelType === 'bad') {
+                    // Spam: Bad model high recall but low precision (overconfident)
+                    prob = Math.random() < 0.9 ? 0.7 + Math.random() * 0.3 : Math.random() * 0.6;
+                } else if (dataset === 'fraud' && modelType === 'good') {
+                    // Fraud: Good model high precision when it detects fraud - well calibrated
+                    prob = Math.random() < 0.75 ? 0.6 + Math.random() * 0.4 : 0.2 + Math.random() * 0.3;
+                } else if (dataset === 'fraud' && modelType === 'bad') {
+                    // Fraud: Bad model high recall but low precision
+                    prob = Math.random() < 0.95 ? 0.6 + Math.random() * 0.4 : Math.random() * 0.3;
+                }
+                
+                probabilities.push(prob);
+                trueLabels.push(1);
+            }
+            
+            // Generate probabilities for negative samples
+            for (let i = 0; i < negativeCount; i++) {
+                let prob;
+                
+                if (dataset === 'balanced' && modelType === 'good') {
+                    // Medical: Good model good specificity
+                    prob = Math.random() < 0.9 ? Math.random() * 0.3 : 0.3 + Math.random() * 0.5;
+                } else if (dataset === 'balanced' && modelType === 'bad') {
+                    // Medical: Bad model still decent specificity (high precision)
+                    prob = Math.random() < 0.95 ? Math.random() * 0.2 : 0.2 + Math.random() * 0.6;
+                } else if (dataset === 'spam' && modelType === 'good') {
+                    // Spam: Good model doesn't flag normal emails - well calibrated
+                    prob = Math.random() < 0.96 ? Math.random() * 0.35 : 0.35 + Math.random() * 0.3;
+                } else if (dataset === 'spam' && modelType === 'bad') {
+                    // Spam: Bad model flags too many normal emails (low precision)
+                    prob = Math.random() < 0.7 ? Math.random() * 0.4 : 0.4 + Math.random() * 0.6;
+                } else if (dataset === 'fraud' && modelType === 'good') {
+                    // Fraud: Good model very conservative with flagging - excellent specificity
+                    prob = Math.random() < 0.99 ? Math.random() * 0.25 : 0.25 + Math.random() * 0.3;
+                } else if (dataset === 'fraud' && modelType === 'bad') {
+                    // Fraud: Bad model flags too many legitimate transactions
+                    prob = Math.random() < 0.85 ? Math.random() * 0.3 : 0.3 + Math.random() * 0.7;
+                }
+                
+                probabilities.push(prob);
+                trueLabels.push(0);
+            }
+            
+            // Shuffle arrays together
+            const combined = probabilities.map((prob, i) => ({prob, label: trueLabels[i]}));
+            for (let i = combined.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [combined[i], combined[j]] = [combined[j], combined[i]];
+            }
+            
+            config.probabilities[modelType] = combined.map(item => item.prob);
+            if (!config.trueLabels) {
+                config.trueLabels = combined.map(item => item.label);
+            }
+        }
+
+        // Calculate confusion matrix
+        function calculateConfusionMatrix(dataset, modelType, threshold) {
+            const config = datasets[dataset];
+            if (!config.probabilities[modelType]) return {tp: 0, fp: 0, tn: 0, fn: 0};
+            
+            let tp = 0, fp = 0, tn = 0, fn = 0;
+            
+            for (let i = 0; i < config.probabilities[modelType].length; i++) {
+                const predicted = config.probabilities[modelType][i] >= threshold ? 1 : 0;
+                const actual = config.trueLabels[i];
+                
+                if (actual === 1 && predicted === 1) tp++;
+                else if (actual === 0 && predicted === 1) fp++;
+                else if (actual === 0 && predicted === 0) tn++;
+                else if (actual === 1 && predicted === 0) fn++;
+            }
+            
+            return {tp, fp, tn, fn};
+        }
+
+        // Calculate all metrics
+        function calculateMetrics(cm) {
+            const {tp, fp, tn, fn} = cm;
+            const total = tp + fp + tn + fn;
+            
+            // Basic metrics
+            const accuracy = (tp + tn) / total;
+            const precision = tp + fp > 0 ? tp / (tp + fp) : 0;
+            const recall = tp + fn > 0 ? tp / (tp + fn) : 0;
+            const specificity = tn + fp > 0 ? tn / (tn + fp) : 0;
+            
+            // F-scores
+            const f1 = precision + recall > 0 ? 2 * (precision * recall) / (precision + recall) : 0;
+            const f2 = precision + recall > 0 ? 5 * (precision * recall) / (4 * precision + recall) : 0;
+            
+            // Matthews Correlation Coefficient
+            const mcc_numerator = (tp * tn) - (fp * fn);
+            const mcc_denominator = Math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn));
+            const mcc = mcc_denominator > 0 ? mcc_numerator / mcc_denominator : 0;
+            
+            // Balanced accuracy
+            const sensitivity = recall;
+            const balancedAccuracy = (sensitivity + specificity) / 2;
+            
+            return {
+                accuracy,
+                precision,
+                recall,
+                specificity,
+                f1,
+                f2,
+                mcc,
+                balancedAccuracy,
+                sensitivity
+            };
+        }
+
+        // Update confusion matrix display
+        function updateConfusionMatrix(cm) {
+            document.getElementById('tp').querySelector('.cm-value').textContent = cm.tp;
+            document.getElementById('fp').querySelector('.cm-value').textContent = cm.fp;
+            document.getElementById('tn').querySelector('.cm-value').textContent = cm.tn;
+            document.getElementById('fn').querySelector('.cm-value').textContent = cm.fn;
+        }
+
+        // Update metrics display
+        function updateMetrics(metrics, dataset) {
+            const config = datasets[dataset];
+            const metricsGrid = document.getElementById('metrics-grid');
+            
+            const metricDefinitions = [
+                {
+                    name: 'Accuracy',
+                    value: metrics.accuracy,
+                    description: 'Anteil korrekter Vorhersagen',
+                    important: config.importantMetrics.includes('Accuracy')
+                },
+                {
+                    name: 'Precision',
+                    value: metrics.precision,
+                    description: 'Anteil echter Positive unter allen als positiv klassifizierten',
+                    important: config.importantMetrics.includes('Precision')
+                },
+                {
+                    name: 'Recall (Sensitivität)',
+                    value: metrics.recall,
+                    description: 'Anteil gefundener Positive von allen tatsächlichen Positiven',
+                    important: config.importantMetrics.includes('Recall (Sensitivität)')
+                },
+                {
+                    name: 'Spezifität',
+                    value: metrics.specificity,
+                    description: 'Anteil echter Negative unter allen tatsächlichen Negativen',
+                    important: config.importantMetrics.includes('Spezifität')
+                },
+                {
+                    name: 'F1-Score',
+                    value: metrics.f1,
+                    description: 'Harmonisches Mittel aus Precision und Recall',
+                    important: config.importantMetrics.includes('F1-Score')
+                },
+                {
+                    name: 'F2-Score',
+                    value: metrics.f2,
+                    description: 'Gewichtetes Mittel, das Recall stärker betont',
+                    important: config.importantMetrics.includes('F2-Score')
+                },
+                {
+                    name: 'MCC',
+                    value: metrics.mcc,
+                    description: 'Matthews Correlation Coefficient (-1 bis 1)',
+                    important: config.importantMetrics.includes('MCC')
+                },
+                {
+                    name: 'Balanced Accuracy',
+                    value: metrics.balancedAccuracy,
+                    description: 'Mittlere Sensitivität und Spezifität',
+                    important: config.importantMetrics.includes('Balanced Accuracy')
+                }
+            ];
+            
+            metricsGrid.innerHTML = '';
+            
+            metricDefinitions.forEach(metric => {
+                const metricElement = document.createElement('div');
+                metricElement.className = `metric-item ${metric.important ? 'important-metric' : ''}`;
+                
+                metricElement.innerHTML = `
+                    <div>
+                        <div class="metric-name">${metric.name}</div>
+                        <div class="metric-description">${metric.description}</div>
+                    </div>
+                    <div class="metric-value">${metric.value.toFixed(3)}</div>
+                `;
+                
+                metricsGrid.appendChild(metricElement);
+            });
+        }
+
+        // Calculate ROC curve data
+        function calculateROC(dataset, modelType) {
+            const config = datasets[dataset];
+            if (!config.probabilities[modelType]) return {fpr: [], tpr: [], auc: 0};
+            
+            const thresholds = [];
+            for (let i = 0; i <= 100; i++) {
+                thresholds.push(i / 100);
+            }
+            
+            const fpr = [];
+            const tpr = [];
+            
+            thresholds.forEach(threshold => {
+                const cm = calculateConfusionMatrix(dataset, modelType, threshold);
+                const metrics = calculateMetrics(cm);
+                
+                const falsePositiveRate = cm.fp + cm.tn > 0 ? cm.fp / (cm.fp + cm.tn) : 0;
+                
+                fpr.push(falsePositiveRate);
+                tpr.push(metrics.recall);
+            });
+            
+            // Calculate AUC using trapezoidal rule
+            let auc = 0;
+            for (let i = 1; i < fpr.length; i++) {
+                auc += (fpr[i] - fpr[i-1]) * (tpr[i] + tpr[i-1]) / 2;
+            }
+            
+            return {fpr, tpr, auc: Math.abs(auc)};
+        }
+
+        // Calculate Precision-Recall curve data
+        function calculatePR(dataset, modelType) {
+            const config = datasets[dataset];
+            if (!config.probabilities[modelType]) return {precision: [], recall: [], auc: 0};
+            
+            const thresholds = [];
+            for (let i = 0; i <= 100; i++) {
+                thresholds.push(i / 100);
+            }
+            
+            const precision = [];
+            const recall = [];
+            
+            thresholds.forEach(threshold => {
+                const cm = calculateConfusionMatrix(dataset, modelType, threshold);
+                const metrics = calculateMetrics(cm);
+                
+                precision.push(metrics.precision);
+                recall.push(metrics.recall);
+            });
+            
+            // Calculate AUC-PR using trapezoidal rule
+            let auc = 0;
+            const sortedData = recall.map((r, i) => ({r, p: precision[i]}))
+                                   .sort((a, b) => a.r - b.r);
+            
+            for (let i = 1; i < sortedData.length; i++) {
+                auc += (sortedData[i].r - sortedData[i-1].r) * (sortedData[i].p + sortedData[i-1].p) / 2;
+            }
+            
+            return {precision, recall, auc: Math.abs(auc)};
+        }
+
+        // Plot ROC curve
+        function plotROC(dataset, modelType, currentThreshold) {
+            const rocData = calculateROC(dataset, modelType);
+            
+            // Current threshold point
+            const currentCM = calculateConfusionMatrix(dataset, modelType, currentThreshold);
+            const currentMetrics = calculateMetrics(currentCM);
+            const currentFPR = currentCM.fp + currentCM.tn > 0 ? currentCM.fp / (currentCM.fp + currentCM.tn) : 0;
+            
+            const traces = [
+                {
+                    x: rocData.fpr,
+                    y: rocData.tpr,
+                    mode: 'lines',
+                    name: `ROC Curve (AUC: ${rocData.auc.toFixed(3)})`,
+                    line: { color: '#3498DB', width: 3 }
+                },
+                {
+                    x: [currentFPR],
+                    y: [currentMetrics.recall],
+                    mode: 'markers',
+                    name: `Aktueller Threshold (${currentThreshold})`,
+                    marker: { color: '#E74C3C', size: 12 }
+                },
+                {
+                    x: [0, 1],
+                    y: [0, 1],
+                    mode: 'lines',
+                    name: 'Zufall',
+                    line: { color: 'gray', width: 1, dash: 'dash' }
+                }
+            ];
+            
+            const layout = {
+                title: 'ROC Curve',
+                xaxis: { title: 'False Positive Rate' },
+                yaxis: { title: 'True Positive Rate (Recall)' },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: getComputedStyle(document.body).getPropertyValue('--text-color') },
+                showlegend: true,
+                margin: { t: 50, r: 20, b: 50, l: 50 }
+            };
+            
+            Plotly.newPlot('roc-plot', traces, layout, {displayModeBar: false, responsive: true});
+        }
+
+        // Plot Precision-Recall curve
+        function plotPR(dataset, modelType, currentThreshold) {
+            const prData = calculatePR(dataset, modelType);
+            
+            // Current threshold point
+            const currentCM = calculateConfusionMatrix(dataset, modelType, currentThreshold);
+            const currentMetrics = calculateMetrics(currentCM);
+            
+            const traces = [
+                {
+                    x: prData.recall,
+                    y: prData.precision,
+                    mode: 'lines',
+                    name: `PR Curve (AUC: ${prData.auc.toFixed(3)})`,
+                    line: { color: '#F39C12', width: 3 }
+                },
+                {
+                    x: [currentMetrics.recall],
+                    y: [currentMetrics.precision],
+                    mode: 'markers',
+                    name: `Aktueller Threshold (${currentThreshold})`,
+                    marker: { color: '#E74C3C', size: 12 }
+                }
+            ];
+            
+            const layout = {
+                title: 'Precision-Recall Curve',
+                xaxis: { title: 'Recall' },
+                yaxis: { title: 'Precision' },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: getComputedStyle(document.body).getPropertyValue('--text-color') },
+                showlegend: true,
+                margin: { t: 50, r: 20, b: 50, l: 50 }
+            };
+            
+            Plotly.newPlot('pr-plot', traces, layout, {displayModeBar: false, responsive: true});
+        }
+
+        // Update dataset info display
+        function updateDatasetInfo(dataset, modelType) {
+            const config = datasets[dataset];
+            const infoElement = document.getElementById('dataset-info');
+            
+            infoElement.querySelector('.dataset-title').textContent = 
+                `${config.name} - ${modelType === 'good' ? 'Gutes' : 'Schlechtes'} Modell`;
+            infoElement.querySelector('.dataset-description').textContent = config.description[modelType];
+            
+            document.getElementById('important-metrics').innerHTML = 
+                config.importantMetrics.map(metric => `• ${metric}`).join('<br>');
+        }
+
+        // Update all visualizations
+        function updateAll() {
+            const cm = calculateConfusionMatrix(currentDataset, currentModel, currentThreshold);
+            const metrics = calculateMetrics(cm);
+            
+            updateConfusionMatrix(cm);
+            updateMetrics(metrics, currentDataset);
+            updateDatasetInfo(currentDataset, currentModel);
+            plotROC(currentDataset, currentModel, currentThreshold);
+            plotPR(currentDataset, currentModel, currentThreshold);
+        }
+
+        // Initialize the application
+        function init() {
+            // Generate probabilities for all datasets and models
+            Object.keys(datasets).forEach(dataset => {
+                generateProbabilities(dataset, 'good');
+                generateProbabilities(dataset, 'bad');
+            });
+            
+            // Setup event listeners
+            document.getElementById('dataset').addEventListener('change', (e) => {
+                currentDataset = e.target.value;
+                updateAll();
+            });
+            
+            document.getElementById('model').addEventListener('change', (e) => {
+                currentModel = e.target.value;
+                updateAll();
+            });
+            
+            document.getElementById('threshold').addEventListener('input', (e) => {
+                currentThreshold = parseFloat(e.target.value);
+                document.getElementById('threshold-value').textContent = currentThreshold.toFixed(2);
+                updateAll();
+            });
+            
+            // Initial update
+            updateAll();
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+
+</html>
