@@ -158,12 +158,34 @@
         #tree-container {
             width: 100%;
             min-height: 600px;
-            overflow: auto;
+            overflow: hidden;
+            position: relative;
         }
 
         #tree-svg {
             width: 100%;
             height: 100%;
+        }
+
+        .tree-controls-hint {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        svg {
+            cursor: grab;
+        }
+
+        svg:active {
+            cursor: grabbing;
         }
 
         .node circle {
@@ -373,6 +395,21 @@
             document.getElementById('status-info').style.display = 'none';
         }
 
+        // Add controls hint to tree container
+        function addControlsHint() {
+            const hint = document.createElement('div');
+            hint.className = 'tree-controls-hint';
+            hint.innerHTML = '🖱️ Drag to pan • Scroll to zoom';
+            document.getElementById('tree-container').appendChild(hint);
+            
+            // Remove hint after 4 seconds
+            setTimeout(() => {
+                hint.style.opacity = '0';
+                hint.style.transition = 'opacity 0.5s';
+                setTimeout(() => hint.remove(), 500);
+            }, 4000);
+        }
+
         // Train and visualize
         async function trainAndVisualize() {
             if (!currentData) return;
@@ -404,6 +441,9 @@
                 
                 // Visualize tree
                 visualizeTree(currentTree);
+                
+                // Add controls hint
+                addControlsHint();
                 
             } catch (error) {
                 console.error('Training error:', error);
@@ -617,13 +657,44 @@
             const width = Math.max(800, countLeaves(tree) * 120) - margin.left - margin.right;
             const height = (countDepth(tree) * 100) + margin.top + margin.bottom;
             
+            // Get container dimensions
+            const container = document.getElementById('tree-container');
+            const containerWidth = container.offsetWidth;
+            const containerHeight = container.offsetHeight;
+            
             // Create SVG
             const svg = d3.select('#tree-container')
                 .append('svg')
-                .attr('width', width + margin.left + margin.right)
-                .attr('height', height + margin.top + margin.bottom)
-                .append('g')
+                .attr('width', '100%')
+                .attr('height', '100%')
+                .attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`);
+            
+            // Create zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 3])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                });
+            
+            // Apply zoom to SVG
+            svg.call(zoom);
+            
+            // Create main group for tree
+            const g = svg.append('g')
                 .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            // Center the tree initially
+            const initialScale = Math.min(
+                (containerWidth - margin.left - margin.right) / width,
+                (containerHeight - margin.top - margin.bottom) / height,
+                1
+            );
+            const initialX = (containerWidth - width * initialScale) / 2;
+            const initialY = margin.top;
+            
+            svg.call(zoom.transform, d3.zoomIdentity
+                .translate(initialX, initialY)
+                .scale(initialScale));
             
             // Create tree layout
             const treeLayout = d3.tree().size([width, height - 40]);
@@ -633,7 +704,7 @@
             treeLayout(root);
             
             // Add links
-            svg.selectAll('.link')
+            g.selectAll('.link')
                 .data(root.links())
                 .enter()
                 .append('path')
@@ -644,7 +715,7 @@
                 );
             
             // Add nodes
-            const nodes = svg.selectAll('.node')
+            const nodes = g.selectAll('.node')
                 .data(root.descendants())
                 .enter()
                 .append('g')
