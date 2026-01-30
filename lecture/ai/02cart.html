@@ -29,6 +29,7 @@
     
     <!-- External Libraries -->
     <script src="https://unpkg.com/d3@7.8.5/dist/d3.min.js"></script>
+    <script src="https://unpkg.com/plotly.js@2.28.0/dist/plotly.min.js"></script>
     
     <style>
         /* Decision Tree specific styles */
@@ -188,6 +189,87 @@
             cursor: grabbing;
         }
 
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .modal-info {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid rgba(23, 162, 184, 0.2);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .modal-plot {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .node circle {
+            cursor: pointer;
+        }
+
         .node circle {
             fill: var(--accent-color);
             stroke: var(--text-color);
@@ -305,10 +387,21 @@
         </div>
     </div>
 
+    <!-- Modal for decision boundary visualization -->
+    <div id="boundary-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h2 class="modal-title">Decision Boundary Visualization</h2>
+            <div id="modal-info" class="modal-info"></div>
+            <div id="modal-plot" class="modal-plot"></div>
+        </div>
+    </div>
+
     <script>
         // Global variables
         let currentData = null;
         let currentTree = null;
+        let treeRoot = null; // Store D3 hierarchy root for path finding
         
         // Sample datasets
         const datasets = {
@@ -703,6 +796,9 @@
             const root = d3.hierarchy(treeData);
             treeLayout(root);
             
+            // Store root for later use
+            treeRoot = root;
+            
             // Add links
             g.selectAll('.link')
                 .data(root.links())
@@ -724,7 +820,11 @@
             
             // Add circles
             nodes.append('circle')
-                .attr('r', 6);
+                .attr('r', 6)
+                .on('click', function(event, d) {
+                    event.stopPropagation();
+                    showDecisionBoundary(d);
+                });
             
             // Add text labels
             nodes.append('text')
@@ -787,6 +887,249 @@
         function countDepth(node) {
             if (!node || node.prediction !== undefined) return 1;
             return 1 + Math.max(countDepth(node.left), countDepth(node.right));
+        }
+
+        // Show decision boundary modal
+        function showDecisionBoundary(d3Node) {
+            // Get path from root to this node
+            const path = d3Node.ancestors().reverse();
+            
+            // Build split information
+            const splits = [];
+            for (let i = 0; i < path.length - 1; i++) {
+                const node = path[i].data;
+                const child = path[i + 1];
+                
+                if (node.isLeaf) continue;
+                
+                // Determine if we went left or right
+                const wentLeft = node.children && child === path[i].children[0];
+                
+                // Parse the split from the label
+                const match = node.label.match(/(.+?)\s*≤\s*([0-9.]+)/);
+                if (match) {
+                    const featureName = match[1];
+                    const threshold = parseFloat(match[2]);
+                    const featureIndex = currentData.featureNames.indexOf(featureName);
+                    
+                    splits.push({
+                        feature: featureIndex,
+                        threshold: threshold,
+                        direction: wentLeft ? 'left' : 'right'
+                    });
+                }
+            }
+            
+            // Show modal
+            const modal = document.getElementById('boundary-modal');
+            modal.classList.add('active');
+            
+            // Update info
+            const infoDiv = document.getElementById('modal-info');
+            const nodeData = d3Node.data;
+            let infoHTML = `<strong>Node Information:</strong><br>`;
+            infoHTML += `Samples: ${nodeData.samples}<br>`;
+            
+            if (nodeData.isLeaf) {
+                infoHTML += `<strong>Leaf Node - Prediction: ${nodeData.label}</strong><br>`;
+            } else {
+                infoHTML += `<strong>Split: ${nodeData.label}</strong><br>`;
+            }
+            
+            if (nodeData.distribution) {
+                const dist = Object.entries(nodeData.distribution)
+                    .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                    .map(([cls, count]) => `${currentData.classNames[cls]}: ${count}`)
+                    .join(', ');
+                infoHTML += `Distribution: ${dist}<br>`;
+            }
+            
+            infoHTML += `<br><strong>Decision Path:</strong> ${splits.length} split(s) from root`;
+            
+            infoDiv.innerHTML = infoHTML;
+            
+            // Visualize decision boundaries
+            visualizeDecisionBoundaries(splits, nodeData);
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('boundary-modal');
+            modal.classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('boundary-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Visualize decision boundaries for a node
+        function visualizeDecisionBoundaries(splits, nodeData) {
+            const data = currentData.data;
+            const features = currentData.features;
+            
+            // Get all data points
+            const X = prepareFeatures();
+            const y = prepareTargets();
+            
+            // Filter points that reach this node
+            let filteredIndices = X.map((_, i) => i);
+            splits.forEach(split => {
+                filteredIndices = filteredIndices.filter(i => {
+                    const value = X[i][split.feature];
+                    if (split.direction === 'left') {
+                        return value <= split.threshold;
+                    } else {
+                        return value > split.threshold;
+                    }
+                });
+            });
+            
+            // Get bounds for the plot
+            const xMin = Math.min(...data[features[0]]) - 0.5;
+            const xMax = Math.max(...data[features[0]]) + 0.5;
+            const yMin = Math.min(...data[features[1]]) - 0.5;
+            const yMax = Math.max(...data[features[1]]) + 0.5;
+            
+            // Create scatter plot traces for filtered data
+            const classNames = currentData.classNames;
+            const colors = ['#E74C3C', '#F1C40F', '#3498DB', '#F39C12', '#9B59B6'];
+            
+            const scatterTraces = classNames.map((className, classIndex) => {
+                const classIndices = filteredIndices.filter(i => y[i] === classIndex);
+                
+                return {
+                    x: classIndices.map(i => X[i][0]),
+                    y: classIndices.map(i => X[i][1]),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: className,
+                    marker: {
+                        color: colors[classIndex % colors.length],
+                        size: 10,
+                        opacity: 0.8,
+                        line: { width: 2, color: 'white' }
+                    }
+                };
+            });
+            
+            // Create shapes for decision boundaries
+            const shapes = [];
+            splits.forEach((split, index) => {
+                const isVertical = split.feature === 0; // First feature (x-axis)
+                
+                if (isVertical) {
+                    // Vertical line at x = threshold
+                    shapes.push({
+                        type: 'line',
+                        x0: split.threshold,
+                        y0: yMin,
+                        x1: split.threshold,
+                        y1: yMax,
+                        line: {
+                            color: index === splits.length - 1 ? '#E74C3C' : '#95a5a6',
+                            width: index === splits.length - 1 ? 3 : 2,
+                            dash: index === splits.length - 1 ? 'solid' : 'dash'
+                        }
+                    });
+                } else {
+                    // Horizontal line at y = threshold
+                    shapes.push({
+                        type: 'line',
+                        x0: xMin,
+                        y0: split.threshold,
+                        x1: xMax,
+                        y1: split.threshold,
+                        line: {
+                            color: index === splits.length - 1 ? '#E74C3C' : '#95a5a6',
+                            width: index === splits.length - 1 ? 3 : 2,
+                            dash: index === splits.length - 1 ? 'solid' : 'dash'
+                        }
+                    });
+                }
+            });
+            
+            // Highlight the region for this node
+            if (splits.length > 0) {
+                let xMinRegion = xMin;
+                let xMaxRegion = xMax;
+                let yMinRegion = yMin;
+                let yMaxRegion = yMax;
+                
+                splits.forEach(split => {
+                    if (split.feature === 0) { // x-axis feature
+                        if (split.direction === 'left') {
+                            xMaxRegion = Math.min(xMaxRegion, split.threshold);
+                        } else {
+                            xMinRegion = Math.max(xMinRegion, split.threshold);
+                        }
+                    } else { // y-axis feature
+                        if (split.direction === 'left') {
+                            yMaxRegion = Math.min(yMaxRegion, split.threshold);
+                        } else {
+                            yMinRegion = Math.max(yMinRegion, split.threshold);
+                        }
+                    }
+                });
+                
+                // Add shaded region
+                shapes.push({
+                    type: 'rect',
+                    x0: xMinRegion,
+                    y0: yMinRegion,
+                    x1: xMaxRegion,
+                    y1: yMaxRegion,
+                    fillcolor: 'rgba(255, 229, 92, 0.1)',
+                    line: {
+                        color: 'rgba(255, 229, 92, 0.5)',
+                        width: 2
+                    }
+                });
+            }
+            
+            const layout = {
+                title: {
+                    text: `Decision Boundaries - ${currentData.name}`,
+                    font: { size: 16 }
+                },
+                xaxis: { 
+                    title: currentData.featureNames[0],
+                    range: [xMin, xMax]
+                },
+                yaxis: { 
+                    title: currentData.featureNames[1],
+                    range: [yMin, yMax]
+                },
+                shapes: shapes,
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(255,255,255,0.05)',
+                font: { color: getComputedStyle(document.body).getPropertyValue('--text-color') },
+                showlegend: true,
+                legend: {
+                    x: 1.02,
+                    y: 1,
+                    xanchor: 'left'
+                },
+                margin: { t: 50, r: 150, b: 50, l: 50 }
+            };
+            
+            const config = {
+                displayModeBar: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
+                responsive: true
+            };
+            
+            Plotly.newPlot('modal-plot', scatterTraces, layout, config);
         }
 
         // Initialize on page load
