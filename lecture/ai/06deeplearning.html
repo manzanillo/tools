@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learning - Neuronale Netze</title>
+    <link rel="stylesheet" href="../../shared-styles.css">
+    <script src="https://cdn.plot.ly/plotly-2.28.0.min.js"></script>
+    <style>
+        .network-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .network-viz {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .weight-controls {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .weight-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .weight-group h4 {
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .weight-slider {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .weight-label {
+            font-size: 0.85rem;
+            min-width: 40px;
+        }
+
+        .weight-value {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .activation-select {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        #network-svg {
+            width: 100%;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+        }
+
+        .decision-plot {
+            margin-top: 2rem;
+        }
+
+        .sample-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .sample-input {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sample-input label {
+            font-size: 0.9rem;
+            min-width: 100px;
+        }
+
+        .sample-input input {
+            padding: 0.3rem 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: var(--text-color);
+            width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>Überblick</span>
+            </a>
+            <h1>Deep Learning</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>🧠 Neuronale Netze</h1>
+            <p>Trainiere ein neuronales Netz manuell und visualisiere Entscheidungsgrenzen</p>
+        </header>
+
+        <div class="controls-container" style="display: block;">
+            <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                <h3 style="margin-top: 0;">Netzwerk-Konfiguration</h3>
+                
+                <div class="control-group">
+                    <label class="control-label" for="activation">Aktivierungsfunktion:</label>
+                    <select id="activation" class="form-select activation-select">
+                        <option value="sigmoid">Sigmoid</option>
+                        <option value="relu">ReLU</option>
+                        <option value="id">Identität (Linear)</option>
+                    </select>
+                </div>
+
+                <div class="sample-controls">
+                    <div class="sample-input">
+                        <label>Proteingehalt (%):</label>
+                        <input type="number" id="sample-protein" value="1.5" step="0.1" min="0" max="10">
+                    </div>
+                    <div class="sample-input">
+                        <label>Ballaststoffe (%):</label>
+                        <input type="number" id="sample-fiber" value="3.0" step="0.1" min="0" max="15">
+                    </div>
+                    <button class="btn-secondary" onclick="updateNetwork()">
+                        Berechnen
+                    </button>
+                </div>
+
+                <div class="info-box" style="margin-top: 1rem;">
+                    <h4>Netzwerk-Architektur</h4>
+                    <p><strong>Input Layer:</strong> 2 Neuronen (Proteine, Ballaststoffe)</p>
+                    <p><strong>Hidden Layer:</strong> 3 Neuronen mit Aktivierungsfunktion</p>
+                    <p><strong>Output Layer:</strong> 2 Neuronen (Gemüse, Obst)</p>
+                    <p><strong>Gesamt:</strong> 12 Gewichte (w₁-w₁₂) + 5 Biases (b₁-b₅)</p>
+                </div>
+            </div>
+
+            <div class="network-container">
+                <div class="network-viz">
+                    <h3 style="margin-top: 0;">Netzwerk-Visualisierung</h3>
+                    <svg id="network-svg"></svg>
+                </div>
+
+                <div class="weight-controls">
+                    <h3 style="margin-top: 0;">Gewichte & Biases</h3>
+                    
+                    <div class="weight-group">
+                        <h4>Input → Hidden Layer</h4>
+                        <div id="input-hidden-weights"></div>
+                    </div>
+
+                    <div class="weight-group">
+                        <h4>Hidden Layer Biases</h4>
+                        <div id="hidden-biases"></div>
+                    </div>
+
+                    <div class="weight-group">
+                        <h4>Hidden → Output Layer</h4>
+                        <div id="hidden-output-weights"></div>
+                    </div>
+
+                    <div class="weight-group">
+                        <h4>Output Layer Biases</h4>
+                        <div id="output-biases"></div>
+                    </div>
+
+                    <button class="btn-primary" onclick="randomizeWeights()" style="width: 100%; margin-top: 1rem;">
+                        Gewichte randomisieren
+                    </button>
+                </div>
+            </div>
+
+            <div class="decision-plot">
+                <h3>Entscheidungsgrenze</h3>
+                <div id="decision-plot"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // Theme System
+        // ============================================
+        function initTheme() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.querySelector('.theme-icon');
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            themeIcon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+            
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                themeIcon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+                
+                updateNetwork();
+                updateDecisionBoundary();
+            });
+        }
+
+        function getTextColor() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            return theme === 'light' ? '#000000' : '#FFFFFF';
+        }
+
+        // ============================================
+        // Neural Network Implementation
+        // ============================================
+        let network = {
+            // Input to hidden weights (2 inputs × 3 hidden nodes = 6 weights)
+            w1: 0.8, w2: 0.6,    // to h1
+            w3: -0.5, w4: 0.4,   // to h2
+            w5: 0.3, w6: -0.7,   // to h3
+            
+            // Hidden biases
+            b1: -1.5, b2: 0.5, b3: -0.3,
+            
+            // Hidden to output weights (3 hidden × 2 outputs = 6 weights)
+            w7: 1.2, w8: -0.8, w9: 0.6,    // to o1 (Gemüse)
+            w10: -0.9, w11: 0.7, w12: -0.5, // to o2 (Obst)
+            
+            // Output biases
+            b4: -0.5, b5: 0.3,
+            
+            activation: 'sigmoid'
+        };
+
+        // Activation functions
+        function sigmoid(x) {
+            return 1 / (1 + Math.exp(-x));
+        }
+
+        function relu(x) {
+            return Math.max(0, x);
+        }
+
+        function identity(x) {
+            return x;
+        }
+
+        function activate(x, func) {
+            if (func === 'sigmoid') return sigmoid(x);
+            if (func === 'relu') return relu(x);
+            return identity(x);
+        }
+
+        // Forward pass
+        function forward(protein, fiber) {
+            const act = network.activation;
+            
+            // Hidden layer
+            const h1_in = protein * network.w1 + fiber * network.w2 + network.b1;
+            const h2_in = protein * network.w3 + fiber * network.w4 + network.b2;
+            const h3_in = protein * network.w5 + fiber * network.w6 + network.b3;
+            
+            const h1 = activate(h1_in, act);
+            const h2 = activate(h2_in, act);
+            const h3 = activate(h3_in, act);
+            
+            // Output layer
+            const o1_in = h1 * network.w7 + h2 * network.w8 + h3 * network.w9 + network.b4;
+            const o2_in = h1 * network.w10 + h2 * network.w11 + h3 * network.w12 + network.b5;
+            
+            const o1 = activate(o1_in, act);
+            const o2 = activate(o2_in, act);
+            
+            return {
+                hidden: [h1, h2, h3],
+                hiddenRaw: [h1_in, h2_in, h3_in],
+                output: [o1, o2],
+                outputRaw: [o1_in, o2_in]
+            };
+        }
+
+        // ============================================
+        // UI Setup
+        // ============================================
+        function setupWeightSliders() {
+            // Input to hidden
+            const inputHidden = document.getElementById('input-hidden-weights');
+            inputHidden.innerHTML = '';
+            for (let i = 1; i <= 6; i++) {
+                const slider = createWeightSlider(`w${i}`, network[`w${i}`], -2, 2);
+                inputHidden.appendChild(slider);
+            }
+            
+            // Hidden biases
+            const hiddenBiases = document.getElementById('hidden-biases');
+            hiddenBiases.innerHTML = '';
+            for (let i = 1; i <= 3; i++) {
+                const slider = createWeightSlider(`b${i}`, network[`b${i}`], -2, 2);
+                hiddenBiases.appendChild(slider);
+            }
+            
+            // Hidden to output
+            const hiddenOutput = document.getElementById('hidden-output-weights');
+            hiddenOutput.innerHTML = '';
+            for (let i = 7; i <= 12; i++) {
+                const slider = createWeightSlider(`w${i}`, network[`w${i}`], -2, 2);
+                hiddenOutput.appendChild(slider);
+            }
+            
+            // Output biases
+            const outputBiases = document.getElementById('output-biases');
+            outputBiases.innerHTML = '';
+            for (let i = 4; i <= 5; i++) {
+                const slider = createWeightSlider(`b${i}`, network[`b${i}`], -2, 2);
+                outputBiases.appendChild(slider);
+            }
+        }
+
+        function createWeightSlider(name, value, min, max) {
+            const div = document.createElement('div');
+            div.className = 'weight-slider';
+            
+            const label = document.createElement('span');
+            label.className = 'weight-label';
+            label.textContent = name + ':';
+            
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.min = min;
+            slider.max = max;
+            slider.step = 0.1;
+            slider.value = value;
+            slider.id = `slider-${name}`;
+            
+            const valueSpan = document.createElement('span');
+            valueSpan.className = 'weight-value';
+            valueSpan.id = `value-${name}`;
+            valueSpan.textContent = value.toFixed(2);
+            
+            slider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                network[name] = val;
+                valueSpan.textContent = val.toFixed(2);
+                updateNetwork();
+                updateDecisionBoundary();
+            });
+            
+            div.appendChild(label);
+            div.appendChild(slider);
+            div.appendChild(valueSpan);
+            
+            return div;
+        }
+
+        // ============================================
+        // Network Visualization
+        // ============================================
+        function drawNetwork() {
+            const svg = document.getElementById('network-svg');
+            const width = svg.clientWidth;
+            const height = 400;
+            
+            const protein = parseFloat(document.getElementById('sample-protein').value);
+            const fiber = parseFloat(document.getElementById('sample-fiber').value);
+            
+            const result = forward(protein, fiber);
+            
+            svg.innerHTML = '';
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            
+            // Layer positions
+            const inputX = 50;
+            const hiddenX = width / 2;
+            const outputX = width - 50;
+            
+            const inputY = [height / 3, 2 * height / 3];
+            const hiddenY = [height / 4, height / 2, 3 * height / 4];
+            const outputY = [height / 3, 2 * height / 3];
+            
+            // Draw connections (input to hidden) with weight labels
+            let weightIdx = 1;
+            for (let h = 0; h < 3; h++) {
+                for (let i = 0; i < 2; i++) {
+                    const weight = network[`w${weightIdx}`];
+                    const color = weight > 0 ? '#51CF66' : '#FF6B6B';
+                    const width_line = Math.abs(weight) * 2;
+                    
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', inputX);
+                    line.setAttribute('y1', inputY[i]);
+                    line.setAttribute('x2', hiddenX);
+                    line.setAttribute('y2', hiddenY[h]);
+                    line.setAttribute('stroke', color);
+                    line.setAttribute('stroke-width', width_line);
+                    line.setAttribute('opacity', '0.3');
+                    svg.appendChild(line);
+                    
+                    // Add weight label
+                    const midX = (inputX + hiddenX) / 2;
+                    const midY = (inputY[i] + hiddenY[h]) / 2;
+                    const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    labelText.setAttribute('x', midX);
+                    labelText.setAttribute('y', midY - 5);
+                    labelText.setAttribute('text-anchor', 'middle');
+                    labelText.setAttribute('fill', getTextColor());
+                    labelText.setAttribute('font-size', '9');
+                    labelText.setAttribute('font-weight', 'bold');
+                    labelText.textContent = `w${weightIdx}`;
+                    svg.appendChild(labelText);
+                    
+                    weightIdx++;
+                }
+            }
+            
+            // Draw connections (hidden to output) with weight labels
+            for (let o = 0; o < 2; o++) {
+                for (let h = 0; h < 3; h++) {
+                    const weight = network[`w${weightIdx}`];
+                    const color = weight > 0 ? '#51CF66' : '#FF6B6B';
+                    const width_line = Math.abs(weight) * 2;
+                    
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', hiddenX);
+                    line.setAttribute('y1', hiddenY[h]);
+                    line.setAttribute('x2', outputX);
+                    line.setAttribute('y2', outputY[o]);
+                    line.setAttribute('stroke', color);
+                    line.setAttribute('stroke-width', width_line);
+                    line.setAttribute('opacity', '0.3');
+                    svg.appendChild(line);
+                    
+                    // Add weight label
+                    const midX = (hiddenX + outputX) / 2;
+                    const midY = (hiddenY[h] + outputY[o]) / 2;
+                    const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    labelText.setAttribute('x', midX);
+                    labelText.setAttribute('y', midY - 5);
+                    labelText.setAttribute('text-anchor', 'middle');
+                    labelText.setAttribute('fill', getTextColor());
+                    labelText.setAttribute('font-size', '9');
+                    labelText.setAttribute('font-weight', 'bold');
+                    labelText.textContent = `w${weightIdx}`;
+                    svg.appendChild(labelText);
+                    
+                    weightIdx++;
+                }
+            }
+            
+            // Draw input nodes
+            drawNode(svg, inputX, inputY[0], 20, protein.toFixed(2), 'Proteine', '#4ECDC4');
+            drawNode(svg, inputX, inputY[1], 20, fiber.toFixed(2), 'Ballaststoffe', '#4ECDC4');
+            
+            // Draw hidden nodes
+            for (let i = 0; i < 3; i++) {
+                drawNode(svg, hiddenX, hiddenY[i], 18, result.hidden[i].toFixed(2), `h${i+1}`, '#FFE55C');
+            }
+            
+            // Draw output nodes
+            const maxOutput = Math.max(result.output[0], result.output[1]);
+            const color1 = result.output[0] === maxOutput ? '#51CF66' : '#95A5A6';
+            const color2 = result.output[1] === maxOutput ? '#FFA726' : '#95A5A6';
+            
+            drawNode(svg, outputX, outputY[0], 20, result.output[0].toFixed(2), 'Gemüse', color1);
+            drawNode(svg, outputX, outputY[1], 20, result.output[1].toFixed(2), 'Obst', color2);
+        }
+
+        function drawNode(svg, x, y, r, value, label, color) {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', x);
+            circle.setAttribute('cy', y);
+            circle.setAttribute('r', r);
+            circle.setAttribute('fill', color);
+            circle.setAttribute('opacity', '0.8');
+            svg.appendChild(circle);
+            
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', x);
+            text.setAttribute('y', y + 5);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', '#000');
+            text.setAttribute('font-size', '12');
+            text.setAttribute('font-weight', 'bold');
+            text.textContent = value;
+            svg.appendChild(text);
+            
+            const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            labelText.setAttribute('x', x);
+            labelText.setAttribute('y', y + r + 15);
+            labelText.setAttribute('text-anchor', 'middle');
+            labelText.setAttribute('fill', getTextColor());
+            labelText.setAttribute('font-size', '11');
+            labelText.textContent = label;
+            svg.appendChild(labelText);
+        }
+
+        // ============================================
+        // Decision Boundary Visualization
+        // ============================================
+        function updateDecisionBoundary() {
+            const resolution = 50;
+            const proteinRange = [0, 8];
+            const fiberRange = [0, 12];
+            
+            const proteinStep = (proteinRange[1] - proteinRange[0]) / resolution;
+            const fiberStep = (fiberRange[1] - fiberRange[0]) / resolution;
+            
+            const z = [];
+            const proteins = [];
+            const fibers = [];
+            
+            for (let i = 0; i < resolution; i++) {
+                const row = [];
+                const fiber = fiberRange[0] + i * fiberStep;
+                fibers.push(fiber);
+                
+                for (let j = 0; j < resolution; j++) {
+                    const protein = proteinRange[0] + j * proteinStep;
+                    if (i === 0) proteins.push(protein);
+                    
+                    const result = forward(protein, fiber);
+                    // 1 if Gemüse (output[0]) > Obst (output[1]), else 0
+                    row.push(result.output[0] > result.output[1] ? 1 : 0);
+                }
+                z.push(row);
+            }
+            
+            // Create contour plot for regions
+            const trace = {
+                x: proteins,
+                y: fibers,
+                z: z,
+                type: 'contour',
+                colorscale: [
+                    [0, 'rgba(255, 107, 107, 0.3)'],  // Obst (red)
+                    [1, 'rgba(81, 207, 102, 0.3)']    // Gemüse (green)
+                ],
+                showscale: false,
+                contours: {
+                    coloring: 'heatmap',
+                    showlines: false,
+                    start: 0,
+                    end: 1,
+                    size: 1
+                },
+                hoverinfo: 'none'
+            };
+            
+            // Add decision boundary as a separate contour line
+            const boundaryTrace = {
+                x: proteins,
+                y: fibers,
+                z: z,
+                type: 'contour',
+                showscale: false,
+                contours: {
+                    coloring: 'none',
+                    showlines: true,
+                    start: 0.5,
+                    end: 0.5,
+                    size: 0.01
+                },
+                line: {
+                    color: '#FFE55C',
+                    width: 3
+                },
+                name: 'Entscheidungsgrenze',
+                hoverinfo: 'skip'
+            };
+            
+            // Sample foods data - exact values from the image
+            const vegetables = [
+                { name: 'Spinat', protein: 2.9, fiber: 2.9 },
+                { name: 'Brokkoli', protein: 2.8, fiber: 2.6 },
+                { name: 'Rosenkohl', protein: 3.4, fiber: 3.8 },
+                { name: 'Gurke', protein: 0.7, fiber: 0.5 },
+                { name: 'Wassermelone', protein: 0.6, fiber: 0.4 },
+                { name: 'Lauch', protein: 1.5, fiber: 1.5 },
+                { name: 'Süßkartoffel', protein: 1.6, fiber: 3.0 },
+                { name: 'Rote Bete', protein: 1.6, fiber: 2.8 },
+                { name: 'Karotte', protein: 0.9, fiber: 2.8 },
+                { name: 'Aubergine', protein: 1.0, fiber: 3.0 }
+            ];
+            
+            const fruits = [
+                { name: 'Apfel', protein: 0.3, fiber: 2.4 },
+                { name: 'Birne', protein: 0.4, fiber: 3.1 },
+                { name: 'Traube', protein: 0.7, fiber: 0.6 },
+                { name: 'Ananas', protein: 0.5, fiber: 1.4 },
+                { name: 'Kirsche', protein: 1.0, fiber: 1.6 },
+                { name: 'Granatapfel', protein: 1.7, fiber: 4.0 },
+                { name: 'Brombeere', protein: 1.4, fiber: 5.3 },
+                { name: 'Holunder', protein: 0.6, fiber: 7.0 }
+            ];
+            
+            const vegTrace = {
+                x: vegetables.map(v => v.protein),
+                y: vegetables.map(v => v.fiber),
+                mode: 'markers+text',
+                type: 'scatter',
+                name: 'Gemüse',
+                text: vegetables.map(v => v.name),
+                textposition: 'top center',
+                textfont: { size: 10 },
+                marker: {
+                    size: 10,
+                    color: '#51CF66',
+                    symbol: 'circle',
+                    line: { color: '#FFF', width: 1 }
+                }
+            };
+            
+            const fruitTrace = {
+                x: fruits.map(f => f.protein),
+                y: fruits.map(f => f.fiber),
+                mode: 'markers+text',
+                type: 'scatter',
+                name: 'Obst',
+                text: fruits.map(f => f.name),
+                textposition: 'top center',
+                textfont: { size: 10 },
+                marker: {
+                    size: 10,
+                    color: '#FFA726',
+                    symbol: 'circle',
+                    line: { color: '#FFF', width: 1 }
+                }
+            };
+            
+            // Current sample point
+            const protein = parseFloat(document.getElementById('sample-protein').value);
+            const fiber = parseFloat(document.getElementById('sample-fiber').value);
+            const result = forward(protein, fiber);
+            const sampleColor = result.output[0] > result.output[1] ? '#51CF66' : '#FFA726';
+            
+            const sampleTrace = {
+                x: [protein],
+                y: [fiber],
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Aktuelle Eingabe',
+                marker: {
+                    size: 15,
+                    color: sampleColor,
+                    symbol: 'star',
+                    line: { color: '#FFE55C', width: 2 }
+                }
+            };
+            
+            const layout = {
+                title: 'Klassifikation: Gemüse vs. Obst',
+                xaxis: { 
+                    title: 'Proteingehalt in %',
+                    range: proteinRange,
+                    gridcolor: 'rgba(255, 255, 255, 0.1)'
+                },
+                yaxis: { 
+                    title: 'Ballaststoffgehalt in %',
+                    range: fiberRange,
+                    gridcolor: 'rgba(255, 255, 255, 0.1)'
+                },
+                showlegend: true,
+                legend: { x: 0, y: 1 },
+                hovermode: 'closest',
+                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                paper_bgcolor: 'transparent',
+                font: { color: getTextColor() }
+            };
+            
+            Plotly.newPlot('decision-plot', [trace, boundaryTrace, vegTrace, fruitTrace, sampleTrace], layout, {responsive: true});
+        }
+
+        // ============================================
+        // Event Handlers
+        // ============================================
+        function updateNetwork() {
+            network.activation = document.getElementById('activation').value;
+            drawNetwork();
+            updateDecisionBoundary();
+        }
+
+        function randomizeWeights() {
+            for (let i = 1; i <= 12; i++) {
+                network[`w${i}`] = (Math.random() - 0.5) * 2;
+                document.getElementById(`slider-w${i}`).value = network[`w${i}`];
+                document.getElementById(`value-w${i}`).textContent = network[`w${i}`].toFixed(2);
+            }
+            for (let i = 1; i <= 5; i++) {
+                network[`b${i}`] = (Math.random() - 0.5) * 2;
+                document.getElementById(`slider-b${i}`).value = network[`b${i}`];
+                document.getElementById(`value-b${i}`).textContent = network[`b${i}`].toFixed(2);
+            }
+            updateNetwork();
+        }
+
+        // ============================================
+        // Initialize
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            setupWeightSliders();
+            updateNetwork();
+            
+            document.getElementById('activation').addEventListener('change', updateNetwork);
+            document.getElementById('sample-protein').addEventListener('input', updateNetwork);
+            document.getElementById('sample-fiber').addEventListener('input', updateNetwork);
+        });
+    </script>
+</body>
+</html>
