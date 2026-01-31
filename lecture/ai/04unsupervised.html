@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Unsupervised Learning - k-Means & PCA</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Interactive unsupervised learning visualizations. Explore k-Means clustering and Principal Component Analysis (PCA) with real-time 2D visualizations.">
+    <meta name="keywords" content="machine learning, unsupervised learning, k-means, PCA, clustering, dimensionality reduction">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Unsupervised Learning - k-Means & PCA">
+    <meta property="og:description"
+        content="Interactive unsupervised learning visualizations. Explore k-Means clustering and Principal Component Analysis (PCA) with real-time 2D visualizations.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/04unsupervised.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <!-- External Libraries -->
+    <script src="https://unpkg.com/plotly.js@2.28.0/dist/plotly.min.js"></script>
+    
+    <style>
+        /* Tab Navigation */
+        .tabs-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            color: var(--secondary-text);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+
+        .tab-button.active {
+            background: rgba(255, 229, 92, 0.1);
+            color: var(--accent-color);
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-color);
+        }
+
+        .tab-content {
+            display: none;
+            padding-top: 1rem;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Controls Container */
+        .controls-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .controls-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .visualization-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            min-height: 600px;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            background: var(--input-bg, rgba(255, 255, 255, 0.1));
+            color: var(--text-color);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: var(--input-focus-bg, rgba(255, 255, 255, 0.2));
+        }
+
+        .form-input[type="range"] {
+            appearance: none;
+            height: 6px;
+            background: var(--range-bg, rgba(128, 128, 128, 0.3));
+            border: none;
+            border-radius: 3px;
+        }
+
+        .form-input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .form-input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .range-value {
+            display: inline-block;
+            margin-left: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent-color);
+            color: black;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 229, 92, 0.3);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--btn-secondary-bg, rgba(128, 128, 128, 0.2));
+            color: var(--text-color);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--btn-secondary-hover-bg, rgba(128, 128, 128, 0.3));
+            transform: translateY(-2px);
+        }
+
+        .status-info {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid rgba(23, 162, 184, 0.2);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-color);
+        }
+
+        #kmeans-plot, #pca-plot {
+            width: 100%;
+            min-height: 600px;
+        }
+
+        /* Animation controls */
+        .animation-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .animation-controls button {
+            flex: 1;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid rgba(23, 162, 184, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-color);
+        }
+
+        .info-box h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--accent-color);
+        }
+
+        .info-box p {
+            margin: 0.25rem 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .controls-container {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-buttons {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                border-radius: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>Überblick</span>
+            </a>
+            <h1>Unsupervised Learning</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>🔍 Unsupervised Learning</h1>
+            <p>Explore k-Means Clustering and Principal Component Analysis</p>
+        </header>
+
+        <div class="tabs-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('kmeans')">
+                    k-Means Clustering
+                </button>
+                <button class="tab-button" onclick="switchTab('pca')">
+                    Principal Component Analysis
+                </button>
+            </div>
+        </div>
+
+        <!-- k-Means Tab -->
+        <div id="kmeans-tab" class="tab-content active">
+            <div class="controls-container">
+                <div class="controls-panel">
+                    <h3 style="margin-top: 0;">k-Means Configuration</h3>
+                    
+                    <div class="control-group">
+                        <label class="control-label" for="kmeans-dataset">Dataset:</label>
+                        <select id="kmeans-dataset" class="form-select">
+                            <option value="blobs">Blobs (Clusters)</option>
+                            <option value="circles">Circles</option>
+                            <option value="moons">Moons</option>
+                            <option value="random">Random</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="kmeans-k">
+                            Number of Clusters (k):
+                            <span class="range-value" id="kmeans-k-value">3</span>
+                        </label>
+                        <input type="range" id="kmeans-k" class="form-input" min="2" max="10" value="3">
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="kmeans-points">
+                            Number of Points:
+                            <span class="range-value" id="kmeans-points-value">200</span>
+                        </label>
+                        <input type="range" id="kmeans-points" class="form-input" min="50" max="500" step="50" value="200">
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="kmeans-init">Initialization Method:</label>
+                        <select id="kmeans-init" class="form-select">
+                            <option value="random">Random</option>
+                            <option value="kmeans++">k-means++</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-primary" onclick="generateKMeansData()">
+                        Generate Data
+                    </button>
+
+                    <button class="btn-primary" onclick="initializeKMeans()">
+                        Initialize Centroids
+                    </button>
+
+                    <div class="animation-controls">
+                        <button class="btn-secondary" onclick="stepKMeans()">
+                            Step
+                        </button>
+                        <button class="btn-secondary" onclick="runKMeans()">
+                            Run to Convergence
+                        </button>
+                    </div>
+
+                    <button class="btn-secondary" onclick="resetKMeans()">
+                        Reset
+                    </button>
+
+                    <div class="status-info" id="kmeans-status">
+                        Click "Generate Data" to start
+                    </div>
+
+                    <div class="info-box">
+                        <h4>k-Means Algorithm</h4>
+                        <p><strong>1. Initialize:</strong> Place k centroids randomly</p>
+                        <p><strong>2. Assign:</strong> Assign each point to nearest centroid</p>
+                        <p><strong>3. Update:</strong> Move centroids to cluster means</p>
+                        <p><strong>4. Repeat:</strong> Until convergence</p>
+                    </div>
+                </div>
+
+                <div class="visualization-panel">
+                    <div id="kmeans-plot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PCA Tab -->
+        <div id="pca-tab" class="tab-content">
+            <div class="controls-container">
+                <div class="controls-panel">
+                    <h3 style="margin-top: 0;">PCA Configuration</h3>
+                    
+                    <div class="control-group">
+                        <label class="control-label" for="pca-dataset">Dataset:</label>
+                        <select id="pca-dataset" class="form-select">
+                            <option value="ellipse">Ellipse</option>
+                            <option value="diagonal">Diagonal</option>
+                            <option value="mixed">Mixed Variance</option>
+                            <option value="3d">3D to 2D</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="pca-points">
+                            Number of Points:
+                            <span class="range-value" id="pca-points-value">200</span>
+                        </label>
+                        <input type="range" id="pca-points" class="form-input" min="50" max="500" step="50" value="200">
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="pca-noise">
+                            Noise Level:
+                            <span class="range-value" id="pca-noise-value">0.5</span>
+                        </label>
+                        <input type="range" id="pca-noise" class="form-input" min="0" max="2" step="0.1" value="0.5">
+                    </div>
+
+                    <button class="btn-primary" onclick="generatePCAData()">
+                        Generate Data
+                    </button>
+
+                    <button class="btn-primary" onclick="computePCA()">
+                        Compute PCA
+                    </button>
+
+                    <button class="btn-secondary" onclick="showOriginalData()">
+                        Show Original
+                    </button>
+
+                    <div class="status-info" id="pca-status">
+                        Click "Generate Data" to start
+                    </div>
+
+                    <div class="info-box" id="pca-info">
+                        <h4>Principal Component Analysis</h4>
+                        <p><strong>Goal:</strong> Find directions of maximum variance</p>
+                        <p><strong>PC1:</strong> Direction of highest variance</p>
+                        <p><strong>PC2:</strong> Orthogonal direction, 2nd highest variance</p>
+                        <p><strong>Use:</strong> Dimensionality reduction, visualization</p>
+                    </div>
+                </div>
+
+                <div class="visualization-panel">
+                    <div id="pca-plot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // Tab Switching
+        // ============================================
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Deactivate all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Activate selected button
+            event.target.classList.add('active');
+        }
+
+        // ============================================
+        // Helper function for theme-aware colors
+        // ============================================
+        function getTextColor() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            return theme === 'light' ? '#000000' : '#FFFFFF';
+        }
+
+        // ============================================
+        // k-Means Implementation
+        // ============================================
+        let kmeansData = {
+            points: [],
+            centroids: [],
+            assignments: [],
+            iteration: 0,
+            converged: false
+        };
+
+        // Update range value displays
+        document.getElementById('kmeans-k').addEventListener('input', (e) => {
+            document.getElementById('kmeans-k-value').textContent = e.target.value;
+        });
+
+        document.getElementById('kmeans-points').addEventListener('input', (e) => {
+            document.getElementById('kmeans-points-value').textContent = e.target.value;
+        });
+
+        document.getElementById('pca-points').addEventListener('input', (e) => {
+            document.getElementById('pca-points-value').textContent = e.target.value;
+        });
+
+        document.getElementById('pca-noise').addEventListener('input', (e) => {
+            document.getElementById('pca-noise-value').textContent = e.target.value;
+        });
+
+        // Generate datasets for k-means
+        function generateKMeansDataset(type, n) {
+            const points = [];
+            
+            if (type === 'blobs') {
+                const centers = [[2, 2], [8, 8], [2, 8], [8, 2]];
+                const pointsPerBlob = Math.floor(n / centers.length);
+                
+                centers.forEach(center => {
+                    for (let i = 0; i < pointsPerBlob; i++) {
+                        const angle = Math.random() * 2 * Math.PI;
+                        const radius = Math.random() * 1.5;
+                        points.push([
+                            center[0] + radius * Math.cos(angle),
+                            center[1] + radius * Math.sin(angle)
+                        ]);
+                    }
+                });
+            } else if (type === 'circles') {
+                for (let i = 0; i < n; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const radius = 2 + Math.random() * 6;
+                    points.push([
+                        5 + radius * Math.cos(angle),
+                        5 + radius * Math.sin(angle)
+                    ]);
+                }
+            } else if (type === 'moons') {
+                const halfN = Math.floor(n / 2);
+                for (let i = 0; i < halfN; i++) {
+                    const angle = Math.PI * i / halfN;
+                    const noise = (Math.random() - 0.5) * 0.5;
+                    points.push([
+                        3 * Math.cos(angle) + 5,
+                        3 * Math.sin(angle) + 3 + noise
+                    ]);
+                    points.push([
+                        3 * Math.cos(angle + Math.PI) + 5,
+                        3 * Math.sin(angle + Math.PI) + 7 + noise
+                    ]);
+                }
+            } else {
+                for (let i = 0; i < n; i++) {
+                    points.push([
+                        Math.random() * 10,
+                        Math.random() * 10
+                    ]);
+                }
+            }
+            
+            return points;
+        }
+
+        function generateKMeansData() {
+            const dataset = document.getElementById('kmeans-dataset').value;
+            const n = parseInt(document.getElementById('kmeans-points').value);
+            
+            // Generate points
+            kmeansData.points = generateKMeansDataset(dataset, n);
+            kmeansData.centroids = [];
+            kmeansData.assignments = [];
+            kmeansData.iteration = 0;
+            kmeansData.converged = false;
+            
+            plotKMeans();
+            
+            document.getElementById('kmeans-status').innerHTML = 
+                `Generated ${n} data points. Click "Initialize Centroids" to start clustering`;
+        }
+
+        function initializeKMeans() {
+            if (kmeansData.points.length === 0) {
+                alert('Please generate data first');
+                return;
+            }
+            
+            const k = parseInt(document.getElementById('kmeans-k').value);
+            const initMethod = document.getElementById('kmeans-init').value;
+            
+            kmeansData.iteration = 0;
+            kmeansData.converged = false;
+            
+            // Initialize centroids
+            if (initMethod === 'random') {
+                kmeansData.centroids = [];
+                for (let i = 0; i < k; i++) {
+                    const idx = Math.floor(Math.random() * kmeansData.points.length);
+                    kmeansData.centroids.push([...kmeansData.points[idx]]);
+                }
+            } else {
+                // k-means++ initialization
+                kmeansData.centroids = [kmeansData.points[Math.floor(Math.random() * kmeansData.points.length)]];
+                
+                for (let c = 1; c < k; c++) {
+                    const distances = kmeansData.points.map(point => {
+                        let minDist = Infinity;
+                        kmeansData.centroids.forEach(centroid => {
+                            const dist = Math.sqrt(
+                                Math.pow(point[0] - centroid[0], 2) + 
+                                Math.pow(point[1] - centroid[1], 2)
+                            );
+                            minDist = Math.min(minDist, dist);
+                        });
+                        return minDist * minDist;
+                    });
+                    
+                    const sum = distances.reduce((a, b) => a + b, 0);
+                    let r = Math.random() * sum;
+                    for (let i = 0; i < distances.length; i++) {
+                        r -= distances[i];
+                        if (r <= 0) {
+                            kmeansData.centroids.push([...kmeansData.points[i]]);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Initial assignment
+            assignPointsToClusters();
+            plotKMeans();
+            
+            document.getElementById('kmeans-status').innerHTML = 
+                `<strong>Iteration 0:</strong> Initialized ${k} centroids using ${initMethod} method`;
+        }
+
+        function assignPointsToClusters() {
+            kmeansData.assignments = kmeansData.points.map(point => {
+                let minDist = Infinity;
+                let cluster = 0;
+                
+                kmeansData.centroids.forEach((centroid, idx) => {
+                    const dist = Math.sqrt(
+                        Math.pow(point[0] - centroid[0], 2) + 
+                        Math.pow(point[1] - centroid[1], 2)
+                    );
+                    if (dist < minDist) {
+                        minDist = dist;
+                        cluster = idx;
+                    }
+                });
+                
+                return cluster;
+            });
+        }
+
+        function updateCentroids() {
+            const newCentroids = [];
+            const k = kmeansData.centroids.length;
+            
+            for (let c = 0; c < k; c++) {
+                const clusterPoints = kmeansData.points.filter((_, idx) => 
+                    kmeansData.assignments[idx] === c
+                );
+                
+                if (clusterPoints.length === 0) {
+                    newCentroids.push([...kmeansData.centroids[c]]);
+                } else {
+                    const meanX = clusterPoints.reduce((sum, p) => sum + p[0], 0) / clusterPoints.length;
+                    const meanY = clusterPoints.reduce((sum, p) => sum + p[1], 0) / clusterPoints.length;
+                    newCentroids.push([meanX, meanY]);
+                }
+            }
+            
+            // Check for convergence
+            const moved = kmeansData.centroids.some((centroid, idx) => {
+                const dist = Math.sqrt(
+                    Math.pow(centroid[0] - newCentroids[idx][0], 2) + 
+                    Math.pow(centroid[1] - newCentroids[idx][1], 2)
+                );
+                return dist > 0.001;
+            });
+            
+            kmeansData.centroids = newCentroids;
+            return moved;
+        }
+
+        function stepKMeans() {
+            if (kmeansData.converged) {
+                document.getElementById('kmeans-status').innerHTML = 
+                    `<strong>Already converged!</strong> Click "Reset" to start over`;
+                return;
+            }
+            
+            if (kmeansData.centroids.length === 0) {
+                alert('Please initialize centroids first');
+                return;
+            }
+            
+            assignPointsToClusters();
+            const moved = updateCentroids();
+            kmeansData.iteration++;
+            
+            if (!moved) {
+                kmeansData.converged = true;
+                document.getElementById('kmeans-status').innerHTML = 
+                    `<strong>✓ Converged!</strong> Algorithm completed in ${kmeansData.iteration} iterations`;
+            } else {
+                document.getElementById('kmeans-status').innerHTML = 
+                    `<strong>Iteration ${kmeansData.iteration}:</strong> Updated centroids and reassigned points`;
+            }
+            
+            plotKMeans();
+        }
+
+        function runKMeans() {
+            if (kmeansData.centroids.length === 0) {
+                alert('Please initialize centroids first');
+                return;
+            }
+            
+            const maxIterations = 100;
+            let iteration = 0;
+            
+            while (iteration < maxIterations && !kmeansData.converged) {
+                assignPointsToClusters();
+                const moved = updateCentroids();
+                kmeansData.iteration++;
+                iteration++;
+                
+                if (!moved) {
+                    kmeansData.converged = true;
+                }
+            }
+            
+            document.getElementById('kmeans-status').innerHTML = 
+                `<strong>✓ Converged!</strong> Algorithm completed in ${kmeansData.iteration} iterations`;
+            
+            plotKMeans();
+        }
+
+        function resetKMeans() {
+            kmeansData = {
+                points: [],
+                centroids: [],
+                assignments: [],
+                iteration: 0,
+                converged: false
+            };
+            
+            Plotly.purge('kmeans-plot');
+            document.getElementById('kmeans-status').innerHTML = 
+                `Click "Generate Data" to start`;
+        }
+
+        function plotKMeans() {
+            const colors = ['#FF6B6B', '#51CF66', '#3498DB', '#FFA726', '#9B59B6', 
+                          '#F7DC6F', '#FF6B9D', '#17A2B8', '#A8E063', '#5F27CD'];
+            
+            const traces = [];
+            
+            // Plot points colored by cluster
+            if (kmeansData.assignments.length > 0) {
+                const k = kmeansData.centroids.length;
+                for (let c = 0; c < k; c++) {
+                    const clusterPoints = kmeansData.points.filter((_, idx) => 
+                        kmeansData.assignments[idx] === c
+                    );
+                    
+                    if (clusterPoints.length > 0) {
+                        traces.push({
+                            x: clusterPoints.map(p => p[0]),
+                            y: clusterPoints.map(p => p[1]),
+                            mode: 'markers',
+                            type: 'scatter',
+                            name: `Cluster ${c + 1}`,
+                            marker: {
+                                size: 8,
+                                color: colors[c % colors.length],
+                                opacity: 0.6
+                            }
+                        });
+                    }
+                }
+            } else {
+                // Plot all points in grey if not yet assigned
+                traces.push({
+                    x: kmeansData.points.map(p => p[0]),
+                    y: kmeansData.points.map(p => p[1]),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: 'Points',
+                    marker: {
+                        size: 8,
+                        color: '#95A5A6',
+                        opacity: 0.6
+                    }
+                });
+            }
+            
+            // Plot centroids
+            if (kmeansData.centroids.length > 0) {
+                traces.push({
+                    x: kmeansData.centroids.map(c => c[0]),
+                    y: kmeansData.centroids.map(c => c[1]),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: 'Centroids',
+                    marker: {
+                        size: 20,
+                        color: 'black',
+                        symbol: 'x',
+                        line: {
+                            color: '#FFE55C',
+                            width: 3
+                        }
+                    }
+                });
+            }
+            
+            const layout = {
+                title: `k-Means Clustering - Iteration ${kmeansData.iteration}`,
+                xaxis: { title: 'X', range: [0, 10] },
+                yaxis: { title: 'Y', range: [0, 10] },
+                showlegend: true,
+                hovermode: 'closest',
+                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                paper_bgcolor: 'transparent',
+                font: { color: getTextColor() }
+            };
+            
+            Plotly.newPlot('kmeans-plot', traces, layout, {responsive: true});
+        }
+
+        // ============================================
+        // PCA Implementation
+        // ============================================
+        let pcaData = {
+            original: [],
+            transformed: [],
+            components: [],
+            explainedVariance: [],
+            mean: []
+        };
+
+        function generatePCAData() {
+            const dataset = document.getElementById('pca-dataset').value;
+            const n = parseInt(document.getElementById('pca-points').value);
+            const noise = parseFloat(document.getElementById('pca-noise').value);
+            
+            const points = [];
+            
+            if (dataset === 'ellipse') {
+                // Generate elliptical data
+                for (let i = 0; i < n; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const r = Math.random();
+                    const x = 3 * r * Math.cos(angle) + (Math.random() - 0.5) * noise;
+                    const y = 1 * r * Math.sin(angle) + (Math.random() - 0.5) * noise;
+                    points.push([x, y]);
+                }
+            } else if (dataset === 'diagonal') {
+                // Generate diagonal line with noise
+                for (let i = 0; i < n; i++) {
+                    const t = (Math.random() - 0.5) * 6;
+                    const x = t + (Math.random() - 0.5) * noise;
+                    const y = t + (Math.random() - 0.5) * noise;
+                    points.push([x, y]);
+                }
+            } else if (dataset === 'mixed') {
+                // High variance in X, low in Y
+                for (let i = 0; i < n; i++) {
+                    const x = (Math.random() - 0.5) * 6;
+                    const y = (Math.random() - 0.5) * noise;
+                    points.push([x, y]);
+                }
+            } else if (dataset === '3d') {
+                // 3D data projected to 2D
+                for (let i = 0; i < n; i++) {
+                    const t = (Math.random() - 0.5) * 4;
+                    const s = (Math.random() - 0.5) * 2;
+                    const x = t + s + (Math.random() - 0.5) * noise;
+                    const y = 0.5 * t - s + (Math.random() - 0.5) * noise;
+                    points.push([x, y]);
+                }
+            }
+            
+            pcaData.original = points;
+            pcaData.transformed = [];
+            pcaData.components = [];
+            
+            plotOriginalData();
+            
+            document.getElementById('pca-status').innerHTML = 
+                `Generated ${n} data points. Click "Compute PCA" to analyze`;
+        }
+
+        function computePCA() {
+            if (pcaData.original.length === 0) {
+                alert('Please generate data first');
+                return;
+            }
+            
+            const data = pcaData.original;
+            const n = data.length;
+            
+            // Calculate mean
+            const meanX = data.reduce((sum, p) => sum + p[0], 0) / n;
+            const meanY = data.reduce((sum, p) => sum + p[1], 0) / n;
+            pcaData.mean = [meanX, meanY];
+            
+            // Center the data
+            const centered = data.map(p => [p[0] - meanX, p[1] - meanY]);
+            
+            // Calculate covariance matrix
+            let covXX = 0, covXY = 0, covYY = 0;
+            centered.forEach(p => {
+                covXX += p[0] * p[0];
+                covXY += p[0] * p[1];
+                covYY += p[1] * p[1];
+            });
+            covXX /= n;
+            covXY /= n;
+            covYY /= n;
+            
+            // Calculate eigenvalues and eigenvectors analytically for 2x2 matrix
+            const trace = covXX + covYY;
+            const det = covXX * covYY - covXY * covXY;
+            
+            const eigenvalue1 = trace / 2 + Math.sqrt(trace * trace / 4 - det);
+            const eigenvalue2 = trace / 2 - Math.sqrt(trace * trace / 4 - det);
+            
+            // Eigenvector for first eigenvalue
+            let v1x, v1y;
+            if (Math.abs(covXY) > 1e-10) {
+                v1x = eigenvalue1 - covYY;
+                v1y = covXY;
+            } else {
+                v1x = 1;
+                v1y = 0;
+            }
+            const norm1 = Math.sqrt(v1x * v1x + v1y * v1y);
+            v1x /= norm1;
+            v1y /= norm1;
+            
+            // Second eigenvector (orthogonal)
+            const v2x = -v1y;
+            const v2y = v1x;
+            
+            pcaData.components = [
+                [v1x, v1y],
+                [v2x, v2y]
+            ];
+            
+            // Calculate explained variance
+            const totalVar = eigenvalue1 + eigenvalue2;
+            pcaData.explainedVariance = [
+                (eigenvalue1 / totalVar * 100).toFixed(1),
+                (eigenvalue2 / totalVar * 100).toFixed(1)
+            ];
+            
+            // Transform data to PC space
+            pcaData.transformed = centered.map(p => [
+                p[0] * v1x + p[1] * v1y,
+                p[0] * v2x + p[1] * v2y
+            ]);
+            
+            plotPCA();
+            
+            document.getElementById('pca-status').innerHTML = 
+                `<strong>PCA Complete!</strong> PC1: ${pcaData.explainedVariance[0]}%, PC2: ${pcaData.explainedVariance[1]}%`;
+            
+            // Update info box
+            document.getElementById('pca-info').innerHTML = `
+                <h4>PCA Results</h4>
+                <p><strong>PC1 explains:</strong> ${pcaData.explainedVariance[0]}% of variance</p>
+                <p><strong>PC2 explains:</strong> ${pcaData.explainedVariance[1]}% of variance</p>
+                <p><strong>PC1 direction:</strong> [${pcaData.components[0][0].toFixed(3)}, ${pcaData.components[0][1].toFixed(3)}]</p>
+                <p><strong>PC2 direction:</strong> [${pcaData.components[1][0].toFixed(3)}, ${pcaData.components[1][1].toFixed(3)}]</p>
+            `;
+        }
+
+        function plotOriginalData() {
+            const trace = {
+                x: pcaData.original.map(p => p[0]),
+                y: pcaData.original.map(p => p[1]),
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Data Points',
+                marker: {
+                    size: 8,
+                    color: '#4ECDC4',
+                    opacity: 0.6
+                }
+            };
+            
+            const layout = {
+                title: 'Original Data',
+                xaxis: { title: 'X' },
+                yaxis: { title: 'Y', scaleanchor: 'x' },
+                showlegend: true,
+                hovermode: 'closest',
+                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                paper_bgcolor: 'transparent',
+                font: { color: getTextColor() }
+            };
+            
+            Plotly.newPlot('pca-plot', [trace], layout, {responsive: true});
+        }
+
+        function showOriginalData() {
+            if (pcaData.original.length === 0) {
+                alert('Please generate data first');
+                return;
+            }
+            plotOriginalData();
+        }
+
+        function plotPCA() {
+            const traces = [];
+            
+            // Plot centered data
+            const centered = pcaData.original.map(p => [
+                p[0] - pcaData.mean[0],
+                p[1] - pcaData.mean[1]
+            ]);
+            
+            traces.push({
+                x: centered.map(p => p[0]),
+                y: centered.map(p => p[1]),
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Data Points',
+                marker: {
+                    size: 8,
+                    color: '#4ECDC4',
+                    opacity: 0.6
+                }
+            });
+            
+            // Plot principal components as arrows
+            const scale = 3;
+            
+            // PC1
+            traces.push({
+                x: [0, pcaData.components[0][0] * scale],
+                y: [0, pcaData.components[0][1] * scale],
+                mode: 'lines+markers',
+                type: 'scatter',
+                name: `PC1 (${pcaData.explainedVariance[0]}%)`,
+                line: {
+                    color: '#FFE55C',
+                    width: 3
+                },
+                marker: {
+                    size: [0, 12],
+                    symbol: ['circle', 'arrow'],
+                    angleref: 'previous',
+                    color: '#FFE55C'
+                }
+            });
+            
+            // PC2
+            traces.push({
+                x: [0, pcaData.components[1][0] * scale],
+                y: [0, pcaData.components[1][1] * scale],
+                mode: 'lines+markers',
+                type: 'scatter',
+                name: `PC2 (${pcaData.explainedVariance[1]}%)`,
+                line: {
+                    color: '#FF6B6B',
+                    width: 3
+                },
+                marker: {
+                    size: [0, 12],
+                    symbol: ['circle', 'arrow'],
+                    angleref: 'previous',
+                    color: '#FF6B6B'
+                }
+            });
+            
+            const layout = {
+                title: 'Principal Component Analysis',
+                xaxis: { title: 'X (centered)', zeroline: true },
+                yaxis: { title: 'Y (centered)', scaleanchor: 'x', zeroline: true },
+                showlegend: true,
+                hovermode: 'closest',
+                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                paper_bgcolor: 'transparent',
+                font: { color: getTextColor() }
+            };
+            
+            Plotly.newPlot('pca-plot', traces, layout, {responsive: true});
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            console.log('Unsupervised Learning Visualization Ready');
+        });
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        const root = document.documentElement;
+
+        // Initialize theme from localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('ai-lecture-theme');
+            if (savedTheme) {
+                root.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else {
+                // Check system preference
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = prefersDark ? 'dark' : 'light';
+                root.setAttribute('data-theme', theme);
+                updateThemeIcon(theme);
+            }
+        }
+
+        // Update theme icon based on current theme
+        function updateThemeIcon(theme) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('ai-lecture-theme', newTheme);
+            updateThemeIcon(newTheme);
+            
+            // Refresh plots with new theme colors
+            if (kmeansData.points.length > 0) {
+                plotKMeans();
+            }
+            if (pcaData.original.length > 0) {
+                if (pcaData.components.length > 0) {
+                    plotPCA();
+                } else {
+                    plotOriginalData();
+                }
+            }
+        });
+
+        // Initialize theme on page load
+        initTheme();
+    </script>
+</body>
+
+</html>
