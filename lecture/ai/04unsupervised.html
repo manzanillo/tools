@@ -5,18 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Unsupervised Learning - k-Means & PCA</title>
+    <title>Unüberwachtes Lernen - k-Means & PCA</title>
     
     <!-- SEO Meta Tags -->
     <meta name="description"
-        content="Interactive unsupervised learning visualizations. Explore k-Means clustering and Principal Component Analysis (PCA) with real-time 2D visualizations.">
+        content="Interaktive Visualisierungen für unüberwachtes Lernen. Erkunde k-Means Clustering und Principal Component Analysis (PCA) mit Echtzeit-2D-Visualisierungen.">
     <meta name="keywords" content="machine learning, unsupervised learning, k-means, PCA, clustering, dimensionality reduction">
     <meta name="author" content="Stefan Seegerer">
 
     <!-- Open Graph / Social Media Meta Tags -->
-    <meta property="og:title" content="Unsupervised Learning - k-Means & PCA">
+    <meta property="og:title" content="Unüberwachtes Lernen - k-Means & PCA">
     <meta property="og:description"
-        content="Interactive unsupervised learning visualizations. Explore k-Means clustering and Principal Component Analysis (PCA) with real-time 2D visualizations.">
+        content="Interaktive Visualisierungen für unüberwachtes Lernen. Erkunde k-Means Clustering und Principal Component Analysis (PCA) mit Echtzeit-2D-Visualisierungen.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/04unsupervised.html">
 
@@ -329,8 +329,8 @@
 
     <div class="container">
         <header>
-            <h1>🔍 Unsupervised Learning</h1>
-            <p>Explore k-Means Clustering, Hierarchical Clustering, and Principal Component Analysis</p>
+            <h1>🔍 Unüberwachtes Lernen</h1>
+            <p>Erkunde k-Means Clustering, Hierarchical Clustering und Principal Component Analysis</p>
         </header>
 
         <div class="tabs-container">
@@ -351,21 +351,21 @@
         <div id="kmeans-tab" class="tab-content active">
             <div class="controls-container">
                 <div class="controls-panel">
-                    <h3 style="margin-top: 0;">k-Means Configuration</h3>
+                    <h3 style="margin-top: 0;">k-Means Konfiguration</h3>
                     
                     <div class="control-group">
-                        <label class="control-label" for="kmeans-dataset">Dataset:</label>
+                        <label class="control-label" for="kmeans-dataset">Datensatz:</label>
                         <select id="kmeans-dataset" class="form-select">
-                            <option value="blobs">Blobs (Clusters)</option>
-                            <option value="circles">Circles</option>
-                            <option value="moons">Moons</option>
-                            <option value="random">Random</option>
+                            <option value="blobs">Blobs (Cluster)</option>
+                            <option value="circles">Kreise</option>
+                            <option value="moons">Monde</option>
+                            <option value="random">Zufällig</option>
                         </select>
                     </div>
 
                     <div class="control-group">
                         <label class="control-label" for="kmeans-k">
-                            Number of Clusters (k):
+                            Anzahl Cluster (k):
                             <span class="range-value" id="kmeans-k-value">3</span>
                         </label>
                         <input type="range" id="kmeans-k" class="form-input" min="2" max="10" value="3">
@@ -373,51 +373,51 @@
 
                     <div class="control-group">
                         <label class="control-label" for="kmeans-points">
-                            Number of Points:
+                            Anzahl Punkte:
                             <span class="range-value" id="kmeans-points-value">200</span>
                         </label>
                         <input type="range" id="kmeans-points" class="form-input" min="50" max="500" step="50" value="200">
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="kmeans-init">Initialization Method:</label>
+                        <label class="control-label" for="kmeans-init">Initialisierungs-Methode:</label>
                         <select id="kmeans-init" class="form-select">
-                            <option value="random">Random</option>
+                            <option value="random">Zufällig</option>
                             <option value="kmeans++">k-means++</option>
                         </select>
                     </div>
 
                     <button class="btn-primary" onclick="generateKMeansData()">
-                        Generate Data
+                        Daten generieren
                     </button>
 
                     <button class="btn-primary" onclick="initializeKMeans()">
-                        Initialize Centroids
+                        Centroids initialisieren
                     </button>
 
                     <div class="animation-controls">
                         <button class="btn-secondary" onclick="stepKMeans()">
-                            Step
+                            Schritt
                         </button>
                         <button class="btn-secondary" onclick="runKMeans()">
-                            Run to Convergence
+                            Bis zur Konvergenz
                         </button>
                     </div>
 
                     <button class="btn-secondary" onclick="resetKMeans()">
-                        Reset
+                        Zurücksetzen
                     </button>
 
                     <div class="status-info" id="kmeans-status">
-                        Click "Generate Data" to start
+                        Klicke auf "Daten generieren" um zu starten
                     </div>
 
                     <div class="info-box">
-                        <h4>k-Means Algorithm</h4>
-                        <p><strong>1. Initialize:</strong> Place k centroids randomly</p>
-                        <p><strong>2. Assign:</strong> Assign each point to nearest centroid</p>
-                        <p><strong>3. Update:</strong> Move centroids to cluster means</p>
-                        <p><strong>4. Repeat:</strong> Until convergence</p>
+                        <h4>k-Means Algorithmus</h4>
+                        <p><strong>1. Initialisieren:</strong> Platziere k Centroids zufällig</p>
+                        <p><strong>2. Zuordnen:</strong> Ordne jeden Punkt dem nächsten Centroid zu</p>
+                        <p><strong>3. Aktualisieren:</strong> Verschiebe Centroids zu Cluster-Mittelpunkten</p>
+                        <p><strong>4. Wiederholen:</strong> Bis zur Konvergenz</p>
                     </div>
                 </div>
 
@@ -434,24 +434,24 @@
                     <h3 style="margin-top: 0;">Hierarchical Clustering</h3>
                     
                     <div class="control-group">
-                        <label class="control-label" for="hierarchical-dataset">Dataset:</label>
+                        <label class="control-label" for="hierarchical-dataset">Datensatz:</label>
                         <select id="hierarchical-dataset" class="form-select">
-                            <option value="blobs">Blobs (Clusters)</option>
-                            <option value="circles">Circles</option>
-                            <option value="random">Random</option>
+                            <option value="blobs">Blobs (Cluster)</option>
+                            <option value="circles">Kreise</option>
+                            <option value="random">Zufällig</option>
                         </select>
                     </div>
 
                     <div class="control-group">
                         <label class="control-label" for="hierarchical-points">
-                            Number of Points:
+                            Anzahl Punkte:
                             <span class="range-value" id="hierarchical-points-value">30</span>
                         </label>
                         <input type="range" id="hierarchical-points" class="form-input" min="10" max="50" step="5" value="30">
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="hierarchical-linkage">Linkage Method:</label>
+                        <label class="control-label" for="hierarchical-linkage">Linkage-Methode:</label>
                         <select id="hierarchical-linkage" class="form-select">
                             <option value="single">Single (Min)</option>
                             <option value="complete">Complete (Max)</option>
@@ -460,36 +460,36 @@
                     </div>
 
                     <button class="btn-primary" onclick="generateHierarchicalData()">
-                        Generate Data
+                        Daten generieren
                     </button>
 
                     <div class="animation-controls">
                         <button class="btn-secondary" onclick="stepHierarchical()">
-                            Step
+                            Schritt
                         </button>
                         <button class="btn-secondary" onclick="runHierarchical()">
-                            Run to End
+                            Bis zum Ende
                         </button>
                     </div>
 
                     <button class="btn-secondary" onclick="resetHierarchical()">
-                        Reset
+                        Zurücksetzen
                     </button>
 
                     <button class="btn-secondary btn-cut-mode" id="cut-mode-btn" onclick="toggleCutMode()">
-                        ✂️ Enable Cut Mode
+                        ✂️ Schnitt-Modus aktivieren
                     </button>
 
                     <div class="status-info" id="hierarchical-status">
-                        Click "Generate Data" to start
+                        Klicke auf "Daten generieren" um zu starten
                     </div>
 
                     <div class="info-box">
                         <h4>Hierarchical Clustering</h4>
-                        <p><strong>Bottom-up:</strong> Start with individual points</p>
-                        <p><strong>Merge:</strong> Combine closest clusters</p>
-                        <p><strong>Linkage:</strong> How to measure cluster distance</p>
-                        <p><strong>Cut:</strong> Enable cut mode, then click dendrogram</p>
+                        <p><strong>Bottom-up:</strong> Starte mit einzelnen Punkten</p>
+                        <p><strong>Merge:</strong> Kombiniere nächste Cluster</p>
+                        <p><strong>Linkage:</strong> Wie wird Cluster-Distanz gemessen</p>
+                        <p><strong>Cut:</strong> Aktiviere Schnitt-Modus, dann klicke auf Dendrogramm</p>
                     </div>
                 </div>
 
@@ -501,7 +501,7 @@
 
             <!-- Linkage Explanation Section -->
             <div style="margin: 2rem auto; max-width: 1200px; padding: 0 1rem;">
-                <h3 style="color: margin-bottom: 1.5rem; text-align: center;">Understanding Linkage Methods</h3>
+                <h3 style="color: var(--accent-color); margin-bottom: 1.5rem; text-align: center;">Linkage-Methoden verstehen</h3>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
                     <!-- Single Linkage -->
@@ -524,10 +524,10 @@
                             <circle cx="115" cy="95" r="4" fill="#FF6B6B"/>
                             
                             <!-- Label -->
-                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Minimum distance</text>
+                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Minimale Distanz</text>
                         </svg>
                         <p style="font-size: 0.85rem; text-align: center; margin-top: 1rem; color: var(--text-color);">
-                            Distance = <strong>min</strong> of all pairwise distances
+                            Distanz = <strong>min</strong> aller paarweisen Distanzen
                         </p>
                     </div>
 
@@ -554,10 +554,10 @@
                             <circle cx="150" cy="115" r="4" fill="#FF6B6B"/>
                             
                             <!-- Label -->
-                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Maximum distance</text>
+                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Maximale Distanz</text>
                         </svg>
                         <p style="font-size: 0.85rem; text-align: center; margin-top: 1rem; color: var(--text-color);">
-                            Distance = <strong>max</strong> of all pairwise distances
+                            Distanz = <strong>max</strong> aller paarweisen Distanzen
                         </p>
                     </div>
 
@@ -582,10 +582,10 @@
                             <line x1="70" y1="55" x2="150" y2="115" stroke="rgba(155, 89, 182, 0.5)" stroke-width="2" stroke-dasharray="3,3"/>
                             
                             <!-- Label -->
-                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Average of all distances</text>
+                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Durchschnitt aller Distanzen</text>
                         </svg>
                         <p style="font-size: 0.85rem; text-align: center; margin-top: 1rem; color: var(--text-color);">
-                            Distance = <strong>mean</strong> of all pairwise distances
+                            Distanz = <strong>mean</strong> aller paarweisen Distanzen
                         </p>
                     </div>
 
@@ -613,21 +613,21 @@
                             <line x1="60" y1="50" x2="140" y2="110" stroke="#17A2B8" stroke-width="3" stroke-dasharray="5,5"/>
                             
                             <!-- Label -->
-                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Distance between centroids</text>
+                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Distanz zwischen Centroids</text>
                         </svg>
                         <p style="font-size: 0.85rem; text-align: center; margin-top: 1rem; color: var(--text-color);">
-                            Distance between cluster <strong>centers</strong>
+                            Distanz zwischen Cluster-<strong>Zentren</strong>
                         </p>
                     </div>
                 </div>
 
                 <div style="margin-top: 2rem; padding: 1rem; background: rgba(23, 162, 184, 0.1); border-radius: 8px; border: 1px solid rgba(23, 162, 184, 0.2);">
-                    <h4 style="color: var(--accent-color); margin-top: 0;">Choosing a Linkage Method</h4>
+                    <h4 style="color: var(--accent-color); margin-top: 0;">Linkage-Methode wählen</h4>
                     <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-color);">
-                        <li style="margin: 0.5rem 0;"><strong>Single:</strong> Creates long, chain-like clusters. Sensitive to noise and outliers.</li>
-                        <li style="margin: 0.5rem 0;"><strong>Complete:</strong> Creates compact, spherical clusters. Less sensitive to outliers.</li>
-                        <li style="margin: 0.5rem 0;"><strong>Average:</strong> Balanced approach between single and complete linkage.</li>
-                        <li style="margin: 0.5rem 0;"><strong>Centroid:</strong> Uses cluster means. Can produce inversions in dendrogram.</li>
+                        <li style="margin: 0.5rem 0;"><strong>Single:</strong> Erzeugt lange, kettenartige Cluster. Empfindlich gegenüber Rauschen und Ausreißern.</li>
+                        <li style="margin: 0.5rem 0;"><strong>Complete:</strong> Erzeugt kompakte, sphärische Cluster. Weniger empfindlich gegenüber Ausreißern.</li>
+                        <li style="margin: 0.5rem 0;"><strong>Average:</strong> Ausgewogener Ansatz zwischen Single und Complete Linkage.</li>
+                        <li style="margin: 0.5rem 0;"><strong>Centroid:</strong> Verwendet Cluster-Mittelwerte. Kann Inversionen im Dendrogramm erzeugen.</li>
                     </ul>
                 </div>
             </div>
@@ -637,21 +637,21 @@
         <div id="pca-tab" class="tab-content">
             <div class="controls-container">
                 <div class="controls-panel">
-                    <h3 style="margin-top: 0;">PCA Configuration</h3>
+                    <h3 style="margin-top: 0;">PCA Konfiguration</h3>
                     
                     <div class="control-group">
-                        <label class="control-label" for="pca-dataset">Dataset:</label>
+                        <label class="control-label" for="pca-dataset">Datensatz:</label>
                         <select id="pca-dataset" class="form-select">
                             <option value="ellipse">Ellipse</option>
                             <option value="diagonal">Diagonal</option>
-                            <option value="mixed">Mixed Variance</option>
-                            <option value="3d">3D to 2D</option>
+                            <option value="mixed">Gemischte Varianz</option>
+                            <option value="3d">3D zu 2D</option>
                         </select>
                     </div>
 
                     <div class="control-group">
                         <label class="control-label" for="pca-points">
-                            Number of Points:
+                            Anzahl Punkte:
                             <span class="range-value" id="pca-points-value">200</span>
                         </label>
                         <input type="range" id="pca-points" class="form-input" min="50" max="500" step="50" value="200">
@@ -659,34 +659,34 @@
 
                     <div class="control-group">
                         <label class="control-label" for="pca-noise">
-                            Noise Level:
+                            Rauschen:
                             <span class="range-value" id="pca-noise-value">0.5</span>
                         </label>
                         <input type="range" id="pca-noise" class="form-input" min="0" max="2" step="0.1" value="0.5">
                     </div>
 
                     <button class="btn-primary" onclick="generatePCAData()">
-                        Generate Data
+                        Daten generieren
                     </button>
 
                     <button class="btn-primary" onclick="computePCA()">
-                        Compute PCA
+                        PCA berechnen
                     </button>
 
                     <button class="btn-secondary" onclick="showOriginalData()">
-                        Show Original
+                        Originaldaten anzeigen
                     </button>
 
                     <div class="status-info" id="pca-status">
-                        Click "Generate Data" to start
+                        Klicke auf "Daten generieren" um zu starten
                     </div>
 
                     <div class="info-box" id="pca-info">
                         <h4>Principal Component Analysis</h4>
-                        <p><strong>Goal:</strong> Find directions of maximum variance</p>
-                        <p><strong>PC1:</strong> Direction of highest variance</p>
-                        <p><strong>PC2:</strong> Orthogonal direction, 2nd highest variance</p>
-                        <p><strong>Use:</strong> Dimensionality reduction, visualization</p>
+                        <p><strong>Ziel:</strong> Finde Richtungen maximaler Varianz</p>
+                        <p><strong>PC1:</strong> Richtung der höchsten Varianz</p>
+                        <p><strong>PC2:</strong> Orthogonale Richtung, zweithöchste Varianz</p>
+                        <p><strong>Verwendung:</strong> Dimensionsreduktion, Visualisierung</p>
                     </div>
                 </div>
 
@@ -822,12 +822,12 @@
             plotKMeans();
             
             document.getElementById('kmeans-status').innerHTML = 
-                `Generated ${n} data points. Click "Initialize Centroids" to start clustering`;
+                `${n} Datenpunkte generiert. Klicke auf "Centroids initialisieren" um Clustering zu starten`;
         }
 
         function initializeKMeans() {
             if (kmeansData.points.length === 0) {
-                alert('Please generate data first');
+                alert('Bitte zuerst Daten generieren');
                 return;
             }
             
@@ -878,7 +878,7 @@
             plotKMeans();
             
             document.getElementById('kmeans-status').innerHTML = 
-                `<strong>Iteration 0:</strong> Initialized ${k} centroids using ${initMethod} method`;
+                `<strong>Iteration 0:</strong> ${k} Centroids initialisiert mit ${initMethod === 'random' ? 'zufälliger' : 'k-means++'} Methode`;
         }
 
         function assignPointsToClusters() {
@@ -935,12 +935,12 @@
         function stepKMeans() {
             if (kmeansData.converged) {
                 document.getElementById('kmeans-status').innerHTML = 
-                    `<strong>Already converged!</strong> Click "Reset" to start over`;
+                    `<strong>Bereits konvergiert!</strong> Klicke auf "Zurücksetzen" um neu zu starten`;
                 return;
             }
             
             if (kmeansData.centroids.length === 0) {
-                alert('Please initialize centroids first');
+                alert('Bitte zuerst Centroids initialisieren');
                 return;
             }
             
@@ -951,10 +951,10 @@
             if (!moved) {
                 kmeansData.converged = true;
                 document.getElementById('kmeans-status').innerHTML = 
-                    `<strong>✓ Converged!</strong> Algorithm completed in ${kmeansData.iteration} iterations`;
+                    `<strong>✓ Konvergiert!</strong> Algorithmus abgeschlossen in ${kmeansData.iteration} Iterationen`;
             } else {
                 document.getElementById('kmeans-status').innerHTML = 
-                    `<strong>Iteration ${kmeansData.iteration}:</strong> Updated centroids and reassigned points`;
+                    `<strong>Iteration ${kmeansData.iteration}:</strong> Centroids aktualisiert und Punkte neu zugeordnet`;
             }
             
             plotKMeans();
@@ -962,7 +962,7 @@
 
         function runKMeans() {
             if (kmeansData.centroids.length === 0) {
-                alert('Please initialize centroids first');
+                alert('Bitte zuerst Centroids initialisieren');
                 return;
             }
             
@@ -981,7 +981,7 @@
             }
             
             document.getElementById('kmeans-status').innerHTML = 
-                `<strong>✓ Converged!</strong> Algorithm completed in ${kmeansData.iteration} iterations`;
+                `<strong>✓ Konvergiert!</strong> Algorithmus abgeschlossen in ${kmeansData.iteration} Iterationen`;
             
             plotKMeans();
         }
@@ -997,7 +997,7 @@
             
             Plotly.purge('kmeans-plot');
             document.getElementById('kmeans-status').innerHTML = 
-                `Click "Generate Data" to start`;
+                `Klicke auf "Daten generieren" um zu starten`;
         }
 
         function plotKMeans() {
@@ -1139,12 +1139,12 @@
             plotOriginalData();
             
             document.getElementById('pca-status').innerHTML = 
-                `Generated ${n} data points. Click "Compute PCA" to analyze`;
+                `${n} Datenpunkte generiert. Klicke auf "PCA berechnen" um zu analysieren`;
         }
 
         function computePCA() {
             if (pcaData.original.length === 0) {
-                alert('Please generate data first');
+                alert('Bitte zuerst Daten generieren');
                 return;
             }
             
@@ -1215,15 +1215,15 @@
             plotPCA();
             
             document.getElementById('pca-status').innerHTML = 
-                `<strong>PCA Complete!</strong> PC1: ${pcaData.explainedVariance[0]}%, PC2: ${pcaData.explainedVariance[1]}%`;
+                `<strong>PCA abgeschlossen!</strong> PC1: ${pcaData.explainedVariance[0]}%, PC2: ${pcaData.explainedVariance[1]}%`;
             
             // Update info box
             document.getElementById('pca-info').innerHTML = `
-                <h4>PCA Results</h4>
-                <p><strong>PC1 explains:</strong> ${pcaData.explainedVariance[0]}% of variance</p>
-                <p><strong>PC2 explains:</strong> ${pcaData.explainedVariance[1]}% of variance</p>
-                <p><strong>PC1 direction:</strong> [${pcaData.components[0][0].toFixed(3)}, ${pcaData.components[0][1].toFixed(3)}]</p>
-                <p><strong>PC2 direction:</strong> [${pcaData.components[1][0].toFixed(3)}, ${pcaData.components[1][1].toFixed(3)}]</p>
+                <h4>PCA Ergebnisse</h4>
+                <p><strong>PC1 erklärt:</strong> ${pcaData.explainedVariance[0]}% der Varianz</p>
+                <p><strong>PC2 erklärt:</strong> ${pcaData.explainedVariance[1]}% der Varianz</p>
+                <p><strong>PC1 Richtung:</strong> [${pcaData.components[0][0].toFixed(3)}, ${pcaData.components[0][1].toFixed(3)}]</p>
+                <p><strong>PC2 Richtung:</strong> [${pcaData.components[1][0].toFixed(3)}, ${pcaData.components[1][1].toFixed(3)}]</p>
             `;
         }
 
@@ -1242,7 +1242,7 @@
             };
             
             const layout = {
-                title: 'Original Data',
+                title: 'Originaldaten',
                 xaxis: { title: 'X' },
                 yaxis: { title: 'Y', scaleanchor: 'x' },
                 showlegend: true,
@@ -1257,7 +1257,7 @@
 
         function showOriginalData() {
             if (pcaData.original.length === 0) {
-                alert('Please generate data first');
+                alert('Bitte zuerst Daten generieren');
                 return;
             }
             plotOriginalData();
@@ -1328,8 +1328,8 @@
             
             const layout = {
                 title: 'Principal Component Analysis',
-                xaxis: { title: 'X (centered)', zeroline: true },
-                yaxis: { title: 'Y (centered)', scaleanchor: 'x', zeroline: true },
+                xaxis: { title: 'X (zentriert)', zeroline: true },
+                yaxis: { title: 'Y (zentriert)', scaleanchor: 'x', zeroline: true },
                 showlegend: true,
                 hovermode: 'closest',
                 plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
@@ -1368,17 +1368,17 @@
             
             if (hierarchicalData.cutModeActive) {
                 btn.classList.add('active');
-                btn.textContent = '✂️ Disable Cut Mode';
+                btn.textContent = '✂️ Schnitt-Modus deaktivieren';
                 dendrogramPlot.classList.add('cut-mode-cursor');
                 
                 // Update status
                 if (hierarchicalData.completedMerges.length > 0) {
                     document.getElementById('hierarchical-status').innerHTML = 
-                        `<strong>Cut Mode Active:</strong> Click on dendrogram to cut at desired height`;
+                        `<strong>Schnitt-Modus aktiv:</strong> Klicke auf Dendrogramm um bei gewünschter Höhe zu schneiden`;
                 }
             } else {
                 btn.classList.remove('active');
-                btn.textContent = '✂️ Enable Cut Mode';
+                btn.textContent = '✂️ Schnitt-Modus aktivieren';
                 dendrogramPlot.classList.remove('cut-mode-cursor');
                 
                 // Restore previous status if exists
@@ -1387,10 +1387,10 @@
                     const total = hierarchicalData.allMerges.length;
                     if (step === total) {
                         document.getElementById('hierarchical-status').innerHTML = 
-                            `<strong>✓ Complete!</strong> All ${total} merges done`;
+                            `<strong>✓ Fertig!</strong> Alle ${total} Merges abgeschlossen`;
                     } else {
                         document.getElementById('hierarchical-status').innerHTML = 
-                            `<strong>Step ${step}/${total}</strong>`;
+                            `<strong>Schritt ${step}/${total}</strong>`;
                     }
                 }
             }
@@ -1456,7 +1456,7 @@
             plotHierarchicalState();
             
             document.getElementById('hierarchical-status').innerHTML = 
-                `Generated ${n} data points. Click "Step" to merge clusters one by one`;
+                `${n} Datenpunkte generiert. Klicke auf "Schritt" um Cluster einzeln zu verbinden`;
         }
 
         function computeAllMerges() {
@@ -1515,13 +1515,13 @@
 
         function stepHierarchical() {
             if (hierarchicalData.points.length === 0) {
-                alert('Please generate data first');
+                alert('Bitte zuerst Daten generieren');
                 return;
             }
             
             if (hierarchicalData.step >= hierarchicalData.allMerges.length) {
                 document.getElementById('hierarchical-status').innerHTML = 
-                    `<strong>✓ Complete!</strong> All ${hierarchicalData.allMerges.length} merges done`;
+                    `<strong>✓ Fertig!</strong> Alle ${hierarchicalData.allMerges.length} Merges abgeschlossen`;
                 return;
             }
             
@@ -1556,12 +1556,12 @@
             plotHierarchicalState();
             
             document.getElementById('hierarchical-status').innerHTML = 
-                `<strong>Step ${hierarchicalData.step}/${hierarchicalData.allMerges.length}:</strong> Merged clusters at distance ${merge.distance.toFixed(2)}`;
+                `<strong>Schritt ${hierarchicalData.step}/${hierarchicalData.allMerges.length}:</strong> Cluster bei Distanz ${merge.distance.toFixed(2)} verbunden`;
         }
 
         function runHierarchical() {
             if (hierarchicalData.points.length === 0) {
-                alert('Please generate data first');
+                alert('Bitte zuerst Daten generieren');
                 return;
             }
             
@@ -1595,14 +1595,14 @@
             plotHierarchicalState();
             
             document.getElementById('hierarchical-status').innerHTML = 
-                `Reset to initial state. Click "Step" to start merging`;
+                `Zurückgesetzt auf Anfangszustand. Klicke auf "Schritt" um mit Merge zu starten`;
         }
 
         function cutDendrogramAtHeight(height) {
             console.log('cutDendrogramAtHeight called with height:', height);
             console.log('Completed merges:', hierarchicalData.completedMerges.length);
             if (hierarchicalData.completedMerges.length === 0) {
-                alert('Please step through or run the algorithm first');
+                alert('Bitte zuerst den Algorithmus schrittweise durchlaufen oder ausführen');
                 return;
             }
             
@@ -1642,7 +1642,7 @@
             plotClusters();
             
             document.getElementById('hierarchical-status').innerHTML = 
-                `<strong>Cut at height ${height.toFixed(2)}</strong> → ${numClusters} clusters`;
+                `<strong>Schnitt bei Höhe ${height.toFixed(2)}</strong> → ${numClusters} Cluster`;
         }
 
         function plotHierarchicalState() {
@@ -1718,7 +1718,7 @@
             }
             
             const layout2D = {
-                title: `2D Data - ${hierarchicalData.currentClusters.length} clusters${hierarchicalData.nextMerge ? ' (Next merge highlighted)' : ''}`,
+                title: `2D-Daten - ${hierarchicalData.currentClusters.length} Cluster${hierarchicalData.nextMerge ? ' (Nächster Merge hervorgehoben)' : ''}`,
                 xaxis: { title: 'X', range: [0, 10] },
                 yaxis: { title: 'Y', range: [0, 10] },
                 showlegend: false,
@@ -1813,7 +1813,7 @@
                         symbol: 'circle'
                     },
                     showlegend: false,
-                    hovertemplate: `Merge ${idx + 1}<br>Distance: ${yMerge.toFixed(2)}<extra></extra>`
+                    hovertemplate: `Merge ${idx + 1}<br>Distanz: ${yMerge.toFixed(2)}<extra></extra>`
                 });
             });
             
@@ -1831,9 +1831,9 @@
                 text: Array.from({length: n}, (_, i) => `P${i}`),
                 textposition: 'bottom center',
                 textfont: { size: 8 },
-                name: 'Data Points',
+                name: 'Datenpunkte',
                 showlegend: false,
-                hovertemplate: 'Point %{text}<extra></extra>'
+                hovertemplate: 'Punkt %{text}<extra></extra>'
             });
             
             // Add cut line if exists
@@ -1844,21 +1844,21 @@
                     mode: 'lines',
                     line: { color: '#FF0000', width: 2, dash: 'dash' },
                     showlegend: false,
-                    name: 'Cut Height',
-                    hovertemplate: `Cut at height: ${hierarchicalData.cutHeight.toFixed(2)}<extra></extra>`
+                    name: 'Schnitt-Höhe',
+                    hovertemplate: `Schnitt bei Höhe: ${hierarchicalData.cutHeight.toFixed(2)}<extra></extra>`
                 });
             }
             
             const layout = {
-                title: `Dendrogram - Step ${hierarchicalData.step}/${hierarchicalData.allMerges.length}${hierarchicalData.cutModeActive ? ' (Cut mode active - click to cut)' : ''}`,
+                title: `Dendrogramm - Schritt ${hierarchicalData.step}/${hierarchicalData.allMerges.length}${hierarchicalData.cutModeActive ? ' (Schnitt-Modus aktiv - klicken zum Schneiden)' : ''}`,
                 xaxis: { 
-                    title: 'Data Points', 
+                    title: 'Datenpunkte', 
                     showgrid: false,
                     zeroline: false,
                     showticklabels: false
                 },
                 yaxis: { 
-                    title: hierarchicalData.cutModeActive ? 'Distance (click to cut)' : 'Distance',
+                    title: hierarchicalData.cutModeActive ? 'Distanz (klicken zum Schneiden)' : 'Distanz',
                     zeroline: true
                 },
                 showlegend: false,
@@ -1980,7 +1980,7 @@
             }
             
             const layout = {
-                title: `Cut into ${uniqueClusters.length} Clusters`,
+                title: `Geschnitten in ${uniqueClusters.length} Cluster`,
                 xaxis: { title: 'X', range: [0, 10] },
                 yaxis: { title: 'Y', range: [0, 10] },
                 showlegend: true,
