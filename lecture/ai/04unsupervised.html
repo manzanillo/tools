@@ -282,6 +282,20 @@
             margin: 0.25rem 0;
         }
 
+        /* Cut mode cursor */
+        .cut-mode-cursor {
+            cursor: crosshair !important;
+        }
+
+        .btn-cut-mode {
+            background: var(--btn-secondary-bg, rgba(128, 128, 128, 0.2));
+        }
+
+        .btn-cut-mode.active {
+            background: #FF6B6B;
+            color: white;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .controls-container {
@@ -445,14 +459,6 @@
                         </select>
                     </div>
 
-                    <div class="control-group">
-                        <label class="control-label" for="hierarchical-k">
-                            Cut into Clusters (k):
-                            <span class="range-value" id="hierarchical-k-value">3</span>
-                        </label>
-                        <input type="range" id="hierarchical-k" class="form-input" min="2" max="8" value="3">
-                    </div>
-
                     <button class="btn-primary" onclick="generateHierarchicalData()">
                         Generate Data
                     </button>
@@ -470,8 +476,8 @@
                         Reset
                     </button>
 
-                    <button class="btn-secondary" onclick="cutDendrogram()">
-                        Cut into k Clusters
+                    <button class="btn-secondary btn-cut-mode" id="cut-mode-btn" onclick="toggleCutMode()">
+                        ✂️ Enable Cut Mode
                     </button>
 
                     <div class="status-info" id="hierarchical-status">
@@ -483,7 +489,7 @@
                         <p><strong>Bottom-up:</strong> Start with individual points</p>
                         <p><strong>Merge:</strong> Combine closest clusters</p>
                         <p><strong>Linkage:</strong> How to measure cluster distance</p>
-                        <p><strong>Dendrogram:</strong> Tree showing merge history</p>
+                        <p><strong>Cut:</strong> Enable cut mode, then click dendrogram</p>
                     </div>
                 </div>
 
@@ -1212,7 +1218,9 @@
             clusters: [], // Final cluster assignments
             linkage: 'average',
             step: 0,
-            nextMerge: null
+            nextMerge: null,
+            cutHeight: undefined,
+            cutModeActive: false
         };
 
         // Update range value displays for hierarchical
@@ -1220,9 +1228,45 @@
             document.getElementById('hierarchical-points-value').textContent = e.target.value;
         });
 
-        document.getElementById('hierarchical-k').addEventListener('input', (e) => {
-            document.getElementById('hierarchical-k-value').textContent = e.target.value;
-        });
+        function toggleCutMode() {
+            hierarchicalData.cutModeActive = !hierarchicalData.cutModeActive;
+            const btn = document.getElementById('cut-mode-btn');
+            const dendrogramPlot = document.getElementById('hierarchical-dendrogram-plot');
+            
+            if (hierarchicalData.cutModeActive) {
+                btn.classList.add('active');
+                btn.textContent = '✂️ Disable Cut Mode';
+                dendrogramPlot.classList.add('cut-mode-cursor');
+                
+                // Update status
+                if (hierarchicalData.completedMerges.length > 0) {
+                    document.getElementById('hierarchical-status').innerHTML = 
+                        `<strong>Cut Mode Active:</strong> Click on dendrogram to cut at desired height`;
+                }
+            } else {
+                btn.classList.remove('active');
+                btn.textContent = '✂️ Enable Cut Mode';
+                dendrogramPlot.classList.remove('cut-mode-cursor');
+                
+                // Restore previous status if exists
+                if (hierarchicalData.completedMerges.length > 0) {
+                    const step = hierarchicalData.step;
+                    const total = hierarchicalData.allMerges.length;
+                    if (step === total) {
+                        document.getElementById('hierarchical-status').innerHTML = 
+                            `<strong>✓ Complete!</strong> All ${total} merges done`;
+                    } else {
+                        document.getElementById('hierarchical-status').innerHTML = 
+                            `<strong>Step ${step}/${total}</strong>`;
+                    }
+                }
+            }
+            
+            // Replot to update config
+            if (hierarchicalData.completedMerges.length > 0) {
+                plotPartialDendrogram();
+            }
+        }
 
         function euclideanDistance(p1, p2) {
             return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
@@ -1258,6 +1302,7 @@
             hierarchicalData.completedMerges = [];
             hierarchicalData.clusters = [];
             hierarchicalData.nextMerge = null;
+            hierarchicalData.cutHeight = undefined;
             
             // Initialize each point as its own cluster
             hierarchicalData.currentClusters = hierarchicalData.points.map((p, idx) => ({
@@ -1400,6 +1445,7 @@
             hierarchicalData.step = 0;
             hierarchicalData.completedMerges = [];
             hierarchicalData.clusters = [];
+            hierarchicalData.cutHeight = undefined;
             
             // Reset to initial state
             hierarchicalData.currentClusters = hierarchicalData.points.map((p, idx) => ({
@@ -1419,13 +1465,13 @@
                 `Reset to initial state. Click "Step" to start merging`;
         }
 
-        function cutDendrogram() {
+        function cutDendrogramAtHeight(height) {
+            console.log('cutDendrogramAtHeight called with height:', height);
+            console.log('Completed merges:', hierarchicalData.completedMerges.length);
             if (hierarchicalData.completedMerges.length === 0) {
                 alert('Please step through or run the algorithm first');
                 return;
             }
-            
-            const k = parseInt(document.getElementById('hierarchical-k').value);
             
             // Start with all points in separate clusters
             let clusterMap = {};
@@ -1433,26 +1479,37 @@
                 clusterMap[idx] = idx;
             });
             
-            // Apply merges until we have k clusters
-            const numMerges = hierarchicalData.points.length - k;
-            for (let i = 0; i < numMerges && i < hierarchicalData.completedMerges.length; i++) {
+            // Apply all merges that happen below the cut height
+            let numClusters = hierarchicalData.points.length;
+            console.log('Applying merges with height <=', height);
+            for (let i = 0; i < hierarchicalData.completedMerges.length; i++) {
                 const merge = hierarchicalData.completedMerges[i];
                 
-                // Update cluster assignments
-                for (let pointId in clusterMap) {
-                    if (clusterMap[pointId] === merge.cluster1 || clusterMap[pointId] === merge.cluster2) {
-                        clusterMap[pointId] = merge.newId;
+                // Only apply merges below the cut height
+                if (merge.distance <= height) {
+                    console.log('Applying merge at height:', merge.distance);
+                    // Update cluster assignments
+                    for (let pointId in clusterMap) {
+                        if (clusterMap[pointId] === merge.cluster1 || clusterMap[pointId] === merge.cluster2) {
+                            clusterMap[pointId] = merge.newId;
+                        }
                     }
+                    numClusters--;
+                } else {
+                    break; // Merges are in order, so we can stop
                 }
             }
             
             // Convert to cluster assignments array
             hierarchicalData.clusters = Object.values(clusterMap);
+            hierarchicalData.cutHeight = height;
+            console.log('Final clusters:', hierarchicalData.clusters);
+            console.log('Number of clusters:', numClusters);
             
             plotClusters();
             
             document.getElementById('hierarchical-status').innerHTML = 
-                `<strong>Cut into ${k} clusters!</strong> Showing point assignments`;
+                `<strong>Cut at height ${height.toFixed(2)}</strong> → ${numClusters} clusters`;
         }
 
         function plotHierarchicalState() {
@@ -1646,8 +1703,21 @@
                 hovertemplate: 'Point %{text}<extra></extra>'
             });
             
+            // Add cut line if exists
+            if (hierarchicalData.cutHeight !== undefined) {
+                traces.push({
+                    x: [Math.min(...Object.values(positions)), Math.max(...Object.values(positions))],
+                    y: [hierarchicalData.cutHeight, hierarchicalData.cutHeight],
+                    mode: 'lines',
+                    line: { color: '#FF0000', width: 2, dash: 'dash' },
+                    showlegend: false,
+                    name: 'Cut Height',
+                    hovertemplate: `Cut at height: ${hierarchicalData.cutHeight.toFixed(2)}<extra></extra>`
+                });
+            }
+            
             const layout = {
-                title: `Dendrogram - Step ${hierarchicalData.step}/${hierarchicalData.allMerges.length}`,
+                title: `Dendrogram - Step ${hierarchicalData.step}/${hierarchicalData.allMerges.length}${hierarchicalData.cutModeActive ? ' (Cut mode active - click to cut)' : ''}`,
                 xaxis: { 
                     title: 'Data Points', 
                     showgrid: false,
@@ -1655,7 +1725,7 @@
                     showticklabels: false
                 },
                 yaxis: { 
-                    title: 'Distance',
+                    title: hierarchicalData.cutModeActive ? 'Distance (click to cut)' : 'Distance',
                     zeroline: true
                 },
                 showlegend: false,
@@ -1663,10 +1733,82 @@
                 plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
                 paper_bgcolor: 'transparent',
                 font: { color: getTextColor() },
-                margin: { t: 40, b: 50, l: 40, r: 20 }
+                margin: { t: 40, b: 50, l: 40, r: 20 },
+                dragmode: hierarchicalData.cutModeActive ? false : 'zoom'
             };
             
-            Plotly.newPlot('hierarchical-dendrogram-plot', traces, layout, {responsive: true});
+            const config = {
+                responsive: true,
+                scrollZoom: !hierarchicalData.cutModeActive,
+                displayModeBar: !hierarchicalData.cutModeActive,
+                doubleClick: hierarchicalData.cutModeActive ? false : 'reset',
+                modeBarButtonsToRemove: ['zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d']
+            };
+            
+            Plotly.newPlot('hierarchical-dendrogram-plot', traces, layout, config);
+            
+            // Remove any existing click handlers
+            const dendrogramPlot = document.getElementById('hierarchical-dendrogram-plot');
+            Plotly.purge(dendrogramPlot);
+            Plotly.newPlot(dendrogramPlot, traces, layout, config);
+            
+            // Add click handler if cut mode is active
+            console.log('Cut mode active:', hierarchicalData.cutModeActive, 'Completed merges:', hierarchicalData.completedMerges.length);
+            if (hierarchicalData.cutModeActive && hierarchicalData.completedMerges.length > 0) {
+                console.log('Adding click handler for cut mode');
+                // Use a raw DOM click handler to capture clicks anywhere on the plot
+                const plotDiv = dendrogramPlot;
+                
+                // Remove any existing listener
+                const oldListener = plotDiv._cutModeListener;
+                if (oldListener) {
+                    plotDiv.removeEventListener('click', oldListener);
+                }
+                
+                // Add new listener
+                const clickListener = function(event) {
+                    console.log('Click event fired!', event);
+                    
+                    // Use the main plot div instead of searching for .plotly
+                    const rect = plotDiv.getBoundingClientRect();
+                    const yPixel = event.clientY - rect.top;
+                    console.log('Pixel Y:', yPixel, 'Rect:', rect);
+                    
+                    // Get y-axis range from Plotly layout
+                    const yaxis = plotDiv._fullLayout.yaxis;
+                    const yRange = yaxis.range;
+                    const plotHeight = rect.height;
+                    console.log('Y-axis range:', yRange, 'Plot height:', plotHeight);
+                    
+                    // Convert pixel to data coordinate
+                    // In Plotly, y=0 is at bottom, so we need to invert
+                    const yFraction = 1 - (yPixel / plotHeight);
+                    const clickHeight = yRange[0] + yFraction * (yRange[1] - yRange[0]);
+                    console.log('Y fraction:', yFraction, 'Calculated height:', clickHeight);
+                    
+                    // Only cut if height is within valid range
+                    if (clickHeight >= 0 && clickHeight <= yRange[1]) {
+                        console.log('Valid height, calling cutDendrogramAtHeight with:', clickHeight);
+                        cutDendrogramAtHeight(clickHeight);
+                    } else {
+                        console.log('Height out of range:', clickHeight, 'Range:', [0, yRange[1]]);
+                    }
+                };
+                
+                plotDiv._cutModeListener = clickListener;
+                plotDiv.addEventListener('click', clickListener);
+                console.log('Click listener attached to plotDiv');
+            } else {
+                // Remove listener if cut mode is off
+                console.log('Cut mode off or no merges, removing listener if present');
+                const plotDiv = dendrogramPlot;
+                const oldListener = plotDiv._cutModeListener;
+                if (oldListener) {
+                    plotDiv.removeEventListener('click', oldListener);
+                    delete plotDiv._cutModeListener;
+                    console.log('Listener removed');
+                }
+            }
         }
 
         function plotClusters() {
@@ -1718,7 +1860,7 @@
             
             Plotly.newPlot('hierarchical-2d-plot', traces, layout, {responsive: true});
             
-            // Keep dendrogram showing completed merges
+            // Keep dendrogram showing completed merges with cut line
             plotPartialDendrogram();
         }
 
