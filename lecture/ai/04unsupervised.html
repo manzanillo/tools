@@ -498,6 +498,139 @@
                     <div id="hierarchical-dendrogram-plot" style="flex: 1; min-height: 300px;"></div>
                 </div>
             </div>
+
+            <!-- Linkage Explanation Section -->
+            <div style="margin: 2rem auto; max-width: 1200px; padding: 0 1rem;">
+                <h3 style="color: margin-bottom: 1.5rem; text-align: center;">Understanding Linkage Methods</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                    <!-- Single Linkage -->
+                    <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <h4 style="color: #51CF66; margin-top: 0; text-align: center;">Single Linkage</h4>
+                        <svg width="100%" height="180" viewBox="0 0 200 180" style="display: block; margin: 1rem auto;">
+                            <!-- Cluster 1 (Blue) -->
+                            <ellipse cx="60" cy="50" rx="35" ry="30" fill="none" stroke="#3498DB" stroke-width="2"/>
+                            <circle cx="45" cy="45" r="12" fill="#3498DB" opacity="0.8"/>
+                            <circle cx="70" cy="55" r="12" fill="#5DADE2" opacity="0.8"/>
+                            
+                            <!-- Cluster 2 (Yellow) -->
+                            <ellipse cx="140" cy="110" rx="35" ry="30" fill="none" stroke="#FFA726" stroke-width="2"/>
+                            <circle cx="125" cy="105" r="12" fill="#F7DC6F" opacity="0.8"/>
+                            <circle cx="150" cy="115" r="12" fill="#FFA726" opacity="0.8"/>
+                            
+                            <!-- Minimum distance line -->
+                            <line x1="85" y1="65" x2="115" y2="95" stroke="#FF6B6B" stroke-width="3" stroke-dasharray="5,5"/>
+                            <circle cx="85" cy="65" r="4" fill="#FF6B6B"/>
+                            <circle cx="115" cy="95" r="4" fill="#FF6B6B"/>
+                            
+                            <!-- Label -->
+                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Minimum distance</text>
+                        </svg>
+                        <p style="font-size: 0.85rem; text-align: center; margin-top: 1rem; color: var(--text-color);">
+                            Distance = <strong>min</strong> of all pairwise distances
+                        </p>
+                    </div>
+
+                    <!-- Complete Linkage -->
+                    <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <h4 style="color: #FF6B6B; margin-top: 0; text-align: center;">Complete Linkage</h4>
+                        <svg width="100%" height="180" viewBox="0 0 200 180" style="display: block; margin: 1rem auto;">
+                            <!-- Cluster 1 (Blue) -->
+                            <ellipse cx="60" cy="50" rx="35" ry="30" fill="none" stroke="#3498DB" stroke-width="2"/>
+                            <circle cx="45" cy="45" r="12" fill="#3498DB" opacity="0.8"/>
+                            <circle cx="70" cy="55" r="12" fill="#5DADE2" opacity="0.8"/>
+                            
+                            <!-- Cluster 2 (Yellow) -->
+                            <ellipse cx="140" cy="110" rx="35" ry="30" fill="none" stroke="#FFA726" stroke-width="2"/>
+                            <circle cx="125" cy="105" r="12" fill="#F7DC6F" opacity="0.8"/>
+                            <circle cx="150" cy="115" r="12" fill="#FFA726" opacity="0.8"/>
+                            
+                            <!-- Maximum distance lines (multiple faded, one highlighted) -->
+                            <line x1="45" y1="45" x2="125" y2="105" stroke="rgba(128,128,128,0.3)" stroke-width="1" stroke-dasharray="2,2"/>
+                            <line x1="45" y1="45" x2="150" y2="115" stroke="rgba(128,128,128,0.3)" stroke-width="1" stroke-dasharray="2,2"/>
+                            <line x1="70" y1="55" x2="125" y2="105" stroke="rgba(128,128,128,0.3)" stroke-width="1" stroke-dasharray="2,2"/>
+                            <line x1="70" y1="55" x2="150" y2="115" stroke="#FF6B6B" stroke-width="3" stroke-dasharray="5,5"/>
+                            <circle cx="70" cy="55" r="4" fill="#FF6B6B"/>
+                            <circle cx="150" cy="115" r="4" fill="#FF6B6B"/>
+                            
+                            <!-- Label -->
+                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Maximum distance</text>
+                        </svg>
+                        <p style="font-size: 0.85rem; text-align: center; margin-top: 1rem; color: var(--text-color);">
+                            Distance = <strong>max</strong> of all pairwise distances
+                        </p>
+                    </div>
+
+                    <!-- Average Linkage -->
+                    <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <h4 style="color: #9B59B6; margin-top: 0; text-align: center;">Average Linkage</h4>
+                        <svg width="100%" height="180" viewBox="0 0 200 180" style="display: block; margin: 1rem auto;">
+                            <!-- Cluster 1 (Blue) -->
+                            <ellipse cx="60" cy="50" rx="35" ry="30" fill="none" stroke="#3498DB" stroke-width="2"/>
+                            <circle cx="45" cy="45" r="12" fill="#3498DB" opacity="0.8"/>
+                            <circle cx="70" cy="55" r="12" fill="#5DADE2" opacity="0.8"/>
+                            
+                            <!-- Cluster 2 (Yellow) -->
+                            <ellipse cx="140" cy="110" rx="35" ry="30" fill="none" stroke="#FFA726" stroke-width="2"/>
+                            <circle cx="125" cy="105" r="12" fill="#F7DC6F" opacity="0.8"/>
+                            <circle cx="150" cy="115" r="12" fill="#FFA726" opacity="0.8"/>
+                            
+                            <!-- All distance lines -->
+                            <line x1="45" y1="45" x2="125" y2="105" stroke="rgba(155, 89, 182, 0.5)" stroke-width="2" stroke-dasharray="3,3"/>
+                            <line x1="45" y1="45" x2="150" y2="115" stroke="rgba(155, 89, 182, 0.5)" stroke-width="2" stroke-dasharray="3,3"/>
+                            <line x1="70" y1="55" x2="125" y2="105" stroke="rgba(155, 89, 182, 0.5)" stroke-width="2" stroke-dasharray="3,3"/>
+                            <line x1="70" y1="55" x2="150" y2="115" stroke="rgba(155, 89, 182, 0.5)" stroke-width="2" stroke-dasharray="3,3"/>
+                            
+                            <!-- Label -->
+                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Average of all distances</text>
+                        </svg>
+                        <p style="font-size: 0.85rem; text-align: center; margin-top: 1rem; color: var(--text-color);">
+                            Distance = <strong>mean</strong> of all pairwise distances
+                        </p>
+                    </div>
+
+                    <!-- Centroid Linkage (Info only) -->
+                    <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <h4 style="color: #17A2B8; margin-top: 0; text-align: center;">Centroid Linkage</h4>
+                        <svg width="100%" height="180" viewBox="0 0 200 180" style="display: block; margin: 1rem auto;">
+                            <!-- Cluster 1 (Blue) -->
+                            <ellipse cx="60" cy="50" rx="35" ry="30" fill="none" stroke="#3498DB" stroke-width="2"/>
+                            <circle cx="45" cy="45" r="12" fill="#3498DB" opacity="0.8"/>
+                            <circle cx="70" cy="55" r="12" fill="#5DADE2" opacity="0.8"/>
+                            <!-- Centroid 1 -->
+                            <path d="M 57.5,50 L 62.5,50 M 60,47.5 L 60,52.5" stroke="#000" stroke-width="2.5" fill="none"/>
+                            <path d="M 57.5,50 L 62.5,50 M 60,47.5 L 60,52.5" stroke="#FFE55C" stroke-width="2" fill="none"/>
+                            
+                            <!-- Cluster 2 (Yellow) -->
+                            <ellipse cx="140" cy="110" rx="35" ry="30" fill="none" stroke="#FFA726" stroke-width="2"/>
+                            <circle cx="125" cy="105" r="12" fill="#F7DC6F" opacity="0.8"/>
+                            <circle cx="150" cy="115" r="12" fill="#FFA726" opacity="0.8"/>
+                            <!-- Centroid 2 -->
+                            <path d="M 137.5,110 L 142.5,110 M 140,107.5 L 140,112.5" stroke="#000" stroke-width="2.5" fill="none"/>
+                            <path d="M 137.5,110 L 142.5,110 M 140,107.5 L 140,112.5" stroke="#FFE55C" stroke-width="2" fill="none"/>
+                            
+                            <!-- Centroid distance line -->
+                            <line x1="60" y1="50" x2="140" y2="110" stroke="#17A2B8" stroke-width="3" stroke-dasharray="5,5"/>
+                            
+                            <!-- Label -->
+                            <text x="100" y="170" text-anchor="middle" fill="var(--text-color)" font-size="12">Distance between centroids</text>
+                        </svg>
+                        <p style="font-size: 0.85rem; text-align: center; margin-top: 1rem; color: var(--text-color);">
+                            Distance between cluster <strong>centers</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1rem; background: rgba(23, 162, 184, 0.1); border-radius: 8px; border: 1px solid rgba(23, 162, 184, 0.2);">
+                    <h4 style="color: var(--accent-color); margin-top: 0;">Choosing a Linkage Method</h4>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-color);">
+                        <li style="margin: 0.5rem 0;"><strong>Single:</strong> Creates long, chain-like clusters. Sensitive to noise and outliers.</li>
+                        <li style="margin: 0.5rem 0;"><strong>Complete:</strong> Creates compact, spherical clusters. Less sensitive to outliers.</li>
+                        <li style="margin: 0.5rem 0;"><strong>Average:</strong> Balanced approach between single and complete linkage.</li>
+                        <li style="margin: 0.5rem 0;"><strong>Centroid:</strong> Uses cluster means. Can produce inversions in dendrogram.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <!-- PCA Tab -->
