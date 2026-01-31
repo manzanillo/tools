@@ -316,13 +316,16 @@
     <div class="container">
         <header>
             <h1>🔍 Unsupervised Learning</h1>
-            <p>Explore k-Means Clustering and Principal Component Analysis</p>
+            <p>Explore k-Means Clustering, Hierarchical Clustering, and Principal Component Analysis</p>
         </header>
 
         <div class="tabs-container">
             <div class="tab-buttons">
                 <button class="tab-button active" onclick="switchTab('kmeans')">
                     k-Means Clustering
+                </button>
+                <button class="tab-button" onclick="switchTab('hierarchical')">
+                    Hierarchical Clustering
                 </button>
                 <button class="tab-button" onclick="switchTab('pca')">
                     Principal Component Analysis
@@ -406,6 +409,87 @@
 
                 <div class="visualization-panel">
                     <div id="kmeans-plot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hierarchical Clustering Tab -->
+        <div id="hierarchical-tab" class="tab-content">
+            <div class="controls-container">
+                <div class="controls-panel">
+                    <h3 style="margin-top: 0;">Hierarchical Clustering</h3>
+                    
+                    <div class="control-group">
+                        <label class="control-label" for="hierarchical-dataset">Dataset:</label>
+                        <select id="hierarchical-dataset" class="form-select">
+                            <option value="blobs">Blobs (Clusters)</option>
+                            <option value="circles">Circles</option>
+                            <option value="random">Random</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="hierarchical-points">
+                            Number of Points:
+                            <span class="range-value" id="hierarchical-points-value">30</span>
+                        </label>
+                        <input type="range" id="hierarchical-points" class="form-input" min="10" max="50" step="5" value="30">
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="hierarchical-linkage">Linkage Method:</label>
+                        <select id="hierarchical-linkage" class="form-select">
+                            <option value="single">Single (Min)</option>
+                            <option value="complete">Complete (Max)</option>
+                            <option value="average" selected>Average</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="hierarchical-k">
+                            Cut into Clusters (k):
+                            <span class="range-value" id="hierarchical-k-value">3</span>
+                        </label>
+                        <input type="range" id="hierarchical-k" class="form-input" min="2" max="8" value="3">
+                    </div>
+
+                    <button class="btn-primary" onclick="generateHierarchicalData()">
+                        Generate Data
+                    </button>
+
+                    <div class="animation-controls">
+                        <button class="btn-secondary" onclick="stepHierarchical()">
+                            Step
+                        </button>
+                        <button class="btn-secondary" onclick="runHierarchical()">
+                            Run to End
+                        </button>
+                    </div>
+
+                    <button class="btn-secondary" onclick="resetHierarchical()">
+                        Reset
+                    </button>
+
+                    <button class="btn-secondary" onclick="cutDendrogram()">
+                        Cut into k Clusters
+                    </button>
+
+                    <div class="status-info" id="hierarchical-status">
+                        Click "Generate Data" to start
+                    </div>
+
+                    <div class="info-box">
+                        <h4>Hierarchical Clustering</h4>
+                        <p><strong>Bottom-up:</strong> Start with individual points</p>
+                        <p><strong>Merge:</strong> Combine closest clusters</p>
+                        <p><strong>Linkage:</strong> How to measure cluster distance</p>
+                        <p><strong>Dendrogram:</strong> Tree showing merge history</p>
+                    </div>
+                </div>
+
+                <div class="visualization-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div id="hierarchical-2d-plot" style="flex: 1; min-height: 300px;"></div>
+                    <div id="hierarchical-dendrogram-plot" style="flex: 1; min-height: 300px;"></div>
                 </div>
             </div>
         </div>
@@ -1117,6 +1201,527 @@
             Plotly.newPlot('pca-plot', traces, layout, {responsive: true});
         }
 
+        // ============================================
+        // Hierarchical Clustering Implementation
+        // ============================================
+        let hierarchicalData = {
+            points: [],
+            allMerges: [], // All possible merges computed upfront
+            completedMerges: [], // Merges shown so far
+            currentClusters: [], // Current cluster state
+            clusters: [], // Final cluster assignments
+            linkage: 'average',
+            step: 0,
+            nextMerge: null
+        };
+
+        // Update range value displays for hierarchical
+        document.getElementById('hierarchical-points').addEventListener('input', (e) => {
+            document.getElementById('hierarchical-points-value').textContent = e.target.value;
+        });
+
+        document.getElementById('hierarchical-k').addEventListener('input', (e) => {
+            document.getElementById('hierarchical-k-value').textContent = e.target.value;
+        });
+
+        function euclideanDistance(p1, p2) {
+            return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
+        }
+
+        function clusterDistance(c1, c2, linkage) {
+            let distances = [];
+            
+            for (let p1 of c1) {
+                for (let p2 of c2) {
+                    distances.push(euclideanDistance(p1, p2));
+                }
+            }
+            
+            if (linkage === 'single') {
+                return Math.min(...distances);
+            } else if (linkage === 'complete') {
+                return Math.max(...distances);
+            } else { // average
+                return distances.reduce((a, b) => a + b, 0) / distances.length;
+            }
+        }
+
+        function generateHierarchicalData() {
+            const dataset = document.getElementById('hierarchical-dataset').value;
+            const n = parseInt(document.getElementById('hierarchical-points').value);
+            const linkage = document.getElementById('hierarchical-linkage').value;
+            
+            // Generate points
+            hierarchicalData.points = generateKMeansDataset(dataset, n);
+            hierarchicalData.linkage = linkage;
+            hierarchicalData.step = 0;
+            hierarchicalData.completedMerges = [];
+            hierarchicalData.clusters = [];
+            hierarchicalData.nextMerge = null;
+            
+            // Initialize each point as its own cluster
+            hierarchicalData.currentClusters = hierarchicalData.points.map((p, idx) => ({
+                id: idx,
+                points: [p],
+                children: null,
+                height: 0
+            }));
+            
+            // Pre-compute all merges
+            computeAllMerges();
+            
+            // Find first merge to highlight
+            if (hierarchicalData.allMerges.length > 0) {
+                hierarchicalData.nextMerge = hierarchicalData.allMerges[0];
+            }
+            
+            plotHierarchicalState();
+            
+            document.getElementById('hierarchical-status').innerHTML = 
+                `Generated ${n} data points. Click "Step" to merge clusters one by one`;
+        }
+
+        function computeAllMerges() {
+            const linkage = hierarchicalData.linkage;
+            let clusters = hierarchicalData.points.map((p, idx) => ({
+                id: idx,
+                points: [p],
+                children: null,
+                height: 0
+            }));
+            
+            const merges = [];
+            let nextId = hierarchicalData.points.length;
+            
+            while (clusters.length > 1) {
+                let minDist = Infinity;
+                let mergeI = -1;
+                let mergeJ = -1;
+                
+                // Find closest pair
+                for (let i = 0; i < clusters.length; i++) {
+                    for (let j = i + 1; j < clusters.length; j++) {
+                        const dist = clusterDistance(clusters[i].points, clusters[j].points, linkage);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            mergeI = i;
+                            mergeJ = j;
+                        }
+                    }
+                }
+                
+                const newCluster = {
+                    id: nextId++,
+                    points: [...clusters[mergeI].points, ...clusters[mergeJ].points],
+                    children: [clusters[mergeI].id, clusters[mergeJ].id],
+                    height: minDist
+                };
+                
+                merges.push({
+                    cluster1: clusters[mergeI].id,
+                    cluster2: clusters[mergeJ].id,
+                    distance: minDist,
+                    newId: newCluster.id,
+                    left: {...clusters[mergeI]},
+                    right: {...clusters[mergeJ]},
+                    mergedPoints: newCluster.points
+                });
+                
+                const newClusters = clusters.filter((_, idx) => idx !== mergeI && idx !== mergeJ);
+                newClusters.push(newCluster);
+                clusters = newClusters;
+            }
+            
+            hierarchicalData.allMerges = merges;
+        }
+
+        function stepHierarchical() {
+            if (hierarchicalData.points.length === 0) {
+                alert('Please generate data first');
+                return;
+            }
+            
+            if (hierarchicalData.step >= hierarchicalData.allMerges.length) {
+                document.getElementById('hierarchical-status').innerHTML = 
+                    `<strong>✓ Complete!</strong> All ${hierarchicalData.allMerges.length} merges done`;
+                return;
+            }
+            
+            // Add current merge to completed
+            const merge = hierarchicalData.allMerges[hierarchicalData.step];
+            hierarchicalData.completedMerges.push(merge);
+            
+            // Update current clusters
+            const clusterToRemove1 = merge.cluster1;
+            const clusterToRemove2 = merge.cluster2;
+            
+            hierarchicalData.currentClusters = hierarchicalData.currentClusters.filter(
+                c => c.id !== clusterToRemove1 && c.id !== clusterToRemove2
+            );
+            
+            hierarchicalData.currentClusters.push({
+                id: merge.newId,
+                points: merge.mergedPoints,
+                children: [merge.cluster1, merge.cluster2],
+                height: merge.distance
+            });
+            
+            hierarchicalData.step++;
+            
+            // Set next merge to highlight
+            if (hierarchicalData.step < hierarchicalData.allMerges.length) {
+                hierarchicalData.nextMerge = hierarchicalData.allMerges[hierarchicalData.step];
+            } else {
+                hierarchicalData.nextMerge = null;
+            }
+            
+            plotHierarchicalState();
+            
+            document.getElementById('hierarchical-status').innerHTML = 
+                `<strong>Step ${hierarchicalData.step}/${hierarchicalData.allMerges.length}:</strong> Merged clusters at distance ${merge.distance.toFixed(2)}`;
+        }
+
+        function runHierarchical() {
+            if (hierarchicalData.points.length === 0) {
+                alert('Please generate data first');
+                return;
+            }
+            
+            while (hierarchicalData.step < hierarchicalData.allMerges.length) {
+                stepHierarchical();
+            }
+        }
+
+        function resetHierarchical() {
+            if (hierarchicalData.points.length === 0) {
+                return;
+            }
+            
+            hierarchicalData.step = 0;
+            hierarchicalData.completedMerges = [];
+            hierarchicalData.clusters = [];
+            
+            // Reset to initial state
+            hierarchicalData.currentClusters = hierarchicalData.points.map((p, idx) => ({
+                id: idx,
+                points: [p],
+                children: null,
+                height: 0
+            }));
+            
+            if (hierarchicalData.allMerges.length > 0) {
+                hierarchicalData.nextMerge = hierarchicalData.allMerges[0];
+            }
+            
+            plotHierarchicalState();
+            
+            document.getElementById('hierarchical-status').innerHTML = 
+                `Reset to initial state. Click "Step" to start merging`;
+        }
+
+        function cutDendrogram() {
+            if (hierarchicalData.completedMerges.length === 0) {
+                alert('Please step through or run the algorithm first');
+                return;
+            }
+            
+            const k = parseInt(document.getElementById('hierarchical-k').value);
+            
+            // Start with all points in separate clusters
+            let clusterMap = {};
+            hierarchicalData.points.forEach((p, idx) => {
+                clusterMap[idx] = idx;
+            });
+            
+            // Apply merges until we have k clusters
+            const numMerges = hierarchicalData.points.length - k;
+            for (let i = 0; i < numMerges && i < hierarchicalData.completedMerges.length; i++) {
+                const merge = hierarchicalData.completedMerges[i];
+                
+                // Update cluster assignments
+                for (let pointId in clusterMap) {
+                    if (clusterMap[pointId] === merge.cluster1 || clusterMap[pointId] === merge.cluster2) {
+                        clusterMap[pointId] = merge.newId;
+                    }
+                }
+            }
+            
+            // Convert to cluster assignments array
+            hierarchicalData.clusters = Object.values(clusterMap);
+            
+            plotClusters();
+            
+            document.getElementById('hierarchical-status').innerHTML = 
+                `<strong>Cut into ${k} clusters!</strong> Showing point assignments`;
+        }
+
+        function plotHierarchicalState() {
+            // Plot 2D points with current clusters highlighted
+            const traces2D = [];
+            const colors = ['#FF6B6B', '#51CF66', '#3498DB', '#FFA726', '#9B59B6', 
+                          '#F7DC6F', '#FF6B9D', '#17A2B8'];
+            
+            // Color points by current cluster
+            hierarchicalData.currentClusters.forEach((cluster, idx) => {
+                traces2D.push({
+                    x: cluster.points.map(p => p[0]),
+                    y: cluster.points.map(p => p[1]),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: `Cluster ${cluster.id}`,
+                    marker: {
+                        size: 10,
+                        color: colors[idx % colors.length],
+                        opacity: 0.7,
+                        line: {
+                            color: colors[idx % colors.length],
+                            width: 2
+                        }
+                    },
+                    showlegend: false
+                });
+            });
+            
+            // Highlight next merge points in red
+            if (hierarchicalData.nextMerge) {
+                const nextMerge = hierarchicalData.nextMerge;
+                const cluster1 = hierarchicalData.currentClusters.find(c => c.id === nextMerge.cluster1);
+                const cluster2 = hierarchicalData.currentClusters.find(c => c.id === nextMerge.cluster2);
+                
+                if (cluster1) {
+                    traces2D.push({
+                        x: cluster1.points.map(p => p[0]),
+                        y: cluster1.points.map(p => p[1]),
+                        mode: 'markers',
+                        type: 'scatter',
+                        name: 'Next Merge',
+                        marker: {
+                            size: 14,
+                            color: 'rgba(0,0,0,0)',
+                            line: {
+                                color: '#FF0000',
+                                width: 3
+                            }
+                        },
+                        showlegend: false
+                    });
+                }
+                
+                if (cluster2) {
+                    traces2D.push({
+                        x: cluster2.points.map(p => p[0]),
+                        y: cluster2.points.map(p => p[1]),
+                        mode: 'markers',
+                        type: 'scatter',
+                        name: 'Next Merge',
+                        marker: {
+                            size: 14,
+                            color: 'rgba(0,0,0,0)',
+                            line: {
+                                color: '#FF0000',
+                                width: 3
+                            }
+                        },
+                        showlegend: false
+                    });
+                }
+            }
+            
+            const layout2D = {
+                title: `2D Data - ${hierarchicalData.currentClusters.length} clusters${hierarchicalData.nextMerge ? ' (Next merge highlighted)' : ''}`,
+                xaxis: { title: 'X', range: [0, 10] },
+                yaxis: { title: 'Y', range: [0, 10] },
+                showlegend: false,
+                hovermode: 'closest',
+                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                paper_bgcolor: 'transparent',
+                font: { color: getTextColor() },
+                margin: { t: 40, b: 40, l: 40, r: 20 }
+            };
+            
+            Plotly.newPlot('hierarchical-2d-plot', traces2D, layout2D, {responsive: true});
+            
+            // Plot dendrogram showing completed merges
+            plotPartialDendrogram();
+        }
+
+        function plotPartialDendrogram() {
+            const n = hierarchicalData.points.length;
+            const clusterHeights = {};
+            
+            hierarchicalData.completedMerges.forEach(merge => {
+                clusterHeights[merge.newId] = merge.distance;
+            });
+            
+            const positions = {};
+            for (let i = 0; i < n; i++) {
+                positions[i] = i * 2;
+            }
+            
+            function getXPosition(clusterId) {
+                if (positions[clusterId] !== undefined) {
+                    return positions[clusterId];
+                }
+                
+                const merge = hierarchicalData.completedMerges.find(m => m.newId === clusterId);
+                if (!merge) return 0;
+                
+                const leftX = getXPosition(merge.cluster1);
+                const rightX = getXPosition(merge.cluster2);
+                positions[clusterId] = (leftX + rightX) / 2;
+                return positions[clusterId];
+            }
+            
+            hierarchicalData.completedMerges.forEach(merge => {
+                getXPosition(merge.newId);
+            });
+            
+            const traces = [];
+            
+            // Draw completed merges
+            hierarchicalData.completedMerges.forEach((merge, idx) => {
+                const x1 = positions[merge.cluster1];
+                const x2 = positions[merge.cluster2];
+                const y1 = clusterHeights[merge.cluster1] || 0;
+                const y2 = clusterHeights[merge.cluster2] || 0;
+                const yMerge = merge.distance;
+                
+                traces.push({
+                    x: [x1, x1],
+                    y: [y1, yMerge],
+                    mode: 'lines',
+                    line: { color: '#FFE55C', width: 3 },
+                    showlegend: false,
+                    hoverinfo: 'skip'
+                });
+                
+                traces.push({
+                    x: [x2, x2],
+                    y: [y2, yMerge],
+                    mode: 'lines',
+                    line: { color: '#FFE55C', width: 3 },
+                    showlegend: false,
+                    hoverinfo: 'skip'
+                });
+                
+                traces.push({
+                    x: [x1, x2],
+                    y: [yMerge, yMerge],
+                    mode: 'lines',
+                    line: { color: '#FFE55C', width: 3 },
+                    showlegend: false,
+                    hoverinfo: 'skip'
+                });
+                
+                traces.push({
+                    x: [(x1 + x2) / 2],
+                    y: [yMerge],
+                    mode: 'markers',
+                    marker: {
+                        size: 8,
+                        color: '#FF6B6B',
+                        symbol: 'circle'
+                    },
+                    showlegend: false,
+                    hovertemplate: `Merge ${idx + 1}<br>Distance: ${yMerge.toFixed(2)}<extra></extra>`
+                });
+            });
+            
+            // Add leaf points
+            traces.push({
+                x: Object.keys(positions).filter(k => parseInt(k) < n).map(k => positions[k]),
+                y: new Array(n).fill(0),
+                mode: 'markers+text',
+                marker: {
+                    size: 10,
+                    color: '#4ECDC4',
+                    symbol: 'circle',
+                    line: { color: getTextColor(), width: 1 }
+                },
+                text: Array.from({length: n}, (_, i) => `P${i}`),
+                textposition: 'bottom center',
+                textfont: { size: 8 },
+                name: 'Data Points',
+                showlegend: false,
+                hovertemplate: 'Point %{text}<extra></extra>'
+            });
+            
+            const layout = {
+                title: `Dendrogram - Step ${hierarchicalData.step}/${hierarchicalData.allMerges.length}`,
+                xaxis: { 
+                    title: 'Data Points', 
+                    showgrid: false,
+                    zeroline: false,
+                    showticklabels: false
+                },
+                yaxis: { 
+                    title: 'Distance',
+                    zeroline: true
+                },
+                showlegend: false,
+                hovermode: 'closest',
+                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                paper_bgcolor: 'transparent',
+                font: { color: getTextColor() },
+                margin: { t: 40, b: 50, l: 40, r: 20 }
+            };
+            
+            Plotly.newPlot('hierarchical-dendrogram-plot', traces, layout, {responsive: true});
+        }
+
+        function plotClusters() {
+            const colors = ['#FF6B6B', '#51CF66', '#3498DB', '#FFA726', '#9B59B6', 
+                          '#F7DC6F', '#FF6B9D', '#17A2B8'];
+            
+            // Get unique cluster IDs
+            const uniqueClusters = [...new Set(hierarchicalData.clusters)];
+            const clusterIdMap = {};
+            uniqueClusters.forEach((id, idx) => {
+                clusterIdMap[id] = idx;
+            });
+            
+            const traces = [];
+            
+            // Plot each cluster
+            for (let clusterId of uniqueClusters) {
+                const clusterPoints = hierarchicalData.points.filter((p, idx) => 
+                    hierarchicalData.clusters[idx] === clusterId
+                );
+                
+                const colorIdx = clusterIdMap[clusterId];
+                
+                traces.push({
+                    x: clusterPoints.map(p => p[0]),
+                    y: clusterPoints.map(p => p[1]),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: `Cluster ${colorIdx + 1}`,
+                    marker: {
+                        size: 10,
+                        color: colors[colorIdx % colors.length],
+                        opacity: 0.7
+                    }
+                });
+            }
+            
+            const layout = {
+                title: `Cut into ${uniqueClusters.length} Clusters`,
+                xaxis: { title: 'X', range: [0, 10] },
+                yaxis: { title: 'Y', range: [0, 10] },
+                showlegend: true,
+                hovermode: 'closest',
+                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                paper_bgcolor: 'transparent',
+                font: { color: getTextColor() },
+                margin: { t: 40, b: 40, l: 40, r: 20 }
+            };
+            
+            Plotly.newPlot('hierarchical-2d-plot', traces, layout, {responsive: true});
+            
+            // Keep dendrogram showing completed merges
+            plotPartialDendrogram();
+        }
+
         // Initialize on page load
         window.addEventListener('load', () => {
             console.log('Unsupervised Learning Visualization Ready');
@@ -1158,6 +1763,13 @@
             // Refresh plots with new theme colors
             if (kmeansData.points.length > 0) {
                 plotKMeans();
+            }
+            if (hierarchicalData.points.length > 0) {
+                if (hierarchicalData.clusters.length > 0) {
+                    plotClusters();
+                } else {
+                    plotHierarchicalState();
+                }
             }
             if (pcaData.original.length > 0) {
                 if (pcaData.components.length > 0) {
