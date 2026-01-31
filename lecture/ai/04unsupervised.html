@@ -1099,7 +1099,8 @@
             transformed: [],
             components: [],
             explainedVariance: [],
-            mean: []
+            mean: [],
+            is3D: false
         };
 
         function generatePCAData() {
@@ -1110,6 +1111,7 @@
             const points = [];
             
             if (dataset === 'ellipse') {
+                pcaData.is3D = false;
                 // Generate elliptical data
                 for (let i = 0; i < n; i++) {
                     const angle = Math.random() * 2 * Math.PI;
@@ -1119,6 +1121,7 @@
                     points.push([x, y]);
                 }
             } else if (dataset === 'diagonal') {
+                pcaData.is3D = false;
                 // Generate diagonal line with noise
                 for (let i = 0; i < n; i++) {
                     const t = (Math.random() - 0.5) * 6;
@@ -1127,6 +1130,7 @@
                     points.push([x, y]);
                 }
             } else if (dataset === 'mixed') {
+                pcaData.is3D = false;
                 // High variance in X, low in Y
                 for (let i = 0; i < n; i++) {
                     const x = (Math.random() - 0.5) * 6;
@@ -1134,14 +1138,23 @@
                     points.push([x, y]);
                 }
             } else if (dataset === '3d') {
-                // 3D data projected to 2D
+                // 3D data with clear structure - banana/arc shape mostly in a plane
+                pcaData.is3D = true;
                 for (let i = 0; i < n; i++) {
-                    const t = (Math.random() - 0.5) * 4;
-                    const s = (Math.random() - 0.5) * 2;
-                    const x = t + s + (Math.random() - 0.5) * noise;
-                    const y = 0.5 * t - s + (Math.random() - 0.5) * noise;
-                    points.push([x, y]);
+                    // Create a curved structure along an arc
+                    const t = (i / n) * Math.PI * 1.5 - Math.PI * 0.75; // Arc from -135° to 135°
+                    const radius = 3;
+                    
+                    // Main structure in XY plane (high variance)
+                    const x = radius * Math.cos(t) + (Math.random() - 0.5) * noise * 0.5;
+                    const y = radius * Math.sin(t) * 0.6 + (Math.random() - 0.5) * noise * 0.5; // Squash Y
+                    // Small variance in Z (this will be the "lost" dimension)
+                    const z = (Math.random() - 0.5) * 0.8 + Math.sin(t * 2) * 0.3; // Small wobble
+                    
+                    points.push([x, y, z]);
                 }
+            } else {
+                pcaData.is3D = false;
             }
             
             pcaData.original = points;
@@ -1163,108 +1176,254 @@
             const data = pcaData.original;
             const n = data.length;
             
-            // Calculate mean
-            const meanX = data.reduce((sum, p) => sum + p[0], 0) / n;
-            const meanY = data.reduce((sum, p) => sum + p[1], 0) / n;
-            pcaData.mean = [meanX, meanY];
-            
-            // Center the data
-            const centered = data.map(p => [p[0] - meanX, p[1] - meanY]);
-            
-            // Calculate covariance matrix
-            let covXX = 0, covXY = 0, covYY = 0;
-            centered.forEach(p => {
-                covXX += p[0] * p[0];
-                covXY += p[0] * p[1];
-                covYY += p[1] * p[1];
-            });
-            covXX /= n;
-            covXY /= n;
-            covYY /= n;
-            
-            // Calculate eigenvalues and eigenvectors analytically for 2x2 matrix
-            const trace = covXX + covYY;
-            const det = covXX * covYY - covXY * covXY;
-            
-            const eigenvalue1 = trace / 2 + Math.sqrt(trace * trace / 4 - det);
-            const eigenvalue2 = trace / 2 - Math.sqrt(trace * trace / 4 - det);
-            
-            // Eigenvector for first eigenvalue
-            let v1x, v1y;
-            if (Math.abs(covXY) > 1e-10) {
-                v1x = eigenvalue1 - covYY;
-                v1y = covXY;
+            if (pcaData.is3D) {
+                // Handle 3D data
+                // Calculate mean
+                const meanX = data.reduce((sum, p) => sum + p[0], 0) / n;
+                const meanY = data.reduce((sum, p) => sum + p[1], 0) / n;
+                const meanZ = data.reduce((sum, p) => sum + p[2], 0) / n;
+                pcaData.mean = [meanX, meanY, meanZ];
+                
+                // Center the data
+                const centered = data.map(p => [p[0] - meanX, p[1] - meanY, p[2] - meanZ]);
+                
+                // Calculate 3x3 covariance matrix
+                let cov = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+                centered.forEach(p => {
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = 0; j < 3; j++) {
+                            cov[i][j] += p[i] * p[j];
+                        }
+                    }
+                });
+                cov = cov.map(row => row.map(val => val / n));
+                
+                // Simple power iteration to find top 2 eigenvectors
+                // First eigenvector
+                let v1 = [1, 1, 1];
+                for (let iter = 0; iter < 100; iter++) {
+                    let newV = [0, 0, 0];
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = 0; j < 3; j++) {
+                            newV[i] += cov[i][j] * v1[j];
+                        }
+                    }
+                    const norm = Math.sqrt(newV.reduce((sum, v) => sum + v * v, 0));
+                    v1 = newV.map(v => v / norm);
+                }
+                
+                // Eigenvalue 1
+                let ev1 = 0;
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        ev1 += v1[i] * cov[i][j] * v1[j];
+                    }
+                }
+                
+                // Deflate matrix for second eigenvector
+                let cov2 = cov.map((row, i) => row.map((val, j) => val - ev1 * v1[i] * v1[j]));
+                
+                // Second eigenvector
+                let v2 = [1, -1, 0.5];
+                for (let iter = 0; iter < 100; iter++) {
+                    let newV = [0, 0, 0];
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = 0; j < 3; j++) {
+                            newV[i] += cov2[i][j] * v2[j];
+                        }
+                    }
+                    const norm = Math.sqrt(newV.reduce((sum, v) => sum + v * v, 0));
+                    if (norm > 1e-10) {
+                        v2 = newV.map(v => v / norm);
+                    }
+                }
+                
+                // Eigenvalue 2
+                let ev2 = 0;
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        ev2 += v2[i] * cov2[i][j] * v2[j];
+                    }
+                }
+                
+                pcaData.components = [v1, v2];
+                
+                // Calculate explained variance
+                const totalVar = cov[0][0] + cov[1][1] + cov[2][2]; // Trace
+                pcaData.explainedVariance = [
+                    (ev1 / totalVar * 100).toFixed(1),
+                    (ev2 / totalVar * 100).toFixed(1)
+                ];
+                
+                // Project 3D data to 2D
+                pcaData.transformed = centered.map(p => [
+                    p[0] * v1[0] + p[1] * v1[1] + p[2] * v1[2],
+                    p[0] * v2[0] + p[1] * v2[1] + p[2] * v2[2]
+                ]);
+                
+                plotPCA();
+                
+                document.getElementById('pca-status').innerHTML = 
+                    `<strong>PCA abgeschlossen!</strong> PC1: ${pcaData.explainedVariance[0]}%, PC2: ${pcaData.explainedVariance[1]}% (3D → 2D Reduktion)`;
+                
+                // Update info box
+                document.getElementById('pca-info').innerHTML = `
+                    <h4>PCA Ergebnisse (3D → 2D)</h4>
+                    <p><strong>PC1 erklärt:</strong> ${pcaData.explainedVariance[0]}% der Varianz</p>
+                    <p><strong>PC2 erklärt:</strong> ${pcaData.explainedVariance[1]}% der Varianz</p>
+                    <p><strong>PC1 Richtung:</strong> [${v1[0].toFixed(3)}, ${v1[1].toFixed(3)}, ${v1[2].toFixed(3)}]</p>
+                    <p><strong>PC2 Richtung:</strong> [${v2[0].toFixed(3)}, ${v2[1].toFixed(3)}, ${v2[2].toFixed(3)}]</p>
+                `;
             } else {
-                v1x = 1;
-                v1y = 0;
+                // Handle 2D data (existing code)
+                // Calculate mean
+                const meanX = data.reduce((sum, p) => sum + p[0], 0) / n;
+                const meanY = data.reduce((sum, p) => sum + p[1], 0) / n;
+                pcaData.mean = [meanX, meanY];
+                
+                // Center the data
+                const centered = data.map(p => [p[0] - meanX, p[1] - meanY]);
+                
+                // Calculate covariance matrix
+                let covXX = 0, covXY = 0, covYY = 0;
+                centered.forEach(p => {
+                    covXX += p[0] * p[0];
+                    covXY += p[0] * p[1];
+                    covYY += p[1] * p[1];
+                });
+                covXX /= n;
+                covXY /= n;
+                covYY /= n;
+                
+                // Calculate eigenvalues and eigenvectors analytically for 2x2 matrix
+                const trace = covXX + covYY;
+                const det = covXX * covYY - covXY * covXY;
+                
+                const eigenvalue1 = trace / 2 + Math.sqrt(trace * trace / 4 - det);
+                const eigenvalue2 = trace / 2 - Math.sqrt(trace * trace / 4 - det);
+                
+                // Eigenvector for first eigenvalue
+                let v1x, v1y;
+                if (Math.abs(covXY) > 1e-10) {
+                    v1x = eigenvalue1 - covYY;
+                    v1y = covXY;
+                } else {
+                    v1x = 1;
+                    v1y = 0;
+                }
+                const norm1 = Math.sqrt(v1x * v1x + v1y * v1y);
+                v1x /= norm1;
+                v1y /= norm1;
+                
+                // Second eigenvector (orthogonal)
+                const v2x = -v1y;
+                const v2y = v1x;
+                
+                pcaData.components = [
+                    [v1x, v1y],
+                    [v2x, v2y]
+                ];
+                
+                // Calculate explained variance
+                const totalVar = eigenvalue1 + eigenvalue2;
+                pcaData.explainedVariance = [
+                    (eigenvalue1 / totalVar * 100).toFixed(1),
+                    (eigenvalue2 / totalVar * 100).toFixed(1)
+                ];
+                
+                // Transform data to PC space
+                pcaData.transformed = centered.map(p => [
+                    p[0] * v1x + p[1] * v1y,
+                    p[0] * v2x + p[1] * v2y
+                ]);
+                
+                plotPCA();
+                
+                document.getElementById('pca-status').innerHTML = 
+                    `<strong>PCA abgeschlossen!</strong> PC1: ${pcaData.explainedVariance[0]}%, PC2: ${pcaData.explainedVariance[1]}%`;
+                
+                // Update info box
+                document.getElementById('pca-info').innerHTML = `
+                    <h4>PCA Ergebnisse</h4>
+                    <p><strong>PC1 erklärt:</strong> ${pcaData.explainedVariance[0]}% der Varianz</p>
+                    <p><strong>PC2 erklärt:</strong> ${pcaData.explainedVariance[1]}% der Varianz</p>
+                    <p><strong>PC1 Richtung:</strong> [${pcaData.components[0][0].toFixed(3)}, ${pcaData.components[0][1].toFixed(3)}]</p>
+                    <p><strong>PC2 Richtung:</strong> [${pcaData.components[1][0].toFixed(3)}, ${pcaData.components[1][1].toFixed(3)}]</p>
+                `;
             }
-            const norm1 = Math.sqrt(v1x * v1x + v1y * v1y);
-            v1x /= norm1;
-            v1y /= norm1;
-            
-            // Second eigenvector (orthogonal)
-            const v2x = -v1y;
-            const v2y = v1x;
-            
-            pcaData.components = [
-                [v1x, v1y],
-                [v2x, v2y]
-            ];
-            
-            // Calculate explained variance
-            const totalVar = eigenvalue1 + eigenvalue2;
-            pcaData.explainedVariance = [
-                (eigenvalue1 / totalVar * 100).toFixed(1),
-                (eigenvalue2 / totalVar * 100).toFixed(1)
-            ];
-            
-            // Transform data to PC space
-            pcaData.transformed = centered.map(p => [
-                p[0] * v1x + p[1] * v1y,
-                p[0] * v2x + p[1] * v2y
-            ]);
-            
-            plotPCA();
-            
-            document.getElementById('pca-status').innerHTML = 
-                `<strong>PCA abgeschlossen!</strong> PC1: ${pcaData.explainedVariance[0]}%, PC2: ${pcaData.explainedVariance[1]}%`;
-            
-            // Update info box
-            document.getElementById('pca-info').innerHTML = `
-                <h4>PCA Ergebnisse</h4>
-                <p><strong>PC1 erklärt:</strong> ${pcaData.explainedVariance[0]}% der Varianz</p>
-                <p><strong>PC2 erklärt:</strong> ${pcaData.explainedVariance[1]}% der Varianz</p>
-                <p><strong>PC1 Richtung:</strong> [${pcaData.components[0][0].toFixed(3)}, ${pcaData.components[0][1].toFixed(3)}]</p>
-                <p><strong>PC2 Richtung:</strong> [${pcaData.components[1][0].toFixed(3)}, ${pcaData.components[1][1].toFixed(3)}]</p>
-            `;
         }
 
         function plotOriginalData() {
-            const trace = {
-                x: pcaData.original.map(p => p[0]),
-                y: pcaData.original.map(p => p[1]),
-                mode: 'markers',
-                type: 'scatter',
-                name: 'Data Points',
-                marker: {
-                    size: 8,
-                    color: '#4ECDC4',
-                    opacity: 0.6
-                }
-            };
-            
-            const layout = {
-                title: 'Originaldaten',
-                xaxis: { title: 'X' },
-                yaxis: { title: 'Y', scaleanchor: 'x' },
-                showlegend: true,
-                hovermode: 'closest',
-                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
-                paper_bgcolor: 'transparent',
-                font: { color: getTextColor() }
-            };
-            
-            Plotly.newPlot('pca-plot', [trace], layout, {responsive: true});
+            if (pcaData.is3D) {
+                // Reset the container structure if it was modified by plotPCA
+                const pcaPlot = document.getElementById('pca-plot');
+                pcaPlot.innerHTML = '';
+                
+                // Plot 3D data with rotation
+                const trace = {
+                    x: pcaData.original.map(p => p[0]),
+                    y: pcaData.original.map(p => p[1]),
+                    z: pcaData.original.map(p => p[2]),
+                    mode: 'markers',
+                    type: 'scatter3d',
+                    name: 'Datenpunkte',
+                    marker: {
+                        size: 4,
+                        color: '#4ECDC4',
+                        opacity: 0.8
+                    }
+                };
+                
+                const layout = {
+                    title: 'Originaldaten (3D - rotierbar)',
+                    scene: {
+                        xaxis: { title: 'X' },
+                        yaxis: { title: 'Y' },
+                        zaxis: { title: 'Z' },
+                        camera: {
+                            eye: { x: 1.5, y: 1.5, z: 1.3 }
+                        },
+                        bgcolor: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    showlegend: true,
+                    hovermode: 'closest',
+                    paper_bgcolor: 'transparent',
+                    font: { color: getTextColor() }
+                };
+                
+                Plotly.newPlot('pca-plot', [trace], layout, {responsive: true});
+            } else {
+                // Reset the container structure if it was modified by plotPCA
+                const pcaPlot = document.getElementById('pca-plot');
+                pcaPlot.innerHTML = '';
+                
+                // Plot 2D data
+                const trace = {
+                    x: pcaData.original.map(p => p[0]),
+                    y: pcaData.original.map(p => p[1]),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: 'Datenpunkte',
+                    marker: {
+                        size: 8,
+                        color: '#4ECDC4',
+                        opacity: 0.6
+                    }
+                };
+                
+                const layout = {
+                    title: 'Originaldaten',
+                    xaxis: { title: 'X' },
+                    yaxis: { title: 'Y', scaleanchor: 'x' },
+                    showlegend: true,
+                    hovermode: 'closest',
+                    plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    paper_bgcolor: 'transparent',
+                    font: { color: getTextColor() }
+                };
+                
+                Plotly.newPlot('pca-plot', [trace], layout, {responsive: true});
+            }
         }
 
         function showOriginalData() {
@@ -1276,80 +1435,228 @@
         }
 
         function plotPCA() {
-            const traces = [];
-            
-            // Plot centered data
-            const centered = pcaData.original.map(p => [
-                p[0] - pcaData.mean[0],
-                p[1] - pcaData.mean[1]
-            ]);
-            
-            traces.push({
-                x: centered.map(p => p[0]),
-                y: centered.map(p => p[1]),
-                mode: 'markers',
-                type: 'scatter',
-                name: 'Data Points',
-                marker: {
-                    size: 8,
-                    color: '#4ECDC4',
-                    opacity: 0.6
+            if (pcaData.is3D) {
+                // For 3D data, create a container with two plots side by side
+                const pcaPlot = document.getElementById('pca-plot');
+                pcaPlot.innerHTML = `
+                    <div style="display: flex; gap: 1rem; height: 600px;">
+                        <div id="pca-3d-plot" style="flex: 1;"></div>
+                        <div id="pca-2d-plot" style="flex: 1;"></div>
+                    </div>
+                `;
+                
+                // 3D plot with original data and PC vectors
+                const traces3D = [];
+                
+                // Original 3D data points
+                traces3D.push({
+                    x: pcaData.original.map(p => p[0]),
+                    y: pcaData.original.map(p => p[1]),
+                    z: pcaData.original.map(p => p[2]),
+                    mode: 'markers',
+                    type: 'scatter3d',
+                    name: 'Datenpunkte',
+                    marker: {
+                        size: 4,
+                        color: '#4ECDC4',
+                        opacity: 0.8
+                    }
+                });
+                
+                // PC1 vector (scaled)
+                const scale = 4;
+                const v1 = pcaData.components[0];
+                traces3D.push({
+                    x: [0, v1[0] * scale],
+                    y: [0, v1[1] * scale],
+                    z: [0, v1[2] * scale],
+                    mode: 'lines+markers',
+                    type: 'scatter3d',
+                    name: `PC1 (${pcaData.explainedVariance[0]}%)`,
+                    line: {
+                        color: '#FFE55C',
+                        width: 8
+                    },
+                    marker: {
+                        size: [4, 8],
+                        color: '#FFE55C'
+                    }
+                });
+                
+                // PC2 vector
+                const v2 = pcaData.components[1];
+                traces3D.push({
+                    x: [0, v2[0] * scale],
+                    y: [0, v2[1] * scale],
+                    z: [0, v2[2] * scale],
+                    mode: 'lines+markers',
+                    type: 'scatter3d',
+                    name: `PC2 (${pcaData.explainedVariance[1]}%)`,
+                    line: {
+                        color: '#FF6B6B',
+                        width: 8
+                    },
+                    marker: {
+                        size: [4, 8],
+                        color: '#FF6B6B'
+                    }
+                });
+                
+                // Add semi-transparent plane showing PC1-PC2 projection plane
+                const planeSize = 5;
+                const planeX = [];
+                const planeY = [];
+                const planeZ = [];
+                for (let i = -1; i <= 1; i += 0.5) {
+                    for (let j = -1; j <= 1; j += 0.5) {
+                        planeX.push(v1[0] * i * planeSize + v2[0] * j * planeSize);
+                        planeY.push(v1[1] * i * planeSize + v2[1] * j * planeSize);
+                        planeZ.push(v1[2] * i * planeSize + v2[2] * j * planeSize);
+                    }
                 }
-            });
-            
-            // Plot principal components as arrows
-            const scale = 3;
-            
-            // PC1
-            traces.push({
-                x: [0, pcaData.components[0][0] * scale],
-                y: [0, pcaData.components[0][1] * scale],
-                mode: 'lines+markers',
-                type: 'scatter',
-                name: `PC1 (${pcaData.explainedVariance[0]}%)`,
-                line: {
-                    color: '#FFE55C',
-                    width: 3
-                },
-                marker: {
-                    size: [0, 12],
-                    symbol: ['circle', 'arrow'],
-                    angleref: 'previous',
-                    color: '#FFE55C'
-                }
-            });
-            
-            // PC2
-            traces.push({
-                x: [0, pcaData.components[1][0] * scale],
-                y: [0, pcaData.components[1][1] * scale],
-                mode: 'lines+markers',
-                type: 'scatter',
-                name: `PC2 (${pcaData.explainedVariance[1]}%)`,
-                line: {
-                    color: '#FF6B6B',
-                    width: 3
-                },
-                marker: {
-                    size: [0, 12],
-                    symbol: ['circle', 'arrow'],
-                    angleref: 'previous',
-                    color: '#FF6B6B'
-                }
-            });
-            
-            const layout = {
-                title: 'Principal Component Analysis',
-                xaxis: { title: 'X (zentriert)', zeroline: true },
-                yaxis: { title: 'Y (zentriert)', scaleanchor: 'x', zeroline: true },
-                showlegend: true,
-                hovermode: 'closest',
-                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
-                paper_bgcolor: 'transparent',
-                font: { color: getTextColor() }
-            };
-            
-            Plotly.newPlot('pca-plot', traces, layout, {responsive: true});
+                
+                traces3D.push({
+                    x: planeX,
+                    y: planeY,
+                    z: planeZ,
+                    mode: 'markers',
+                    type: 'scatter3d',
+                    name: 'Projektionsebene',
+                    marker: {
+                        size: 2,
+                        color: '#FFE55C',
+                        opacity: 0.15
+                    },
+                    showlegend: false
+                });
+                
+                const layout3D = {
+                    title: '3D Originaldaten mit PC-Vektoren',
+                    scene: {
+                        xaxis: { title: 'X' },
+                        yaxis: { title: 'Y' },
+                        zaxis: { title: 'Z' },
+                        camera: {
+                            eye: { x: 1.5, y: 1.5, z: 1.3 }
+                        },
+                        bgcolor: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    showlegend: true,
+                    legend: { x: 0, y: 1 },
+                    hovermode: 'closest',
+                    paper_bgcolor: 'transparent',
+                    font: { color: getTextColor() },
+                    margin: { l: 0, r: 0, t: 40, b: 0 }
+                };
+                
+                Plotly.newPlot('pca-3d-plot', traces3D, layout3D, {responsive: true});
+                
+                // 2D projection plot
+                const traces2D = [];
+                
+                traces2D.push({
+                    x: pcaData.transformed.map(p => p[0]),
+                    y: pcaData.transformed.map(p => p[1]),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: '2D Projektion',
+                    marker: {
+                        size: 6,
+                        color: '#4ECDC4',
+                        opacity: 0.6
+                    }
+                });
+                
+                const layout2D = {
+                    title: '2D Projektion (Hauptstruktur erhalten)',
+                    xaxis: { title: `PC1 (${pcaData.explainedVariance[0]}%)`, zeroline: true },
+                    yaxis: { title: `PC2 (${pcaData.explainedVariance[1]}%)`, scaleanchor: 'x', zeroline: true },
+                    showlegend: false,
+                    hovermode: 'closest',
+                    plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    paper_bgcolor: 'transparent',
+                    font: { color: getTextColor() },
+                    margin: { l: 50, r: 20, t: 40, b: 50 }
+                };
+                
+                Plotly.newPlot('pca-2d-plot', traces2D, layout2D, {responsive: true});
+            } else {
+                // For 2D data, show centered data with component vectors
+                const traces = [];
+                
+                // Plot centered data
+                const centered = pcaData.original.map(p => [
+                    p[0] - pcaData.mean[0],
+                    p[1] - pcaData.mean[1]
+                ]);
+                
+                traces.push({
+                    x: centered.map(p => p[0]),
+                    y: centered.map(p => p[1]),
+                    mode: 'markers',
+                    type: 'scatter',
+                    name: 'Datenpunkte',
+                    marker: {
+                        size: 8,
+                        color: '#4ECDC4',
+                        opacity: 0.6
+                    }
+                });
+                
+                // Plot principal components as arrows
+                const scale = 3;
+                
+                // PC1
+                traces.push({
+                    x: [0, pcaData.components[0][0] * scale],
+                    y: [0, pcaData.components[0][1] * scale],
+                    mode: 'lines+markers',
+                    type: 'scatter',
+                    name: `PC1 (${pcaData.explainedVariance[0]}%)`,
+                    line: {
+                        color: '#FFE55C',
+                        width: 3
+                    },
+                    marker: {
+                        size: [0, 12],
+                        symbol: ['circle', 'arrow'],
+                        angleref: 'previous',
+                        color: '#FFE55C'
+                    }
+                });
+                
+                // PC2
+                traces.push({
+                    x: [0, pcaData.components[1][0] * scale],
+                    y: [0, pcaData.components[1][1] * scale],
+                    mode: 'lines+markers',
+                    type: 'scatter',
+                    name: `PC2 (${pcaData.explainedVariance[1]}%)`,
+                    line: {
+                        color: '#FF6B6B',
+                        width: 3
+                    },
+                    marker: {
+                        size: [0, 12],
+                        symbol: ['circle', 'arrow'],
+                        angleref: 'previous',
+                        color: '#FF6B6B'
+                    }
+                });
+                
+                const layout = {
+                    title: 'Principal Component Analysis',
+                    xaxis: { title: 'X (zentriert)', zeroline: true },
+                    yaxis: { title: 'Y (zentriert)', scaleanchor: 'x', zeroline: true },
+                    showlegend: true,
+                    hovermode: 'closest',
+                    plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    paper_bgcolor: 'transparent',
+                    font: { color: getTextColor() }
+                };
+                
+                Plotly.newPlot('pca-plot', traces, layout, {responsive: true});
+            }
         }
 
         // ============================================
