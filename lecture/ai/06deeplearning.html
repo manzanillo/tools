@@ -7,27 +7,52 @@
     <link rel="stylesheet" href="../../shared-styles.css">
     <script src="https://cdn.plot.ly/plotly-2.28.0.min.js"></script>
     <style>
-        .network-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
         .network-viz {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
             padding: 2rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 2rem;
+        }
+
+        .decision-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        @media (min-width: 1200px) {
+            .decision-container {
+                grid-template-columns: 2fr 1fr;
+            }
         }
 
         .weight-controls {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
-            padding: 1.5rem;
+            padding: 0;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
             max-height: 600px;
+        }
+
+        .weight-controls h3 {
+            margin: 0;
+            padding: 1.5rem 1.5rem 1rem 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .weight-controls-scroll {
             overflow-y: auto;
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            flex: 1;
+        }
+
+        .weight-controls .btn-primary {
+            margin: 1rem 1.5rem 1.5rem 1.5rem;
+            flex-shrink: 0;
         }
 
         .weight-group {
@@ -80,10 +105,6 @@
             height: 400px;
             background: rgba(255, 255, 255, 0.02);
             border-radius: 8px;
-        }
-
-        .decision-plot {
-            margin-top: 2rem;
         }
 
         .sample-controls {
@@ -162,52 +183,55 @@
                 </div>
 
                 <div class="info-box" style="margin-top: 1rem;">
-                    <h4>Netzwerk-Architektur</h4>
+                 <!--   <h4>Netzwerk-Architektur</h4>
                     <p><strong>Input Layer:</strong> 2 Neuronen (Proteine, Ballaststoffe)</p>
                     <p><strong>Hidden Layer:</strong> 3 Neuronen mit Aktivierungsfunktion</p>
-                    <p><strong>Output Layer:</strong> 2 Neuronen (Gemüse, Obst)</p>
-                    <p><strong>Gesamt:</strong> 12 Gewichte (w₁-w₁₂) + 5 Biases (b₁-b₅)</p>
+               <p><strong>Output Layer:</strong> 1 Neuron (Binär-Klassifikation)</p>
+                -->         <p><strong>Ausgabe:</strong> Output > 0.5 → Obst, Output ≤ 0.5 → Gemüse</p>
+                <!--    <p><strong>Gesamt:</strong> 9 Gewichte (w₁-w₉) + 4 Biases (b₁-b₄)</p>-->
                 </div>
             </div>
 
-            <div class="network-container">
-                <div class="network-viz">
-                    <h3 style="margin-top: 0;">Netzwerk-Visualisierung</h3>
-                    <svg id="network-svg"></svg>
+            <div class="network-viz">
+                <h3 style="margin-top: 0;">Netzwerk-Visualisierung</h3>
+                <svg id="network-svg"></svg>
+            </div>
+
+            <div class="decision-container">
+                <div class="decision-plot">
+                    <h3>Entscheidungsgrenze</h3>
+                    <div id="decision-plot"></div>
                 </div>
 
                 <div class="weight-controls">
-                    <h3 style="margin-top: 0;">Gewichte & Biases</h3>
+                    <h3>Gewichte & Biases</h3>
                     
-                    <div class="weight-group">
-                        <h4>Input → Hidden Layer</h4>
-                        <div id="input-hidden-weights"></div>
+                    <div class="weight-controls-scroll">
+                        <div class="weight-group">
+                            <h4>Input → Hidden Layer</h4>
+                            <div id="input-hidden-weights"></div>
+                        </div>
+
+                        <div class="weight-group">
+                            <h4>Hidden Layer Biases</h4>
+                            <div id="hidden-biases"></div>
+                        </div>
+
+                        <div class="weight-group">
+                            <h4>Hidden → Output Layer</h4>
+                            <div id="hidden-output-weights"></div>
+                        </div>
+
+                        <div class="weight-group">
+                            <h4>Output Layer Biases</h4>
+                            <div id="output-biases"></div>
+                        </div>
                     </div>
 
-                    <div class="weight-group">
-                        <h4>Hidden Layer Biases</h4>
-                        <div id="hidden-biases"></div>
-                    </div>
-
-                    <div class="weight-group">
-                        <h4>Hidden → Output Layer</h4>
-                        <div id="hidden-output-weights"></div>
-                    </div>
-
-                    <div class="weight-group">
-                        <h4>Output Layer Biases</h4>
-                        <div id="output-biases"></div>
-                    </div>
-
-                    <button class="btn-primary" onclick="randomizeWeights()" style="width: 100%; margin-top: 1rem;">
+                    <button class="btn-primary" onclick="randomizeWeights()">
                         Gewichte randomisieren
                     </button>
                 </div>
-            </div>
-
-            <div class="decision-plot">
-                <h3>Entscheidungsgrenze</h3>
-                <div id="decision-plot"></div>
             </div>
         </div>
     </div>
@@ -254,12 +278,11 @@
             // Hidden biases
             b1: -1.5, b2: 0.5, b3: -0.3,
             
-            // Hidden to output weights (3 hidden × 2 outputs = 6 weights)
-            w7: 1.2, w8: -0.8, w9: 0.6,    // to o1 (Gemüse)
-            w10: -0.9, w11: 0.7, w12: -0.5, // to o2 (Obst)
+            // Hidden to output weights (3 hidden × 1 output = 3 weights)
+            w7: -0.9, w8: 0.7, w9: -0.5,    // to o1 (binary output)
             
-            // Output biases
-            b4: -0.5, b5: 0.3,
+            // Output bias
+            b4: 0.3,
             
             activation: 'sigmoid'
         };
@@ -296,18 +319,15 @@
             const h2 = activate(h2_in, act);
             const h3 = activate(h3_in, act);
             
-            // Output layer
+            // Output layer (single output)
             const o1_in = h1 * network.w7 + h2 * network.w8 + h3 * network.w9 + network.b4;
-            const o2_in = h1 * network.w10 + h2 * network.w11 + h3 * network.w12 + network.b5;
-            
             const o1 = activate(o1_in, act);
-            const o2 = activate(o2_in, act);
             
             return {
                 hidden: [h1, h2, h3],
                 hiddenRaw: [h1_in, h2_in, h3_in],
-                output: [o1, o2],
-                outputRaw: [o1_in, o2_in]
+                output: o1,
+                outputRaw: o1_in
             };
         }
 
@@ -334,18 +354,16 @@
             // Hidden to output
             const hiddenOutput = document.getElementById('hidden-output-weights');
             hiddenOutput.innerHTML = '';
-            for (let i = 7; i <= 12; i++) {
+            for (let i = 7; i <= 9; i++) {
                 const slider = createWeightSlider(`w${i}`, network[`w${i}`], -2, 2);
                 hiddenOutput.appendChild(slider);
             }
             
-            // Output biases
+            // Output bias
             const outputBiases = document.getElementById('output-biases');
             outputBiases.innerHTML = '';
-            for (let i = 4; i <= 5; i++) {
-                const slider = createWeightSlider(`b${i}`, network[`b${i}`], -2, 2);
-                outputBiases.appendChild(slider);
-            }
+            const slider = createWeightSlider('b4', network.b4, -2, 2);
+            outputBiases.appendChild(slider);
         }
 
         function createWeightSlider(name, value, min, max) {
@@ -360,7 +378,7 @@
             slider.type = 'range';
             slider.min = min;
             slider.max = max;
-            slider.step = 0.1;
+            slider.step = 0.05;
             slider.value = value;
             slider.id = `slider-${name}`;
             
@@ -444,38 +462,37 @@
                 }
             }
             
-            // Draw connections (hidden to output) with weight labels
-            for (let o = 0; o < 2; o++) {
-                for (let h = 0; h < 3; h++) {
-                    const weight = network[`w${weightIdx}`];
-                    const color = weight > 0 ? '#51CF66' : '#FF6B6B';
-                    const width_line = Math.abs(weight) * 2;
-                    
-                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                    line.setAttribute('x1', hiddenX);
-                    line.setAttribute('y1', hiddenY[h]);
-                    line.setAttribute('x2', outputX);
-                    line.setAttribute('y2', outputY[o]);
-                    line.setAttribute('stroke', color);
-                    line.setAttribute('stroke-width', width_line);
-                    line.setAttribute('opacity', '0.3');
-                    svg.appendChild(line);
-                    
-                    // Add weight label
-                    const midX = (hiddenX + outputX) / 2;
-                    const midY = (hiddenY[h] + outputY[o]) / 2;
-                    const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    labelText.setAttribute('x', midX);
-                    labelText.setAttribute('y', midY - 5);
-                    labelText.setAttribute('text-anchor', 'middle');
-                    labelText.setAttribute('fill', getTextColor());
-                    labelText.setAttribute('font-size', '9');
-                    labelText.setAttribute('font-weight', 'bold');
-                    labelText.textContent = `w${weightIdx}`;
-                    svg.appendChild(labelText);
-                    
-                    weightIdx++;
-                }
+            // Draw connections (hidden to output) with weight labels - single output
+            const outputYSingle = height / 2;
+            for (let h = 0; h < 3; h++) {
+                const weight = network[`w${weightIdx}`];
+                const color = weight > 0 ? '#51CF66' : '#FF6B6B';
+                const width_line = Math.abs(weight) * 2;
+                
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', hiddenX);
+                line.setAttribute('y1', hiddenY[h]);
+                line.setAttribute('x2', outputX);
+                line.setAttribute('y2', outputYSingle);
+                line.setAttribute('stroke', color);
+                line.setAttribute('stroke-width', width_line);
+                line.setAttribute('opacity', '0.3');
+                svg.appendChild(line);
+                
+                // Add weight label
+                const midX = (hiddenX + outputX) / 2;
+                const midY = (hiddenY[h] + outputYSingle) / 2;
+                const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                labelText.setAttribute('x', midX);
+                labelText.setAttribute('y', midY - 5);
+                labelText.setAttribute('text-anchor', 'middle');
+                labelText.setAttribute('fill', getTextColor());
+                labelText.setAttribute('font-size', '9');
+                labelText.setAttribute('font-weight', 'bold');
+                labelText.textContent = `w${weightIdx}`;
+                svg.appendChild(labelText);
+                
+                weightIdx++;
             }
             
             // Draw input nodes
@@ -487,13 +504,11 @@
                 drawNode(svg, hiddenX, hiddenY[i], 18, result.hidden[i].toFixed(2), `h${i+1}`, '#FFE55C');
             }
             
-            // Draw output nodes
-            const maxOutput = Math.max(result.output[0], result.output[1]);
-            const color1 = result.output[0] === maxOutput ? '#51CF66' : '#95A5A6';
-            const color2 = result.output[1] === maxOutput ? '#FFA726' : '#95A5A6';
+            // Draw output node (single)
+            const outputClass = result.output > 0.5 ? 'Obst' : 'Gemüse';
+            const outputColor = result.output > 0.5 ? '#FFA726' : '#51CF66';
             
-            drawNode(svg, outputX, outputY[0], 20, result.output[0].toFixed(2), 'Gemüse', color1);
-            drawNode(svg, outputX, outputY[1], 20, result.output[1].toFixed(2), 'Obst', color2);
+            drawNode(svg, outputX, outputYSingle, 20, result.output.toFixed(2), outputClass, outputColor);
         }
 
         function drawNode(svg, x, y, r, value, label, color) {
@@ -550,8 +565,8 @@
                     if (i === 0) proteins.push(protein);
                     
                     const result = forward(protein, fiber);
-                    // 1 if Gemüse (output[0]) > Obst (output[1]), else 0
-                    row.push(result.output[0] > result.output[1] ? 1 : 0);
+                    // Use continuous output value for smooth boundary
+                    row.push(result.output);
                 }
                 z.push(row);
             }
@@ -563,8 +578,9 @@
                 z: z,
                 type: 'contour',
                 colorscale: [
-                    [0, 'rgba(255, 107, 107, 0.3)'],  // Obst (red)
-                    [1, 'rgba(81, 207, 102, 0.3)']    // Gemüse (green)
+                    [0, 'rgba(81, 207, 102, 0.5)'],    // Gemüse (green) at 0
+                    [0.5, 'rgba(200, 200, 200, 0.2)'], // Neutral at 0.5
+                    [1, 'rgba(255, 167, 38, 0.5)']     // Obst (orange) at 1
                 ],
                 showscale: false,
                 contours: {
@@ -572,7 +588,7 @@
                     showlines: false,
                     start: 0,
                     end: 1,
-                    size: 1
+                    size: 0.1
                 },
                 hoverinfo: 'none'
             };
@@ -662,7 +678,7 @@
             const protein = parseFloat(document.getElementById('sample-protein').value);
             const fiber = parseFloat(document.getElementById('sample-fiber').value);
             const result = forward(protein, fiber);
-            const sampleColor = result.output[0] > result.output[1] ? '#51CF66' : '#FFA726';
+            const sampleColor = result.output > 0.5 ? '#FFA726' : '#51CF66';
             
             const sampleTrace = {
                 x: [protein],
@@ -711,12 +727,12 @@
         }
 
         function randomizeWeights() {
-            for (let i = 1; i <= 12; i++) {
+            for (let i = 1; i <= 9; i++) {
                 network[`w${i}`] = (Math.random() - 0.5) * 2;
                 document.getElementById(`slider-w${i}`).value = network[`w${i}`];
                 document.getElementById(`value-w${i}`).textContent = network[`w${i}`].toFixed(2);
             }
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 4; i++) {
                 network[`b${i}`] = (Math.random() - 0.5) * 2;
                 document.getElementById(`slider-b${i}`).value = network[`b${i}`];
                 document.getElementById(`value-b${i}`).textContent = network[`b${i}`].toFixed(2);
