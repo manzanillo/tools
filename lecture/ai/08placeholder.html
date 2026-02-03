@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Session 08 - Kein Applet</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Session 08 - Theoriesession ohne interaktives Applet">
+    <meta name="keywords" content="AI for the Web, machine learning, theory">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <style>
+        .placeholder-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .placeholder-icon {
+            font-size: 8rem;
+            margin-bottom: 2rem;
+            opacity: 0.6;
+        }
+
+        .placeholder-title {
+            font-size: 2.5rem;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .placeholder-text {
+            font-size: 1.2rem;
+            color: var(--secondary-text);
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .back-button {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 229, 92, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>Überblick</span>
+            </a>
+            <h1>Session 08</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="placeholder-container">
+            <div class="placeholder-icon">📚</div>
+            <h1 class="placeholder-title">Kein Applet verfügbar</h1>
+            <p class="placeholder-text">
+                Für diese Session gibt es kein interaktives Applet. 
+                Die Inhalte werden im Rahmen der Vorlesung vermittelt.
+            </p>
+            <a href="index.html" class="back-button">Zurück zur Übersicht</a>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        const root = document.documentElement;
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('ai-lecture-theme');
+            if (savedTheme) {
+                root.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = prefersDark ? 'dark' : 'light';
+                root.setAttribute('data-theme', theme);
+                updateThemeIcon(theme);
+            }
+        }
+
+        function updateThemeIcon(theme) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('ai-lecture-theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        initTheme();
+    </script>
+</body>
+</html>
