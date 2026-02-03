@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Regression - Lineare und Polynomiale Modelle</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Interaktive Visualisierungen für Regressionsmodelle. Erkunde lineare, polynomiale, Ridge und Lasso Regression mit Echtzeit-Visualisierungen.">
+    <meta name="keywords" content="machine learning, regression, linear regression, polynomial regression, ridge, lasso, regularization">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Regression - Lineare und Polynomiale Modelle">
+    <meta property="og:description"
+        content="Interaktive Visualisierungen für Regressionsmodelle. Erkunde verschiedene Regressionstechniken und Regularisierung.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/05regression.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <!-- External Libraries -->
+    <script src="https://unpkg.com/plotly.js@2.28.0/dist/plotly.min.js"></script>
+    
+    <style>
+        /* Tab Navigation */
+        .tabs-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            color: var(--secondary-text);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+
+        .tab-button.active {
+            background: rgba(255, 229, 92, 0.1);
+            color: var(--accent-color);
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-color);
+        }
+
+        .tab-content {
+            display: none;
+            padding-top: 1rem;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Layout */
+        .controls-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .controls-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .slider-container {
+            margin-bottom: 1rem;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .slider-value {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent-color);
+            color: black;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 229, 92, 0.3);
+        }
+
+        .info-box {
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid rgba(23, 162, 184, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-color);
+        }
+
+        .info-box h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--accent-color);
+        }
+
+        .info-box p {
+            margin: 0.25rem 0;
+        }
+
+        .metrics-box {
+            background: rgba(255, 229, 92, 0.1);
+            border: 1px solid rgba(255, 229, 92, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .metrics-box h4 {
+            margin: 0 0 0.75rem 0;
+            color: var(--accent-color);
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-name {
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        #regression-plot {
+            width: 100%;
+            min-height: 600px;
+        }
+
+        .plot-container {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .controls-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>Überblick</span>
+            </a>
+            <h1>Regression</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>📈 Regression</h1>
+            <p>Erkunde verschiedene Regressionsmodelle und deren Anpassung an kontinuierliche Daten</p>
+        </header>
+
+        <div class="tabs-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('linear')">
+                    Lineare Regression
+                </button>
+                <button class="tab-button" onclick="switchTab('polynomial')">
+                    Polynomiale Regression
+                </button>
+                <button class="tab-button" onclick="switchTab('regularization')">
+                    Regularisierung (Ridge/Lasso)
+                </button>
+            </div>
+        </div>
+
+        <!-- Linear Regression Tab -->
+        <div id="linear-tab" class="tab-content active">
+            <div class="controls-container">
+                <div class="controls-panel">
+                    <h3 style="margin-top: 0;">Lineare Regression</h3>
+                    
+                    <div class="control-group">
+                        <label class="control-label" for="linear-dataset">Datensatz:</label>
+                        <select id="linear-dataset" class="form-select">
+                            <option value="linear">Linear</option>
+                            <option value="linear-noise">Linear mit Rauschen</option>
+                            <option value="quadratic">Quadratisch</option>
+                            <option value="exponential">Exponentiell</option>
+                        </select>
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Anzahl Datenpunkte</span>
+                            <span class="slider-value" id="linear-points-value">50</span>
+                        </div>
+                        <input type="range" id="linear-points" min="20" max="200" value="50" step="10">
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Rauschen</span>
+                            <span class="slider-value" id="linear-noise-value">0.5</span>
+                        </div>
+                        <input type="range" id="linear-noise" min="0" max="4" value="0.5" step="0.1">
+                    </div>
+
+                    <button class="btn-primary" onclick="generateLinearData()">Neue Daten generieren</button>
+
+                    <div class="metrics-box">
+                        <h4>Modell-Metriken</h4>
+                        <div class="metric-row">
+                            <span class="metric-name">MSE (Mean Squared Error)</span>
+                            <span class="metric-value" id="linear-mse">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">RMSE (Root MSE)</span>
+                            <span class="metric-value" id="linear-rmse">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">R² (Coefficient of Determination)</span>
+                            <span class="metric-value" id="linear-r2">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">MAE (Mean Absolute Error)</span>
+                            <span class="metric-value" id="linear-mae">-</span>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>💡 Linear Regression</h4>
+                        <p>Findet die beste gerade Linie durch die Datenpunkte mittels Least Squares.</p>
+                        <p><strong>Formel:</strong> y = mx + b</p>
+                    </div>
+                </div>
+
+                <div class="plot-container">
+                    <div id="linear-plot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Polynomial Regression Tab -->
+        <div id="polynomial-tab" class="tab-content">
+            <div class="controls-container">
+                <div class="controls-panel">
+                    <h3 style="margin-top: 0;">Polynomiale Regression</h3>
+                    
+                    <div class="control-group">
+                        <label class="control-label" for="poly-dataset">Datensatz:</label>
+                        <select id="poly-dataset" class="form-select">
+                            <option value="quadratic">Quadratisch</option>
+                            <option value="cubic">Kubisch</option>
+                            <option value="sine">Sinuswelle</option>
+                            <option value="complex">Komplex</option>
+                        </select>
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Polynomgrad</span>
+                            <span class="slider-value" id="poly-degree-value">2</span>
+                        </div>
+                        <input type="range" id="poly-degree" min="1" max="10" value="2" step="1">
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Anzahl Datenpunkte</span>
+                            <span class="slider-value" id="poly-points-value">50</span>
+                        </div>
+                        <input type="range" id="poly-points" min="20" max="200" value="50" step="10">
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Rauschen</span>
+                            <span class="slider-value" id="poly-noise-value">0.3</span>
+                        </div>
+                        <input type="range" id="poly-noise" min="0" max="4" value="0.3" step="0.1">
+                    </div>
+
+                    <button class="btn-primary" onclick="generatePolyData()">Neue Daten generieren</button>
+
+                    <div class="metrics-box">
+                        <h4>Modell-Metriken</h4>
+                        <div class="metric-row">
+                            <span class="metric-name">MSE</span>
+                            <span class="metric-value" id="poly-mse">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">RMSE</span>
+                            <span class="metric-value" id="poly-rmse">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">R²</span>
+                            <span class="metric-value" id="poly-r2">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">MAE</span>
+                            <span class="metric-value" id="poly-mae">-</span>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>💡 Polynomial Regression</h4>
+                        <p>Erweitert lineare Regression mit höheren Potenzen von x.</p>
+                        <p><strong>Formel:</strong> y = a₀ + a₁x + a₂x² + ... + aₙxⁿ</p>
+                        <p><strong>Achtung:</strong> Zu hohe Grade können zu Overfitting führen!</p>
+                    </div>
+                </div>
+
+                <div class="plot-container">
+                    <div id="poly-plot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regularization Tab -->
+        <div id="regularization-tab" class="tab-content">
+            <div class="controls-container">
+                <div class="controls-panel">
+                    <h3 style="margin-top: 0;">Regularisierung</h3>
+                    
+                    <div class="control-group">
+                        <label class="control-label" for="reg-type">Regularisierungstyp:</label>
+                        <select id="reg-type" class="form-select">
+                            <option value="none">Keine (Standard)</option>
+                            <option value="ridge">Ridge (L2)</option>
+                            <option value="lasso">Lasso (L1)</option>
+                        </select>
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Polynomgrad</span>
+                            <span class="slider-value" id="reg-degree-value">5</span>
+                        </div>
+                        <input type="range" id="reg-degree" min="1" max="15" value="5" step="1">
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Regularisierungsstärke (λ)</span>
+                            <span class="slider-value" id="reg-lambda-value">0.1</span>
+                        </div>
+                        <input type="range" id="reg-lambda" min="0" max="2" value="0.1" step="0.01">
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Anzahl Datenpunkte</span>
+                            <span class="slider-value" id="reg-points-value">30</span>
+                        </div>
+                        <input type="range" id="reg-points" min="15" max="100" value="30" step="5">
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>Rauschen</span>
+                            <span class="slider-value" id="reg-noise-value">0.5</span>
+                        </div>
+                        <input type="range" id="reg-noise" min="0" max="4" value="0.5" step="0.1">
+                    </div>
+
+                    <button class="btn-primary" onclick="generateRegData()">Neue Daten generieren</button>
+
+                    <div class="metrics-box">
+                        <h4>Modell-Metriken</h4>
+                        <div class="metric-row">
+                            <span class="metric-name">MSE</span>
+                            <span class="metric-value" id="reg-mse">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">RMSE</span>
+                            <span class="metric-value" id="reg-rmse">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">R²</span>
+                            <span class="metric-value" id="reg-r2">-</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">MAE</span>
+                            <span class="metric-value" id="reg-mae">-</span>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>💡 Regularisierung</h4>
+                        <p><strong>Ridge (L2):</strong> Bestraft große Gewichte quadratisch. Reduziert Overfitting, behält alle Features.</p>
+                        <p><strong>Lasso (L1):</strong> Kann Gewichte auf genau 0 setzen. Feature-Selektion.</p>
+                        <p>λ (Lambda) kontrolliert die Stärke der Regularisierung.</p>
+                    </div>
+                </div>
+
+                <div class="plot-container">
+                    <div id="reg-plot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let linearData = { x: [], y: [] };
+        let polyData = { x: [], y: [] };
+        let regData = { x: [], y: [] };
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        // Utility functions
+        function getTextColor() {
+            return document.documentElement.getAttribute('data-theme') === 'dark' ? '#E0E0E0' : '#2D2D2D';
+        }
+
+        function getGridColor() {
+            return document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+        }
+
+        // Data generation functions
+        function generateDataset(type, nPoints, noise) {
+            const x = [];
+            const y = [];
+            
+            for (let i = 0; i < nPoints; i++) {
+                const xi = (i / nPoints) * 10 - 5;
+                let yi;
+                
+                switch(type) {
+                    case 'linear':
+                        yi = 2 * xi + 3;
+                        break;
+                    case 'linear-noise':
+                        yi = 2 * xi + 3;
+                        break;
+                    case 'quadratic':
+                        yi = 0.5 * xi * xi - 2 * xi + 1;
+                        break;
+                    case 'cubic':
+                        yi = 0.1 * xi * xi * xi - 0.5 * xi * xi + 2;
+                        break;
+                    case 'exponential':
+                        yi = Math.exp(xi / 3);
+                        break;
+                    case 'sine':
+                        yi = 5 * Math.sin(xi) + xi;
+                        break;
+                    case 'complex':
+                        yi = 0.3 * xi * xi * xi - 2 * xi + 5 * Math.sin(xi);
+                        break;
+                    default:
+                        yi = 2 * xi + 3;
+                }
+                
+                yi += (Math.random() - 0.5) * noise * 5;
+                x.push(xi);
+                y.push(yi);
+            }
+            
+            return { x, y };
+        }
+
+        // Linear regression using least squares
+        function linearRegression(x, y) {
+            const n = x.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            
+            for (let i = 0; i < n; i++) {
+                sumX += x[i];
+                sumY += y[i];
+                sumXY += x[i] * y[i];
+                sumXX += x[i] * x[i];
+            }
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            
+            return { slope, intercept };
+        }
+
+        // Polynomial regression using matrix operations (simplified)
+        function polynomialRegression(x, y, degree) {
+            const n = x.length;
+            
+            // Create design matrix
+            const X = [];
+            for (let i = 0; i < n; i++) {
+                const row = [];
+                for (let j = 0; j <= degree; j++) {
+                    row.push(Math.pow(x[i], j));
+                }
+                X.push(row);
+            }
+            
+            // Solve using normal equation: (X^T X)^-1 X^T y
+            // This is a simplified implementation
+            const coeffs = solveNormalEquation(X, y);
+            return coeffs;
+        }
+
+        // Ridge regression with L2 regularization
+        function ridgeRegression(x, y, degree, lambda) {
+            const n = x.length;
+            const X = [];
+            
+            for (let i = 0; i < n; i++) {
+                const row = [];
+                for (let j = 0; j <= degree; j++) {
+                    row.push(Math.pow(x[i], j));
+                }
+                X.push(row);
+            }
+            
+            // Add regularization term to normal equation
+            const coeffs = solveRidgeEquation(X, y, lambda);
+            return coeffs;
+        }
+
+        // Normalized gradient descent for better convergence
+        function normalizeFeatures(X) {
+            const n = X.length;
+            const m = X[0].length;
+            const means = new Array(m).fill(0);
+            const stds = new Array(m).fill(0);
+            
+            // Calculate means
+            for (let j = 0; j < m; j++) {
+                for (let i = 0; i < n; i++) {
+                    means[j] += X[i][j];
+                }
+                means[j] /= n;
+            }
+            
+            // Calculate standard deviations
+            for (let j = 0; j < m; j++) {
+                for (let i = 0; i < n; i++) {
+                    stds[j] += Math.pow(X[i][j] - means[j], 2);
+                }
+                stds[j] = Math.sqrt(stds[j] / n);
+                if (stds[j] === 0) stds[j] = 1; // Avoid division by zero
+            }
+            
+            // Normalize (don't normalize intercept)
+            const Xnorm = [];
+            for (let i = 0; i < n; i++) {
+                const row = [X[i][0]]; // Keep intercept as is
+                for (let j = 1; j < m; j++) {
+                    row.push((X[i][j] - means[j]) / stds[j]);
+                }
+                Xnorm.push(row);
+            }
+            
+            return { Xnorm, means, stds };
+        }
+
+        function solveNormalEquation(X, y) {
+            const n = X.length;
+            const m = X[0].length;
+            
+            // Normalize features for better convergence
+            const { Xnorm, means, stds } = normalizeFeatures(X);
+            
+            let coeffs = new Array(m).fill(0);
+            const learningRate = 0.1;
+            const iterations = 5000;
+            
+            for (let iter = 0; iter < iterations; iter++) {
+                const gradient = new Array(m).fill(0);
+                
+                for (let i = 0; i < n; i++) {
+                    let prediction = 0;
+                    for (let j = 0; j < m; j++) {
+                        prediction += coeffs[j] * Xnorm[i][j];
+                    }
+                    const error = prediction - y[i];
+                    
+                    for (let j = 0; j < m; j++) {
+                        gradient[j] += error * Xnorm[i][j];
+                    }
+                }
+                
+                for (let j = 0; j < m; j++) {
+                    coeffs[j] -= (learningRate / n) * gradient[j];
+                }
+            }
+            
+            // Denormalize coefficients
+            const denormCoeffs = new Array(m);
+            denormCoeffs[0] = coeffs[0]; // intercept adjustment will be done below
+            for (let j = 1; j < m; j++) {
+                denormCoeffs[j] = coeffs[j] / stds[j];
+                denormCoeffs[0] -= coeffs[j] * means[j] / stds[j];
+            }
+            
+            return denormCoeffs;
+        }
+
+        function solveRidgeEquation(X, y, lambda) {
+            const n = X.length;
+            const m = X[0].length;
+            
+            const { Xnorm, means, stds } = normalizeFeatures(X);
+            
+            let coeffs = new Array(m).fill(0);
+            const learningRate = 0.1;
+            const iterations = 5000;
+            
+            for (let iter = 0; iter < iterations; iter++) {
+                const gradient = new Array(m).fill(0);
+                
+                for (let i = 0; i < n; i++) {
+                    let prediction = 0;
+                    for (let j = 0; j < m; j++) {
+                        prediction += coeffs[j] * Xnorm[i][j];
+                    }
+                    const error = prediction - y[i];
+                    
+                    for (let j = 0; j < m; j++) {
+                        gradient[j] += error * Xnorm[i][j];
+                    }
+                }
+                
+                // Add L2 regularization (skip intercept)
+                for (let j = 1; j < m; j++) {
+                    gradient[j] += lambda * coeffs[j];
+                }
+                
+                for (let j = 0; j < m; j++) {
+                    coeffs[j] -= (learningRate / n) * gradient[j];
+                }
+            }
+            
+            // Denormalize coefficients
+            const denormCoeffs = new Array(m);
+            denormCoeffs[0] = coeffs[0];
+            for (let j = 1; j < m; j++) {
+                denormCoeffs[j] = coeffs[j] / stds[j];
+                denormCoeffs[0] -= coeffs[j] * means[j] / stds[j];
+            }
+            
+            return denormCoeffs;
+        }
+
+        // Lasso regression (simplified using soft thresholding)
+        function lassoRegression(x, y, degree, lambda) {
+            const n = x.length;
+            const X = [];
+            
+            for (let i = 0; i < n; i++) {
+                const row = [];
+                for (let j = 0; j <= degree; j++) {
+                    row.push(Math.pow(x[i], j));
+                }
+                X.push(row);
+            }
+            
+            const { Xnorm, means, stds } = normalizeFeatures(X);
+            
+            const m = X[0].length;
+            let coeffs = new Array(m).fill(0);
+            
+            const learningRate = 0.1;
+            const iterations = 5000;
+            
+            for (let iter = 0; iter < iterations; iter++) {
+                const gradient = new Array(m).fill(0);
+                
+                for (let i = 0; i < n; i++) {
+                    let prediction = 0;
+                    for (let j = 0; j < m; j++) {
+                        prediction += coeffs[j] * Xnorm[i][j];
+                    }
+                    const error = prediction - y[i];
+                    
+                    for (let j = 0; j < m; j++) {
+                        gradient[j] += error * Xnorm[i][j];
+                    }
+                }
+                
+                for (let j = 0; j < m; j++) {
+                    coeffs[j] -= (learningRate / n) * gradient[j];
+                }
+                
+                // Soft thresholding for L1 (Lasso) - skip intercept
+                const threshold = lambda * learningRate;
+                for (let j = 1; j < m; j++) {
+                    if (coeffs[j] > threshold) {
+                        coeffs[j] -= threshold;
+                    } else if (coeffs[j] < -threshold) {
+                        coeffs[j] += threshold;
+                    } else {
+                        coeffs[j] = 0;
+                    }
+                }
+            }
+            
+            // Denormalize coefficients
+            const denormCoeffs = new Array(m);
+            denormCoeffs[0] = coeffs[0];
+            for (let j = 1; j < m; j++) {
+                denormCoeffs[j] = coeffs[j] / stds[j];
+                denormCoeffs[0] -= coeffs[j] * means[j] / stds[j];
+            }
+            
+            return denormCoeffs;
+        }
+
+        // Prediction functions
+        function predictLinear(x, slope, intercept) {
+            return slope * x + intercept;
+        }
+
+        function predictPolynomial(x, coeffs) {
+            let y = 0;
+            for (let i = 0; i < coeffs.length; i++) {
+                y += coeffs[i] * Math.pow(x, i);
+            }
+            return y;
+        }
+
+        // Metrics calculation
+        function calculateMetrics(yTrue, yPred) {
+            const n = yTrue.length;
+            let sumSquaredError = 0;
+            let sumAbsoluteError = 0;
+            let meanY = 0;
+            
+            for (let i = 0; i < n; i++) {
+                meanY += yTrue[i];
+            }
+            meanY /= n;
+            
+            let totalSumSquares = 0;
+            for (let i = 0; i < n; i++) {
+                const error = yTrue[i] - yPred[i];
+                sumSquaredError += error * error;
+                sumAbsoluteError += Math.abs(error);
+                totalSumSquares += Math.pow(yTrue[i] - meanY, 2);
+            }
+            
+            const mse = sumSquaredError / n;
+            const rmse = Math.sqrt(mse);
+            const mae = sumAbsoluteError / n;
+            const r2 = 1 - (sumSquaredError / totalSumSquares);
+            
+            return { mse, rmse, mae, r2 };
+        }
+
+        // Linear Regression Tab
+        function generateLinearData() {
+            const dataset = document.getElementById('linear-dataset').value;
+            const nPoints = parseInt(document.getElementById('linear-points').value);
+            const noise = parseFloat(document.getElementById('linear-noise').value);
+            
+            linearData = generateDataset(dataset, nPoints, noise);
+            fitAndPlotLinear();
+        }
+
+        function fitAndPlotLinear() {
+            const { slope, intercept } = linearRegression(linearData.x, linearData.y);
+            
+            // Generate prediction line
+            const xLine = [];
+            const yLine = [];
+            const minX = Math.min(...linearData.x);
+            const maxX = Math.max(...linearData.x);
+            
+            for (let i = 0; i <= 100; i++) {
+                const x = minX + (maxX - minX) * (i / 100);
+                xLine.push(x);
+                yLine.push(predictLinear(x, slope, intercept));
+            }
+            
+            // Calculate predictions for metrics
+            const yPred = linearData.x.map(x => predictLinear(x, slope, intercept));
+            const metrics = calculateMetrics(linearData.y, yPred);
+            
+            // Update metrics display
+            document.getElementById('linear-mse').textContent = metrics.mse.toFixed(3);
+            document.getElementById('linear-rmse').textContent = metrics.rmse.toFixed(3);
+            document.getElementById('linear-r2').textContent = metrics.r2.toFixed(3);
+            document.getElementById('linear-mae').textContent = metrics.mae.toFixed(3);
+            
+            // Plot
+            const trace1 = {
+                x: linearData.x,
+                y: linearData.y,
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Datenpunkte',
+                marker: { color: '#FFE55C', size: 8 }
+            };
+            
+            const trace2 = {
+                x: xLine,
+                y: yLine,
+                mode: 'lines',
+                type: 'scatter',
+                name: 'Lineare Regression',
+                line: { color: '#00D9FF', width: 3 }
+            };
+            
+            const layout = {
+                title: `Lineare Regression (y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)})`,
+                xaxis: { title: 'x', gridcolor: getGridColor() },
+                yaxis: { title: 'y', gridcolor: getGridColor() },
+                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                paper_bgcolor: 'transparent',
+                font: { color: getTextColor() },
+                showlegend: true,
+                hovermode: 'closest'
+            };
+            
+            Plotly.newPlot('linear-plot', [trace1, trace2], layout, { responsive: true });
+        }
+
+        // Polynomial Regression Tab
+        function generatePolyData() {
+            const dataset = document.getElementById('poly-dataset').value;
+            const nPoints = parseInt(document.getElementById('poly-points').value);
+            const noise = parseFloat(document.getElementById('poly-noise').value);
+            
+            polyData = generateDataset(dataset, nPoints, noise);
+            fitAndPlotPoly();
+        }
+
+        function fitAndPlotPoly() {
+            const degree = parseInt(document.getElementById('poly-degree').value);
+            const coeffs = polynomialRegression(polyData.x, polyData.y, degree);
+            
+            // Generate prediction line
+            const xLine = [];
+            const yLine = [];
+            const minX = Math.min(...polyData.x);
+            const maxX = Math.max(...polyData.x);
+            
+            for (let i = 0; i <= 100; i++) {
+                const x = minX + (maxX - minX) * (i / 100);
+                xLine.push(x);
+                yLine.push(predictPolynomial(x, coeffs));
+            }
+            
+            // Calculate metrics
+            const yPred = polyData.x.map(x => predictPolynomial(x, coeffs));
+            const metrics = calculateMetrics(polyData.y, yPred);
+            
+            document.getElementById('poly-mse').textContent = metrics.mse.toFixed(3);
+            document.getElementById('poly-rmse').textContent = metrics.rmse.toFixed(3);
+            document.getElementById('poly-r2').textContent = metrics.r2.toFixed(3);
+            document.getElementById('poly-mae').textContent = metrics.mae.toFixed(3);
+            
+            // Plot
+            const trace1 = {
+                x: polyData.x,
+                y: polyData.y,
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Datenpunkte',
+                marker: { color: '#FFE55C', size: 8 }
+            };
+            
+            const trace2 = {
+                x: xLine,
+                y: yLine,
+                mode: 'lines',
+                type: 'scatter',
+                name: `Polynom Grad ${degree}`,
+                line: { color: '#00D9FF', width: 3 }
+            };
+            
+            const layout = {
+                title: `Polynomiale Regression (Grad ${degree})`,
+                xaxis: { title: 'x', gridcolor: getGridColor() },
+                yaxis: { title: 'y', gridcolor: getGridColor() },
+                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                paper_bgcolor: 'transparent',
+                font: { color: getTextColor() },
+                showlegend: true,
+                hovermode: 'closest'
+            };
+            
+            Plotly.newPlot('poly-plot', [trace1, trace2], layout, { responsive: true });
+        }
+
+        // Regularization Tab
+        function generateRegData() {
+            const nPoints = parseInt(document.getElementById('reg-points').value);
+            const noise = parseFloat(document.getElementById('reg-noise').value);
+            
+            regData = generateDataset('complex', nPoints, noise);
+            fitAndPlotReg();
+        }
+
+        function fitAndPlotReg() {
+            const degree = parseInt(document.getElementById('reg-degree').value);
+            const lambda = parseFloat(document.getElementById('reg-lambda').value);
+            const regType = document.getElementById('reg-type').value;
+            
+            let coeffs;
+            if (regType === 'ridge') {
+                coeffs = ridgeRegression(regData.x, regData.y, degree, lambda);
+            } else if (regType === 'lasso') {
+                coeffs = lassoRegression(regData.x, regData.y, degree, lambda);
+            } else {
+                coeffs = polynomialRegression(regData.x, regData.y, degree);
+            }
+            
+            // Generate prediction line
+            const xLine = [];
+            const yLine = [];
+            const minX = Math.min(...regData.x);
+            const maxX = Math.max(...regData.x);
+            
+            for (let i = 0; i <= 100; i++) {
+                const x = minX + (maxX - minX) * (i / 100);
+                xLine.push(x);
+                yLine.push(predictPolynomial(x, coeffs));
+            }
+            
+            // Calculate metrics
+            const yPred = regData.x.map(x => predictPolynomial(x, coeffs));
+            const metrics = calculateMetrics(regData.y, yPred);
+            
+            document.getElementById('reg-mse').textContent = metrics.mse.toFixed(3);
+            document.getElementById('reg-rmse').textContent = metrics.rmse.toFixed(3);
+            document.getElementById('reg-r2').textContent = metrics.r2.toFixed(3);
+            document.getElementById('reg-mae').textContent = metrics.mae.toFixed(3);
+            
+            // Plot
+            const trace1 = {
+                x: regData.x,
+                y: regData.y,
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Datenpunkte',
+                marker: { color: '#FFE55C', size: 8 }
+            };
+            
+            const trace2 = {
+                x: xLine,
+                y: yLine,
+                mode: 'lines',
+                type: 'scatter',
+                name: regType === 'none' ? 'Standard' : regType.toUpperCase(),
+                line: { color: '#00D9FF', width: 3 }
+            };
+            
+            const regTypeLabel = regType === 'none' ? 'Keine Regularisierung' : 
+                                 regType === 'ridge' ? `Ridge (λ=${lambda})` : 
+                                 `Lasso (λ=${lambda})`;
+            
+            const layout = {
+                title: `${regTypeLabel} - Grad ${degree}`,
+                xaxis: { title: 'x', gridcolor: getGridColor() },
+                yaxis: { title: 'y', gridcolor: getGridColor() },
+                plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                paper_bgcolor: 'transparent',
+                font: { color: getTextColor() },
+                showlegend: true,
+                hovermode: 'closest'
+            };
+            
+            Plotly.newPlot('reg-plot', [trace1, trace2], layout, { responsive: true });
+        }
+
+        // Event listeners
+        document.getElementById('linear-dataset').addEventListener('change', generateLinearData);
+        document.getElementById('linear-points').addEventListener('input', (e) => {
+            document.getElementById('linear-points-value').textContent = e.target.value;
+            generateLinearData();
+        });
+        document.getElementById('linear-noise').addEventListener('input', (e) => {
+            document.getElementById('linear-noise-value').textContent = e.target.value;
+            generateLinearData();
+        });
+
+        document.getElementById('poly-dataset').addEventListener('change', generatePolyData);
+        document.getElementById('poly-degree').addEventListener('input', (e) => {
+            document.getElementById('poly-degree-value').textContent = e.target.value;
+            fitAndPlotPoly();
+        });
+        document.getElementById('poly-points').addEventListener('input', (e) => {
+            document.getElementById('poly-points-value').textContent = e.target.value;
+            generatePolyData();
+        });
+        document.getElementById('poly-noise').addEventListener('input', (e) => {
+            document.getElementById('poly-noise-value').textContent = e.target.value;
+            generatePolyData();
+        });
+
+        document.getElementById('reg-type').addEventListener('change', fitAndPlotReg);
+        document.getElementById('reg-degree').addEventListener('input', (e) => {
+            document.getElementById('reg-degree-value').textContent = e.target.value;
+            fitAndPlotReg();
+        });
+        document.getElementById('reg-lambda').addEventListener('input', (e) => {
+            document.getElementById('reg-lambda-value').textContent = e.target.value;
+            fitAndPlotReg();
+        });
+        document.getElementById('reg-points').addEventListener('input', (e) => {
+            document.getElementById('reg-points-value').textContent = e.target.value;
+            generateRegData();
+        });
+        document.getElementById('reg-noise').addEventListener('input', (e) => {
+            document.getElementById('reg-noise-value').textContent = e.target.value;
+            generateRegData();
+        });
+
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        const root = document.documentElement;
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('ai-lecture-theme');
+            if (savedTheme) {
+                root.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = prefersDark ? 'dark' : 'light';
+                root.setAttribute('data-theme', theme);
+                updateThemeIcon(theme);
+            }
+        }
+
+        function updateThemeIcon(theme) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('ai-lecture-theme', newTheme);
+            updateThemeIcon(newTheme);
+            
+            // Refresh plots
+            if (linearData.x.length > 0) fitAndPlotLinear();
+            if (polyData.x.length > 0) fitAndPlotPoly();
+            if (regData.x.length > 0) fitAndPlotReg();
+        });
+
+        // Initialize
+        initTheme();
+        generateLinearData();
+        generatePolyData();
+        generateRegData();
+    </script>
+</body>
+</html>
