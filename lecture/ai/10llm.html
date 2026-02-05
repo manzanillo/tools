@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Large Language Models - System Prompts & Anwendungen</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Erkunde Large Language Models, System Prompts und praktische Anwendungen. Von GPT bis zu Open Source Alternativen.">
+    <meta name="keywords" content="LLM, Large Language Models, System Prompts, GPT, Soekia, Prompt Engineering, KI-Textgenerierung">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Large Language Models - System Prompts & Anwendungen">
+    <meta property="og:description"
+        content="Erkunde die Welt der Large Language Models und ihre praktischen Anwendungen">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/10llm.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <style>
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Light mode glass border fix */
+        [data-theme="light"] {
+            --glass-border: rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .hero-title {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .hero-description {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .links-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: var(--accent-color);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .external-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .external-link {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: left;
+        }
+
+        .external-link.featured {
+            border: 2px solid var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #f0c674);
+        }
+
+        /* Light mode text color for buttons */
+        [data-theme="light"] .external-link {
+            color: black;
+        }
+
+        .external-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 229, 92, 0.3);
+        }
+
+        .link-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .link-description {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .link-meta {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content-container {
+                padding: 1rem;
+            }
+            
+            .hero-section, .links-section {
+                padding: 1.5rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .external-links {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>Überblick</span>
+            </a>
+            <h1>Large Language Models</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="content-container">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1 class="hero-title">🤖 Large Language Models</h1>
+                <p class="hero-description">
+                    Entdecke die Welt der Large Language Models: Von System Prompts und Prompt Engineering 
+                    bis zu praktischen Anwendungen. Verstehe, wie moderne KI-Systeme wie GPT funktionieren 
+                    und welche Möglichkeiten sie bieten.
+                </p>
+            </div>
+
+            <!-- External Links Section -->
+            <div class="links-section">
+                <h2 class="section-title">🔗 LLM-Tools & Ressourcen</h2>
+                
+                <div class="external-links">
+                    <!-- Featured Link: Soekia GPT -->
+                    <a href="https://www.soekia.ch/GPT/" class="external-link featured" target="_blank">
+                        <div class="link-title">
+                            ⭐ Soekia GPT
+                        </div>
+                        <div class="link-description">
+                            Einfaches Lernmodell, das die Grundprinzipien von Large Language Models 
+                            veranschaulicht und für Bildungszwecke entwickelt wurde.
+                        </div>
+                        <div class="link-meta">Didaktisches LLM-Modell</div>
+                    </a>
+
+                    <!-- System Prompts Repository -->
+                    <a href="https://github.com/jujumilk3/leaked-system-prompts" class="external-link" target="_blank">
+                        <div class="link-title">
+                            🔓 Leaked System Prompts
+                        </div>
+                        <div class="link-description">
+                            Sammlung von System Prompts großer LLM-Anbieter wie OpenAI, Anthropic, Google und mehr.
+                        </div>
+                        <div class="link-meta">GitHub Repository • Real System Prompts</div>
+                    </a>
+                </div>
+
+                <!-- Additional Info -->
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem;">
+                    <h3 style="color: var(--accent-color); margin-bottom: 1rem;">💡 Was sind System Prompts?</h3>
+                    <p style="color: var(--text-color); line-height: 1.6; margin-bottom: 1rem;">
+                        System Prompts sind Anweisungen, die einem LLM vor der eigentlichen Konversation gegeben werden. 
+                        Sie definieren das Verhalten, den Ton und die Fähigkeiten des Modells.
+                    </p>
+                    <p style="color: var(--secondary-text); font-size: 0.9rem; line-height: 1.5;">
+                        <strong>Beispiele:</strong> "Du bist ein hilfsreicher Assistent für Programmierung...", 
+                        "Antworte immer im Stil eines Shakespeare-Charakters...", 
+                        "Analysiere Code und gib konstruktives Feedback..."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        const root = document.documentElement;
+
+        // Initialize theme from localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            root.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        // Update theme icon based on current theme
+        function updateThemeIcon(theme) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        // Initialize theme on page load
+        initTheme();
+    </script>
+</body>
+
+</html>
