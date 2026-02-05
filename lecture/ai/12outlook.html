@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Outlook: KI-Zukunft und ethische Herausforderungen</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Interaktive Exploration der Zukunft der Künstlichen Intelligenz: Starke vs. Schwache KI, Lernparadigmen, Ethik und gesellschaftliche Auswirkungen.">
+    <meta name="keywords" content="KI-Zukunft, starke KI, schwache KI, Machine Learning, Ethik, Moral Machine, Job Futuromat, KI-Fehlprognosen">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Outlook: KI-Zukunft und ethische Herausforderungen">
+    <meta property="og:description"
+        content="Interaktive Exploration der Zukunft der KI und ihrer gesellschaftlichen Auswirkungen">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/12outlook.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <style>
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .hero-title {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .hero-description {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .external-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .external-link {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Light mode text color for buttons */
+        [data-theme="light"] .external-link {
+            color: black;
+        }
+
+        .external-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 229, 92, 0.3);
+        }
+
+
+        @media (max-width: 768px) {
+
+            
+            .external-links {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>Überblick</span>
+            </a>
+            <h1>KI-Zukunft & Ethische Herausforderungen</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="content-container">
+        <div class="hero-section">
+            <h1 class="hero-title">🔮 KI-Zukunft & Ethische Herausforderungen</h1>
+            <p class="hero-description">
+                Erkunde die Zukunft der Künstlichen Intelligenz: Von den theoretischen Stufen der Intelligenz
+                bis zu den ethischen Herausforderungen unserer Zeit. Verstehe die Grenzen aktueller KI-Systeme
+                und reflektiere über die gesellschaftlichen Auswirkungen.
+            </p>
+            
+            <div class="external-links">
+                <a href="https://www.moralmachine.net/" class="external-link" target="_blank">
+                    🤖 Moral Machine
+                    <span>Experimentiere mit ethischen Dilemmata</span>
+                </a>
+                <a href="https://job-futuromat.iab.de/" class="external-link" target="_blank">
+                    🔮 Job-Futuromat
+                    <span>Wie beeinflusst KI deinen Beruf?</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        const root = document.documentElement;
+
+        // Initialize theme from localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('ai-lecture-theme');
+            if (savedTheme) {
+                root.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else {
+                // Check system preference
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = prefersDark ? 'dark' : 'light';
+                root.setAttribute('data-theme', theme);
+                updateThemeIcon(theme);
+            }
+        }
+
+        // Update theme icon based on current theme
+        function updateThemeIcon(theme) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('ai-lecture-theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        // Initialize theme on page load
+        initTheme();
+    </script>
+</body>
+
+</html>

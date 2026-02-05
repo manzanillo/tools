@@ -326,8 +326,9 @@
                         <label class="control-label" for="linear-dataset">Datensatz:</label>
                         <select id="linear-dataset" class="form-select">
                             <option value="linear">Linear</option>
-                            <option value="linear-noise">Linear mit Rauschen</option>
-                            <option value="quadratic">Quadratisch</option>
+                            <option value="linear-noise">Linear mit Rauschen (homoskedastisch)</option>
+                            <option value="linear-hetero">Linear mit nichtkonstanter Varianz (heteroskedastisch)</option>
+                            <option value="quadratisch">Quadratisch</option>
                             <option value="exponential">Exponentiell</option>
                         </select>
                     </div>
@@ -374,6 +375,7 @@
                         <h4>💡 Linear Regression</h4>
                         <p>Findet die beste gerade Linie durch die Datenpunkte mittels Least Squares.</p>
                         <p><strong>Formel:</strong> y = mx + b</p>
+                        <p><strong>Hinweis:</strong> Wähle "Linear mit nichtkonstanter Varianz (heteroskedastisch)" für ein Beispiel, bei dem die Varianz der Fehlerterme mit |x| zunimmt.</p>
                     </div>
                 </div>
 
@@ -575,38 +577,50 @@
             for (let i = 0; i < nPoints; i++) {
                 const xi = (i / nPoints) * 10 - 5;
                 let yi;
-                
+                let error = 0;
                 switch(type) {
                     case 'linear':
                         yi = 2 * xi + 3;
+                        error = (Math.random() - 0.5) * noise * 5;
                         break;
                     case 'linear-noise':
                         yi = 2 * xi + 3;
+                        error = (Math.random() - 0.5) * noise * 5;
+                        break;
+                    case 'linear-hetero':
+                        yi = 2 * xi + 3;
+                        // Fehler mit wachsender Varianz nur bei positivem x
+                        const varianceFactor = xi < 0 ? 0.1 : (1 + xi * 2);
+                        error = (Math.random() - 0.5) * noise * varianceFactor;
                         break;
                     case 'quadratic':
                         yi = 0.5 * xi * xi - 2 * xi + 1;
+                        error = (Math.random() - 0.5) * noise * 5;
                         break;
                     case 'cubic':
                         yi = 0.1 * xi * xi * xi - 0.5 * xi * xi + 2;
+                        error = (Math.random() - 0.5) * noise * 5;
                         break;
                     case 'exponential':
                         yi = Math.exp(xi / 3);
+                        error = (Math.random() - 0.5) * noise * 5;
                         break;
                     case 'sine':
                         yi = 5 * Math.sin(xi) + xi;
+                        error = (Math.random() - 0.5) * noise * 5;
                         break;
                     case 'complex':
                         yi = 0.3 * xi * xi * xi - 2 * xi + 5 * Math.sin(xi);
+                        error = (Math.random() - 0.5) * noise * 5;
                         break;
                     default:
                         yi = 2 * xi + 3;
+                        error = (Math.random() - 0.5) * noise * 5;
                 }
-                
-                yi += (Math.random() - 0.5) * noise * 5;
+                yi += error;
                 x.push(xi);
                 y.push(yi);
             }
-            
             return { x, y };
         }
 
