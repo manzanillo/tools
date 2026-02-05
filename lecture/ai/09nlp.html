@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Natural Language Processing - Wortanalogien</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Interaktive Visualisierung von Wortanalogien mit GloVe Word Vectors - Entdecke semantische Beziehungen zwischen Wörtern">
+    <meta name="keywords" content="NLP, word2vec, GloVe, Wortanalogien, word embeddings, natural language processing">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="NLP - Wortanalogien mit GloVe">
+    <meta property="og:description"
+        content="Interaktive Visualisierung von Wortanalogien mit GloVe Word Vectors">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/09nlp.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔤</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <style>
+        .content-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .intro-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .intro-title {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .intro-description {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .applet-link {
+            display: inline-block;
+            padding: 1.5rem 3rem;
+            background: linear-gradient(135deg, var(--accent-color), #f39c12);
+            color: black;
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+            box-shadow: 0 4px 16px rgba(255, 229, 92, 0.3);
+        }
+
+        .applet-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(255, 229, 92, 0.4);
+            text-decoration: none;
+            color: black;
+        }
+
+        .next-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--accent-color), #f39c12);
+            color: black;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .next-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 229, 92, 0.4);
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>Überblick</span>
+            </a>
+            <h1>Natural Language Processing</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="content-container">
+            <!-- Einführung -->
+            <div class="intro-section">
+                <h1 class="intro-title">🔤 Wortanalogien mit GloVe entdecken</h1>
+                <p class="intro-description">
+                    Entdecken Sie die faszinierende Welt der Wortanalogien durch interaktive Visualisierung von GloVe Word Vectors! 
+                    Dieses Tool zeigt, wie Computer Wörter als mehrdimensionale Vektoren verstehen und semantische Beziehungen erkennen.
+                </p>
+                <p class="intro-description">
+                    Besonders interessant ist die Vorauswahl "Jobs & Berufe", aber auch andere Kategorien wie 
+                    Gender-Analogien und Adjektiv-Steigerungen sind verfügbar.
+                </p>
+                
+                <a href="https://www.stefanseegerer.de/word2viz/index_DE.html" 
+                   target="_blank" 
+                   class="applet-link">
+                    🚀 Word2Vec Applet öffnen
+                </a>
+                
+                <p style="margin-top: 1rem; color: var(--secondary-text); font-size: 0.9rem;">
+                    Das Applet öffnet sich in einem neuen Tab
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Theme Toggle Script -->
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        const root = document.documentElement;
+
+        // Check for saved theme preference or default to system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            root.setAttribute('data-theme', savedTheme);
+            themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            themeIcon.textContent = '☀️';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeIcon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
+    </script>
+</body>
+
+</html>
