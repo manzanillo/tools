@@ -468,14 +468,14 @@
         
         // Check for saved theme or default to dark
         const currentTheme = localStorage.getItem('theme') || 'dark';
-        document.body.className = currentTheme + '-theme';
+        document.documentElement.setAttribute('data-theme', currentTheme);
         themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
 
         themeToggle?.addEventListener('click', () => {
-            const currentTheme = document.body.className.includes('dark') ? 'dark' : 'light';
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             
-            document.body.className = newTheme + '-theme';
+            document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             themeIcon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
         });
