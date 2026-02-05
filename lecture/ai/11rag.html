@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Document Similarity & RAG - Dokumentähnlichkeit</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Interaktive Visualisierung von Dokumentähnlichkeit mit verschiedenen Metriken und GloVe Word Embeddings">
+    <meta name="keywords" content="RAG, document similarity, cosine similarity, word embeddings, GloVe, NLP">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Document Similarity & RAG">
+    <meta property="og:description"
+        content="Interaktive Visualisierung von Dokumentähnlichkeit mit GloVe Word Embeddings">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/ai/11rag.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <style>
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .intro-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .intro-title {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 2.2rem;
+        }
+
+        .intro-description {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .controls-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            margin-bottom: 2rem;
+        }
+
+        .control-label {
+            display: block;
+            color: var(--text-color);
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .document-input {
+            width: 100%;
+            min-height: 120px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 1rem;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .document-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(255, 229, 92, 0.2);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-group {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+        }
+
+        .option-title {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .radio-option:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .radio-option input[type="radio"] {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--glass-border);
+            border-radius: 50%;
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .radio-option input[type="radio"]:checked {
+            border-color: var(--accent-color);
+        }
+
+        .radio-option input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .radio-label {
+            color: var(--text-color);
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .radio-description {
+            color: var(--secondary-text);
+            font-size: 0.85rem;
+            margin-left: 1.4rem;
+            margin-top: 0.2rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-color), #f0c674);
+            color: black;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 229, 92, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-metric {
+            color: var(--accent-color);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            color: var(--text-color);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-interpretation {
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .similarity-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            margin: 0.8rem 0;
+            overflow: hidden;
+        }
+
+        .similarity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), #f0c674);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--secondary-text);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        .error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .content-container {
+                padding: 1rem;
+            }
+            
+            .intro-section, .controls-section {
+                padding: 1.5rem;
+            }
+            
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>AI Home</span>
+            </a>
+            <h1>Document Similarity & RAG</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="content-container">
+            <!-- Einführung -->
+            <div class="intro-section">
+                <h1 class="intro-title">📄 Document Similarity & RAG</h1>
+                <p class="intro-description">
+                    Vergleichen Sie die Ähnlichkeit zwischen zwei Dokumenten mit verschiedenen Metriken 
+                    und vortrainierten GloVe Word Embeddings. Diese Grundlagen sind essentiell für 
+                    Retrieval Augmented Generation (RAG) Systeme.
+                </p>
+                <div style="color: var(--secondary-text); font-size: 0.9rem; margin-top: 1rem;">
+                    <strong>GloVe 6B 50d Embeddings:</strong> 400.000 Wörter mit 50-dimensionalen Vektoren
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-section">
+                <h2 style="color: var(--accent-color); margin-bottom: 2rem;">Dokumente und Einstellungen</h2>
+                
+                <!-- Document Inputs -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                    <div class="control-group">
+                        <label class="control-label">Dokument 1:</label>
+                        <select id="dropdown1" onchange="loadSelectedText(1)" style="width: 100%; padding: 0.8rem; margin-bottom: 0.8rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-color); font-size: 0.95rem;">
+                            <option value="">-- Beispieltext wählen --</option>
+                            <option value="ai">🤖 Artificial Intelligence & ML</option>
+                            <option value="deeplearning">🧠 Deep Learning & Neural Networks</option>
+                            <option value="climate">🌍 Climate Change & Environment</option>
+                            <option value="space">🚀 Space Exploration & Astronomy</option>
+                            <option value="health">🏥 Healthcare & Medical Research</option>
+                        </select>
+                        <textarea class="document-input" id="document1" placeholder="Enter your first document here...">Artificial intelligence represents a transformative field of computer science focused on creating systems that can perform tasks typically requiring human intelligence.</textarea>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Dokument 2:</label>
+                        <select id="dropdown2" onchange="loadSelectedText(2)" style="width: 100%; padding: 0.8rem; margin-bottom: 0.8rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-color); font-size: 0.95rem;">
+                            <option value="">-- Beispieltext wählen --</option>
+                            <option value="ai">🤖 Artificial Intelligence & ML</option>
+                            <option value="deeplearning">🧠 Deep Learning & Neural Networks</option>
+                            <option value="climate">🌍 Climate Change & Environment</option>
+                            <option value="space">🚀 Space Exploration & Astronomy</option>
+                            <option value="health">🏥 Healthcare & Medical Research</option>
+                        </select>
+                        <textarea class="document-input" id="document2" placeholder="Enter your second document here...">Machine learning is a powerful subset of artificial intelligence that enables computers to learn and make decisions from data without explicit programming.</textarea>
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div class="options-grid">
+                    <!-- Sentence Vector Method -->
+                    <div class="option-group">
+                        <div class="option-title">🔗 Satzvektor-Methode</div>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="sentenceVector" value="mean" checked>
+                                <span class="radio-label">Mittelwert (Mean)</span>
+                            </label>
+                            <div class="radio-description">Durchschnitt aller Wortvektoren im Satz</div>
+                            
+                            <label class="radio-option">
+                                <input type="radio" name="sentenceVector" value="sum">
+                                <span class="radio-label">Summe</span>
+                            </label>
+                            <div class="radio-description">Addition aller Wortvektoren</div>
+                            
+                            <label class="radio-option">
+                                <input type="radio" name="sentenceVector" value="tfidf">
+                                <span class="radio-label">TF-IDF gewichtet</span>
+                            </label>
+                            <div class="radio-description">Gewichtung nach Term-Häufigkeit</div>
+                        </div>
+                    </div>
+
+                    <!-- Preprocessing -->
+                    <div class="option-group">
+                        <div class="option-title">🔧 Vorverarbeitung</div>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="preprocessing" value="standard" checked>
+                                <span class="radio-label">Standard</span>
+                            </label>
+                            <div class="radio-description">Kleinschreibung, Satzzeichen entfernen</div>
+                            
+                            <label class="radio-option">
+                                <input type="radio" name="preprocessing" value="stemmed">
+                                <span class="radio-label">Mit Stemming</span>
+                            </label>
+                            <div class="radio-description">Wörter auf Grundform reduzieren</div>
+                            
+                            <label class="radio-option">
+                                <input type="radio" name="preprocessing" value="stopwords">
+                                <span class="radio-label">Ohne Stoppwörter</span>
+                            </label>
+                            <div class="radio-description">Häufige Wörter entfernen</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Usage Tip -->
+                <div style="margin-bottom: 2rem; padding: 1rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 12px;">
+                    <div style="color: var(--accent-color); font-weight: 600; margin-bottom: 0.5rem;">💡 Usage Tip:</div>
+                    <div style="color: var(--secondary-text); font-size: 0.9rem; line-height: 1.5;">
+                        Wählen Sie Beispieltexte aus den Dropdown-Menüs über jedem Dokumentfeld aus oder geben Sie eigene Texte ein. KI/Deep Learning-Texte zeigen hohe Ähnlichkeit, während andere Kombinationen (z.B. KI vs. Klima) geringe Ähnlichkeit aufweisen. Das GloVe-Modell funktioniert am besten mit englischen Texten.
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn" onclick="calculateSimilarity()">
+                        <span>🔍</span>
+                        Ähnlichkeit berechnen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="results-section" id="resultsSection">
+                <h2 style="color: var(--accent-color); margin-bottom: 2rem;">📊 Ergebnisse</h2>
+                <div id="resultsContent">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let wordVectors = new Map();
+        let isLoadingVectors = false;
+        let vectorsLoaded = false;
+
+        // Load theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        
+        // Check for saved theme or default to dark
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        document.body.className = currentTheme + '-theme';
+        themeIcon.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+
+        themeToggle?.addEventListener('click', () => {
+            const currentTheme = document.body.className.includes('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.body.className = newTheme + '-theme';
+            localStorage.setItem('theme', newTheme);
+            themeIcon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        });
+
+        // Load word vectors from CSV
+        async function loadWordVectors() {
+            if (vectorsLoaded || isLoadingVectors) return;
+            
+            isLoadingVectors = true;
+            console.log('Loading GloVe word vectors...');
+            
+            try {
+                const response = await fetch('assets/minimal.50d.3f.csv');
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                
+                // Skip header line
+                for (let i = 1; i < lines.length; i++) {
+                    const parts = lines[i].split(',');
+                    if (parts.length >= 51) {
+                        const word = parts[0].replace(/"/g, ''); // Remove quotes
+                        const vector = parts.slice(1, 51).map(val => parseFloat(val));
+                        wordVectors.set(word, vector);
+                    }
+                }
+                
+                vectorsLoaded = true;
+                console.log(`Loaded ${wordVectors.size} word vectors`);
+            } catch (error) {
+                console.error('Error loading word vectors:', error);
+                showError('Fehler beim Laden der Word Vectors. Bitte laden Sie die Seite neu.');
+            }
+            
+            isLoadingVectors = false;
+        }
+
+        // Preprocess text
+        function preprocessText(text, method = 'standard') {
+            let processed = text.toLowerCase();
+            
+            // Remove punctuation and special characters
+            processed = processed.replace(/[^\w\s]/g, ' ');
+            
+            // Remove extra whitespace
+            processed = processed.replace(/\s+/g, ' ').trim();
+            
+            let words = processed.split(' ');
+            
+            if (method === 'stopwords') {
+                const stopwords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should']);
+                words = words.filter(word => !stopwords.has(word));
+            }
+            
+            if (method === 'stemmed') {
+                // Simple stemming (remove common suffixes)
+                words = words.map(word => {
+                    return word.replace(/(ing|ed|er|est|ly|tion|ness)$/, '');
+                });
+            }
+            
+            return words.filter(word => word.length > 0);
+        }
+
+        // Get sentence vector
+        function getSentenceVector(words, method = 'mean') {
+            const vectors = [];
+            const missingWords = [];
+            
+            for (const word of words) {
+                if (wordVectors.has(word)) {
+                    vectors.push(wordVectors.get(word));
+                } else {
+                    missingWords.push(word);
+                }
+            }
+            
+            if (vectors.length === 0) {
+                return { vector: new Array(50).fill(0), missingWords };
+            }
+            
+            let resultVector;
+            
+            if (method === 'mean') {
+                resultVector = new Array(50).fill(0);
+                for (const vector of vectors) {
+                    for (let i = 0; i < 50; i++) {
+                        resultVector[i] += vector[i];
+                    }
+                }
+                for (let i = 0; i < 50; i++) {
+                    resultVector[i] /= vectors.length;
+                }
+            } else if (method === 'sum') {
+                resultVector = new Array(50).fill(0);
+                for (const vector of vectors) {
+                    for (let i = 0; i < 50; i++) {
+                        resultVector[i] += vector[i];
+                    }
+                }
+            } else if (method === 'tfidf') {
+                // Simple TF-IDF approximation
+                const wordCounts = {};
+                for (const word of words) {
+                    wordCounts[word] = (wordCounts[word] || 0) + 1;
+                }
+                
+                resultVector = new Array(50).fill(0);
+                let totalWeight = 0;
+                
+                for (const vector of vectors) {
+                    const word = words[vectors.indexOf(vector)];
+                    const tf = wordCounts[word] / words.length;
+                    const weight = tf; // Simplified, no IDF
+                    
+                    for (let i = 0; i < 50; i++) {
+                        resultVector[i] += vector[i] * weight;
+                    }
+                    totalWeight += weight;
+                }
+                
+                if (totalWeight > 0) {
+                    for (let i = 0; i < 50; i++) {
+                        resultVector[i] /= totalWeight;
+                    }
+                }
+            }
+            
+            return { vector: resultVector, missingWords };
+        }
+
+        // Calculate similarity metrics
+        function calculateCosineSimilarity(vec1, vec2) {
+            let dotProduct = 0;
+            let norm1 = 0;
+            let norm2 = 0;
+            
+            for (let i = 0; i < vec1.length; i++) {
+                dotProduct += vec1[i] * vec2[i];
+                norm1 += vec1[i] * vec1[i];
+                norm2 += vec2[i] * vec2[i];
+            }
+            
+            if (norm1 === 0 || norm2 === 0) return 0;
+            
+            return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
+        }
+
+        function calculateEuclideanDistance(vec1, vec2) {
+            let sum = 0;
+            for (let i = 0; i < vec1.length; i++) {
+                sum += Math.pow(vec1[i] - vec2[i], 2);
+            }
+            return Math.sqrt(sum);
+        }
+
+        function calculateManhattanDistance(vec1, vec2) {
+            let sum = 0;
+            for (let i = 0; i < vec1.length; i++) {
+                sum += Math.abs(vec1[i] - vec2[i]);
+            }
+            return sum;
+        }
+
+        // Main calculation function
+        async function calculateSimilarity() {
+            const doc1 = document.getElementById('document1').value.trim();
+            const doc2 = document.getElementById('document2').value.trim();
+            
+            if (!doc1 || !doc2) {
+                showError('Bitte geben Sie beide Dokumente ein.');
+                return;
+            }
+
+            if (!vectorsLoaded) {
+                showResults('<div class="loading">⏳ Lade Word Vectors...</div>');
+                await loadWordVectors();
+            }
+
+            const sentenceMethod = document.querySelector('input[name="sentenceVector"]:checked').value;
+            const preprocessing = document.querySelector('input[name="preprocessing"]:checked').value;
+
+            // Preprocess documents
+            const words1 = preprocessText(doc1, preprocessing);
+            const words2 = preprocessText(doc2, preprocessing);
+
+            // Get sentence vectors
+            const result1 = getSentenceVector(words1, sentenceMethod);
+            const result2 = getSentenceVector(words2, sentenceMethod);
+
+            // Calculate cosine similarity (only metric now)
+            const similarityValue = calculateCosineSimilarity(result1.vector, result2.vector);
+            const interpretation = getSimilarityInterpretation(similarityValue, 'cosine');
+
+            displayResults({
+                metric: 'cosine',
+                value: similarityValue,
+                interpretation,
+                maxValue: 1,
+                isDistance: false,
+                doc1Words: words1.length,
+                doc2Words: words2.length,
+                missing1: result1.missingWords,
+                missing2: result2.missingWords,
+                sentenceMethod,
+                preprocessing
+            });
+            
+            // Mark as calculated and disable button
+            markAsCalculated();
+        }
+
+        function getSimilarityInterpretation(value, metric) {
+            if (metric === 'cosine') {
+                if (value > 0.9) return 'Sehr hohe Ähnlichkeit - Die Dokumente behandeln sehr ähnliche Themen.';
+                if (value > 0.7) return 'Hohe Ähnlichkeit - Die Dokumente sind thematisch verwandt.';
+                if (value > 0.5) return 'Mittlere Ähnlichkeit - Einige gemeinsame Themen oder Begriffe.';
+                if (value > 0.3) return 'Geringe Ähnlichkeit - Wenige Gemeinsamkeiten.';
+                return 'Sehr geringe Ähnlichkeit - Die Dokumente sind thematisch sehr unterschiedlich.';
+            } else if (metric === 'euclidean') {
+                if (value < 2) return 'Sehr geringe Distanz - Die Dokumente sind sehr ähnlich.';
+                if (value < 5) return 'Geringe Distanz - Die Dokumente sind ähnlich.';
+                if (value < 10) return 'Mittlere Distanz - Mäßige Ähnlichkeit.';
+                if (value < 15) return 'Hohe Distanz - Die Dokumente sind unterschiedlich.';
+                return 'Sehr hohe Distanz - Die Dokumente sind sehr unterschiedlich.';
+            } else if (metric === 'manhattan') {
+                if (value < 10) return 'Sehr geringe Distanz - Die Dokumente sind sehr ähnlich.';
+                if (value < 25) return 'Geringe Distanz - Die Dokumente sind ähnlich.';
+                if (value < 50) return 'Mittlere Distanz - Mäßige Ähnlichkeit.';
+                if (value < 75) return 'Hohe Distanz - Die Dokumente sind unterschiedlich.';
+                return 'Sehr hohe Distanz - Die Dokumente sind sehr unterschiedlich.';
+            }
+        }
+
+        function displayResults(data) {
+            const { value, interpretation, doc1Words, doc2Words, missing1, missing2, sentenceMethod, preprocessing } = data;
+            
+            const methodNames = {
+                mean: 'Mittelwert',
+                sum: 'Summe',
+                tfidf: 'TF-IDF gewichtet'
+            };
+
+            const preprocessingNames = {
+                standard: 'Standard',
+                stemmed: 'Mit Stemming',
+                stopwords: 'Ohne Stoppwörter'
+            };
+
+            // Calculate bar fill percentage for cosine similarity (0-1 range)
+            const barFillPercent = Math.max(0, Math.min(100, value * 100));
+
+            const resultsHTML = `
+                <div class="result-item">
+                    <div class="result-metric">Cosinus-Ähnlichkeit</div>
+                    <div class="result-value">${value.toFixed(4)}</div>
+                    <div class="similarity-bar">
+                        <div class="similarity-fill" style="width: ${barFillPercent}%"></div>
+                    </div>
+                    <div class="result-interpretation">${interpretation}</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
+                    <div class="result-item">
+                        <div class="result-metric">Konfiguration</div>
+                        <div style="color: var(--text-color); line-height: 1.6;">
+                            <strong>Satzvektor:</strong> ${methodNames[sentenceMethod]}<br>
+                            <strong>Vorverarbeitung:</strong> ${preprocessingNames[preprocessing]}
+                        </div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="result-metric">Dokumentstatistik</div>
+                        <div style="color: var(--text-color); line-height: 1.6;">
+                            <strong>Dokument 1:</strong> ${doc1Words} Wörter<br>
+                            <strong>Dokument 2:</strong> ${doc2Words} Wörter
+                        </div>
+                    </div>
+
+                    ${missing1.length > 0 || missing2.length > 0 ? `
+                    <div class="result-item">
+                        <div class="result-metric">⚠️ Unbekannte Wörter</div>
+                        <div style="color: var(--secondary-text); line-height: 1.6; font-size: 0.9rem;">
+                            ${missing1.length > 0 ? `<strong>Dokument 1:</strong> ${missing1.join(', ')}<br>` : ''}
+                            ${missing2.length > 0 ? `<strong>Dokument 2:</strong> ${missing2.join(', ')}` : ''}
+                            <br><small>Diese Wörter sind nicht in den GloVe Vektoren enthalten.</small>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            showResults(resultsHTML);
+        }
+
+        function showResults(html) {
+            document.getElementById('resultsContent').innerHTML = html;
+            document.getElementById('resultsSection').classList.add('show');
+        }
+
+        function showError(message) {
+            const errorHTML = `<div class="error">${message}</div>`;
+            showResults(errorHTML);
+        }
+
+        function loadExamples() {
+            const examples = [
+                {
+                    doc1: "The quick brown fox jumps over the lazy dog.",
+                    doc2: "A fast auburn fox leaps above the sleepy canine."
+                },
+                {
+                    doc1: "Machine learning is a subset of artificial intelligence.",
+                    doc2: "AI includes machine learning as one of its key components."
+                },
+                {
+                    doc1: "The weather is sunny and warm today.",
+                    doc2: "The stock market experienced significant volatility."
+                },
+                {
+                    doc1: "Python is a popular programming language for data science.",
+                    doc2: "Data scientists often use Python for their projects."
+                }
+            ];
+
+            const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            document.getElementById('document1').value = randomExample.doc1;
+            document.getElementById('document2').value = randomExample.doc2;
+        }
+
+        // Predefined longer text examples (English for GloVe compatibility)
+        const longTexts = {
+            ai: `Machine learning algorithms process datasets to identify patterns and make predictions. Neural networks use weighted connections between nodes to classify inputs. Training requires labeled examples to adjust parameters through gradient descent optimization. Supervised learning tackles regression problems by minimizing error functions. Classification tasks assign categories to input vectors using decision boundaries. Feature selection improves model accuracy by choosing relevant variables. Cross validation prevents overfitting by testing on holdout data. Ensemble methods combine multiple weak learners into stronger predictors. Regularization techniques like ridge regression control model complexity. Deep architectures stack multiple layers to learn hierarchical representations automatically.`,
+
+            deeplearning: `Convolutional layers apply filters to detect edges and textures in images. Pooling operations downsample feature maps to reduce computational requirements. Backpropagation computes gradients to update network weights during training iterations. Activation functions introduce nonlinearity through sigmoid, tanh, or ReLU operations. Dropout randomly deactivates neurons to prevent overfitting during forward passes. Batch normalization stabilizes learning by normalizing layer inputs. LSTM cells maintain long-term memory in recurrent network architectures. Attention mechanisms focus on relevant sequence positions for better performance. Transfer learning fine-tunes pretrained models for specific downstream tasks. GPU acceleration enables parallel matrix multiplications for faster training.`,
+
+            climate: `Beautiful flowers bloom in meadows during warm spring seasons. Butterflies flutter between colorful petals collecting sweet nectar. Birds sing cheerful melodies from tall oak tree branches. Gentle breezes carry fresh mountain air across valleys. Streams flow peacefully through green forests filled with wildlife. Sunshine warms the earth and helps plants grow strong. Children play happily in parks surrounded by nature. Families enjoy picnics under shady trees on sunny afternoons. Gardens produce fresh vegetables and herbs for healthy meals. Walking trails wind through peaceful landscapes away from busy cities.`,
+
+            space: `Astronauts float weightlessly inside spacecraft orbiting high above Earth. Rockets blast off from launch pads using powerful engines. Moon craters were formed by ancient asteroid impacts. Stars twinkle brightly in the dark vacuum of space. Planets orbit around the sun in elliptical paths. Satellites transmit television signals back to ground stations. Telescopes reveal distant galaxies containing billions of stars. Space suits protect crews from dangerous radiation exposure. Mission control monitors flights from computer centers. Solar panels convert sunlight into electricity for equipment.`,
+
+            health: `Doctors examine patients using stethoscopes to hear heartbeats clearly. Nurses give injections and check temperatures in hospital rooms. Babies cry loudly when they feel hungry or tired. Grandparents take daily walks to stay healthy and active. Families cook nutritious meals with fresh fruits and vegetables. Children brush their teeth twice daily to prevent cavities. Pharmacies sell medicines to treat common illnesses like colds. Ambulances rush sick people to emergency rooms quickly. Dentists clean teeth and fill cavities during checkups. Exercise keeps muscles strong and hearts pumping efficiently.`
+        };
+
+        function loadSelectedText(documentNumber) {
+            const dropdownId = `dropdown${documentNumber}`;
+            const textareaId = `document${documentNumber}`;
+            const selectedValue = document.getElementById(dropdownId).value;
+            
+            if (selectedValue && longTexts[selectedValue]) {
+                document.getElementById(textareaId).value = longTexts[selectedValue];
+                updateButtonState();
+                
+                // Auto-calculate if both documents have content
+                const doc1 = document.getElementById('document1').value.trim();
+                const doc2 = document.getElementById('document2').value.trim();
+                if (doc1 && doc2) {
+                    calculateSimilarity();
+                }
+            }
+        }
+
+        // Track initial content and button state
+        let lastContent = { doc1: '', doc2: '', settings: '' };
+        let calculationButton;
+
+        function updateButtonState() {
+            if (!calculationButton) {
+                calculationButton = document.querySelector('button[onclick="calculateSimilarity()"]');
+            }
+            
+            const doc1 = document.getElementById('document1').value.trim();
+            const doc2 = document.getElementById('document2').value.trim();
+            const sentenceMethod = document.querySelector('input[name="sentenceVector"]:checked').value;
+            const preprocessing = document.querySelector('input[name="preprocessing"]:checked').value;
+            
+            const currentContent = {
+                doc1: doc1,
+                doc2: doc2,
+                settings: `${sentenceMethod}-cosine-${preprocessing}`
+            };
+            
+            // Enable button only if content or settings changed
+            const hasChanged = (
+                currentContent.doc1 !== lastContent.doc1 ||
+                currentContent.doc2 !== lastContent.doc2 ||
+                currentContent.settings !== lastContent.settings
+            );
+            
+            if (calculationButton) {
+                calculationButton.disabled = !hasChanged || !doc1 || !doc2;
+            }
+        }
+
+        function markAsCalculated() {
+            const doc1 = document.getElementById('document1').value.trim();
+            const doc2 = document.getElementById('document2').value.trim();
+            const sentenceMethod = document.querySelector('input[name="sentenceVector"]:checked').value;
+            const preprocessing = document.querySelector('input[name="preprocessing"]:checked').value;
+            
+            lastContent = {
+                doc1: doc1,
+                doc2: doc2,
+                settings: `${sentenceMethod}-cosine-${preprocessing}`
+            };
+            
+            updateButtonState();
+        }
+        function loadRandomExamples() {
+            const examples = [
+                {
+                    doc1: "The quick brown fox jumps over the lazy dog.",
+                    doc2: "A fast auburn fox leaps above the sleepy canine."
+                },
+                {
+                    doc1: "Machine learning is a subset of artificial intelligence.",
+                    doc2: "AI includes machine learning as one of its key components."
+                },
+                {
+                    doc1: "The weather is sunny and warm today.",
+                    doc2: "The stock market experienced significant volatility."
+                },
+                {
+                    doc1: "Python is a popular programming language for data science.",
+                    doc2: "Data scientists often use Python for their projects."
+                }
+            ];
+
+            const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            document.getElementById('document1').value = randomExample.doc1;
+            document.getElementById('document2').value = randomExample.doc2;
+            updateButtonState();
+        }
+
+        // Add event listeners for input changes
+        function setupEventListeners() {
+            // Text area changes
+            document.getElementById('document1').addEventListener('input', updateButtonState);
+            document.getElementById('document2').addEventListener('input', updateButtonState);
+            
+            // Radio button changes
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', updateButtonState);
+            });
+        }
+
+        // Auto-load vectors when page loads
+        window.addEventListener('load', () => {
+            loadWordVectors();
+            setupEventListeners();
+            updateButtonState(); // Initial button state
+        });
+    </script>
+</body>
+</html>
