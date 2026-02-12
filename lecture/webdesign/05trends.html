@@ -311,48 +311,92 @@ of code</code></pre>
                     <h2 class="card-title mb-0">Navigation</h2>
                 </div>
                 <div class="card-body component-demo">
-                    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
-                        <a class="navbar-brand" href="#">Navbar</a>
-                        <button class="navbar-toggler" type="button">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-                        <div class="navbar-nav">
-                            <a class="nav-link active" href="#">Home</a>
-                            <a class="nav-link" href="#">Features</a>
-                            <a class="nav-link" href="#">Pricing</a>
-                            <a class="nav-link disabled" href="#">Disabled</a>
-                        </div>
-                    </nav>
+                    <!-- Navbar -->
+                    <div class="mb-4">
+                        <h5>Navbar</h5>
+                        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                            <a class="navbar-brand" href="#">Navbar</a>
+                            <button class="navbar-toggler" type="button">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                            <div class="navbar-nav">
+                                <a class="nav-link active" href="#">Home</a>
+                                <a class="nav-link" href="#">Features</a>
+                                <a class="nav-link" href="#">Pricing</a>
+                                <a class="nav-link disabled" href="#">Disabled</a>
+                            </div>
+                        </nav>
+                    </div>
 
-                    <ul class="nav nav-tabs mb-3">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">Active</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Link</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Link</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link disabled" href="#">Disabled</a>
-                        </li>
-                    </ul>
+                    <!-- Tabs -->
+                    <div class="mb-4">
+                        <h5>Tabs</h5>
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#">Active</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Link</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Link</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link disabled" href="#">Disabled</a>
+                            </li>
+                        </ul>
+                    </div>
 
-                    <ul class="nav nav-pills">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">Active</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Link</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Link</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link disabled" href="#">Disabled</a>
-                        </li>
-                    </ul>
+                    <!-- Pills -->
+                    <div class="mb-4">
+                        <h5>Pills</h5>
+                        <ul class="nav nav-pills">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#">Active</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Link</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Link</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link disabled" href="#">Disabled</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Breadcrumb -->
+                    <div class="mb-4">
+                        <h5>Breadcrumb</h5>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                <li class="breadcrumb-item"><a href="#">Library</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Data</li>
+                            </ol>
+                        </nav>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="mb-0">
+                        <h5>Pagination</h5>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                                </li>
+                                <li class="page-item active" aria-current="page">
+                                    <a class="page-link" href="#">1</a>
+                                </li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </section>
 
@@ -546,6 +590,68 @@ Multiple lines</pre>
                         </div>
                     </div>
                     
+                    <!-- Navigation -->
+                    <div class="row" style="margin-bottom: 40px;">
+                        <div class="span16">
+                            <h2>Navigation</h2>
+                            
+                            <!-- Fixed Topbar -->
+                            <div class="topbar">
+                                <div class="fill">
+                                    <div class="container">
+                                        <h3><a href="#">Project Name</a></h3>
+                                        <ul>
+                                            <li class="active"><a href="#">Home</a></li>
+                                            <li><a href="#">Link</a></li>
+                                            <li><a href="#">Link</a></li>
+                                        </ul>
+                                        <form class="pull-right">
+                                            <input class="input-small" type="text" placeholder="Search">
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Tabs -->
+                            <div style="margin-top: 20px;">
+                                <h4>Tabs</h4>
+                                <ul class="tabs">
+                                    <li class="active"><a href="#">Home</a></li>
+                                    <li><a href="#">Profile</a></li>
+                                    <li><a href="#">Messages</a></li>
+                                    <li><a href="#">Settings</a></li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Pills -->
+                            <div style="margin-top: 20px;">
+                                <h4>Pills</h4>
+                                <ul class="pills">
+                                    <li class="active"><a href="#">Home</a></li>
+                                    <li><a href="#">Profile</a></li>
+                                    <li><a href="#">Messages</a></li>
+                                    <li><a href="#">Settings</a></li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <div style="margin-top: 20px;">
+                                <h4>Pagination</h4>
+                                <div class="pagination">
+                                    <ul>
+                                        <li class="prev disabled"><a href="#">&larr; Previous</a></li>
+                                        <li class="active"><a href="#">1</a></li>
+                                        <li><a href="#">2</a></li>
+                                        <li><a href="#">3</a></li>
+                                        <li><a href="#">4</a></li>
+                                        <li><a href="#">5</a></li>
+                                        <li class="next"><a href="#">Next &rarr;</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Forms -->
                     <div class="row">
                         <div class="span16">
@@ -628,22 +734,69 @@ Multiple lines</pre>
                     <!-- Navigation -->
                     <section style="margin-bottom: 40px;">
                         <h2>Navigation</h2>
-                        <div class="navbar">
-                            <div class="navbar-inner">
-                                <a class="brand" href="#">Brand</a>
-                                <ul class="nav">
-                                    <li class="active"><a href="#">Home</a></li>
-                                    <li><a href="#">Link</a></li>
-                                    <li><a href="#">Link</a></li>
-                                </ul>
+                        
+                        <!-- Navbar -->
+                        <div style="margin-bottom: 20px;">
+                            <h4>Navbar</h4>
+                            <div class="navbar">
+                                <div class="navbar-inner">
+                                    <a class="brand" href="#">Brand</a>
+                                    <ul class="nav">
+                                        <li class="active"><a href="#">Home</a></li>
+                                        <li><a href="#">Link</a></li>
+                                        <li><a href="#">Link</a></li>
+                                        <li><a href="#">Link</a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                         
-                        <ul class="nav nav-tabs">
-                            <li class="active"><a href="#">Active</a></li>
-                            <li><a href="#">Link</a></li>
-                            <li><a href="#">Link</a></li>
-                        </ul>
+                        <!-- Tabs -->
+                        <div style="margin-bottom: 20px;">
+                            <h4>Tabs</h4>
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a href="#">Active</a></li>
+                                <li><a href="#">Link</a></li>
+                                <li><a href="#">Link</a></li>
+                                <li><a href="#">Disabled</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Pills -->
+                        <div style="margin-bottom: 20px;">
+                            <h4>Pills</h4>
+                            <ul class="nav nav-pills">
+                                <li class="active"><a href="#">Active</a></li>
+                                <li><a href="#">Link</a></li>
+                                <li><a href="#">Link</a></li>
+                                <li><a href="#">Disabled</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Breadcrumb -->
+                        <div style="margin-bottom: 20px;">
+                            <h4>Breadcrumb</h4>
+                            <ul class="breadcrumb">
+                                <li><a href="#">Home</a> <span class="divider">/</span></li>
+                                <li><a href="#">Library</a> <span class="divider">/</span></li>
+                                <li class="active">Data</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div style="margin-bottom: 20px;">
+                            <h4>Pagination</h4>
+                            <div class="pagination">
+                                <ul>
+                                    <li class="disabled"><a href="#">«</a></li>
+                                    <li class="active"><a href="#">1</a></li>
+                                    <li><a href="#">2</a></li>
+                                    <li><a href="#">3</a></li>
+                                    <li><a href="#">4</a></li>
+                                    <li><a href="#">»</a></li>
+                                </ul>
+                            </div>
+                        </div>
                     </section>
                     
                     <!-- Modals -->
