@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Bootstrap Evolution - Web Design</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Interaktiver Vergleich verschiedener Bootstrap-Versionen - Von Bootstrap 1.0 bis zur aktuellen Version">
+    <meta name="keywords" content="Bootstrap, Framework, Evolution, Vergleich, CSS, Frontend, Web Design">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Bootstrap Evolution - Web Design">
+    <meta property="og:description"
+        content="Vergleiche verschiedene Bootstrap-Versionen und deren Evolution">
+    <meta property="og:type" content="website">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    
+    <!-- Shared Styles -->
+    
+    <!-- Bootstrap CSS (will be dynamically loaded) -->
+    <link id="bootstrap-css" rel="stylesheet" href="">
+    
+    <style>
+        /* Only styles for the floating version switcher - completely isolated */
+        .version-switcher {
+            all: initial !important;
+            position: fixed !important;
+            bottom: 20px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(30px) !important;
+            -webkit-backdrop-filter: blur(30px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 50px !important;
+            padding: 14px 28px !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+            z-index: 99999 !important;
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 7px !important;
+            align-items: center !important;
+            justify-content: center !important;
+            max-width: 90vw !important;
+            overflow-x: auto !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            width: auto !important;
+            height: auto !important;
+        }
+
+        /* Dark mode for version switcher */
+        @media (prefers-color-scheme: dark) {
+            .version-switcher {
+                background: rgba(30, 30, 32, 0.9) !important;
+                border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            }
+        }
+
+        .version-btn {
+            all: initial !important;
+            display: inline-block !important;
+            background: transparent !important;
+            border: 2px solid transparent !important;
+            color: #86868b !important;
+            padding: 7px 14px !important;
+            border-radius: 20px !important;
+            cursor: pointer !important;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
+            white-space: nowrap !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            box-sizing: border-box !important;
+            text-align: center !important;
+            text-decoration: none !important;
+            margin: 0 !important;
+            width: auto !important;
+            height: auto !important;
+            line-height: 1.2 !important;
+            outline: none !important;
+            user-select: none !important;
+            -webkit-user-select: none !important;
+        }
+
+        .version-btn:hover {
+            color: #1d1d1f !important;
+            background: rgba(255, 229, 92, 0.2) !important;
+            transform: none !important;
+        }
+
+        .version-btn.active {
+            background: rgba(255, 229, 92, 1) !important;
+            color: #1d1d1f !important;
+            border-color: rgba(255, 229, 92, 1) !important;
+            transform: none !important;
+        }
+
+        /* Dark mode for version buttons */
+        @media (prefers-color-scheme: dark) {
+            .version-btn {
+                color: #86868b !important;
+            }
+            .version-btn:hover {
+                color: #f5f5f7 !important;
+            }
+        }
+
+        /* Responsive design for version switcher only */
+        @media (max-width: 768px) {
+            .version-switcher {
+                padding: 10px 14px !important;
+                gap: 4px !important;
+            }
+            
+            .version-btn {
+                padding: 7px 14px !important;
+                font-size: 12px !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-indicator" style="display: none;" id="loadingIndicator">
+        🔄 Loading Bootstrap <span id="loadingVersion"></span>
+    </div>
+
+    <div class="container-fluid" style="padding-bottom: 120px;">
+        <div class="container" id="main-content">
+            <!-- Page Header -->
+            <header class="text-center my-5">
+                <div class="badge bg-warning text-dark fs-6 mb-3" id="currentVersionInfo">Bootstrap 5.3.2</div>
+                <h1 class="display-4">Bootstrap Evolution</h1>
+                <p class="lead">Entdecke die Entwicklung von Bootstrap über die Jahre - von Version 1.0 bis heute. Wähle eine Version unten aus, um die Unterschiede zu sehen.</p>
+            </header>
+
+            <!-- Typography Section -->
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Typography</h2>
+                </div>
+                <div class="card-body component-demo">
+                    <h1>Heading 1</h1>
+                    <h2>Heading 2</h2>
+                    <h3>Heading 3</h3>
+                    <h4>Heading 4</h4>
+                    <h5>Heading 5</h5>
+                    <h6>Heading 6</h6>
+                    <p class="lead">This is a lead paragraph. It stands out from regular paragraphs.</p>
+                    <p>This is a regular paragraph with some <strong>bold text</strong> and <em>italic text</em>. 
+                    It also contains a <a href="#">link</a> to demonstrate link styling.</p>
+                    <blockquote>
+                        <p>This is a blockquote. It's used to highlight important quotes or excerpts.</p>
+                        <footer>Someone famous in <cite title="Source Title">Source Title</cite></footer>
+                    </blockquote>
+                    <code>This is inline code</code>
+                    <pre><code>This is a code block
+with multiple lines
+of code</code></pre>
+                </div>
+            </section>
+
+            <!-- Buttons Section -->
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Buttons</h2>
+                </div>
+                <div class="card-body component-demo">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100">
+                                <h5>Standard Buttons</h5>
+                            <button type="button" class="btn btn-primary">Primary</button>
+                            <button type="button" class="btn btn-secondary">Secondary</button>
+                            <button type="button" class="btn btn-success">Success</button>
+                            <button type="button" class="btn btn-danger">Danger</button>
+                            <button type="button" class="btn btn-warning">Warning</button>
+                            <button type="button" class="btn btn-info">Info</button>
+                            <button type="button" class="btn btn-light">Light</button>
+                            <button type="button" class="btn btn-dark">Dark</button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100">
+                                <h5>Button Sizes</h5>
+                            <button type="button" class="btn btn-primary btn-lg">Large</button>
+                            <button type="button" class="btn btn-primary">Default</button>
+                            <button type="button" class="btn btn-primary btn-sm">Small</button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3 h-100">
+                                <h5>Button States</h5>
+                                <button type="button" class="btn btn-primary">Normal</button>
+                                <button type="button" class="btn btn-primary" disabled>Disabled</button>
+                                <button type="button" class="btn btn-outline-primary">Outlined</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Forms Section -->
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Forms</h2>
+                </div>
+                <div class="card-body component-demo">
+                    <form>
+                        <div class="form-group mb-3">
+                            <label for="exampleInput">Email address</label>
+                            <input type="email" class="form-control" id="exampleInput" placeholder="Enter email">
+                            <small class="form-text text-muted">We'll never share your email with anyone else.</small>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="examplePassword">Password</label>
+                            <input type="password" class="form-control" id="examplePassword" placeholder="Password">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="exampleSelect">Select</label>
+                            <select class="form-control" id="exampleSelect">
+                                <option>Option 1</option>
+                                <option>Option 2</option>
+                                <option>Option 3</option>
+                            </select>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="exampleCheck">
+                            <label class="form-check-label" for="exampleCheck">Check me out</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Alerts Section -->
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Alerts</h2>
+                </div>
+                <div class="card-body component-demo">
+                    <div class="alert alert-primary" role="alert">
+                        A simple primary alert—check it out!
+                    </div>
+                    <div class="alert alert-secondary" role="alert">
+                        A simple secondary alert—check it out!
+                    </div>
+                    <div class="alert alert-success" role="alert">
+                        A simple success alert—check it out!
+                    </div>
+                    <div class="alert alert-danger" role="alert">
+                        A simple danger alert—check it out!
+                    </div>
+                    <div class="alert alert-warning" role="alert">
+                        A simple warning alert—check it out!
+                    </div>
+                    <div class="alert alert-info" role="alert">
+                        A simple info alert—check it out!
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cards Section -->
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Cards</h2>
+                </div>
+                <div class="card-body component-demo">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    Featured
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Special title treatment</h5>
+                                    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Card title</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                                    <a href="#" class="card-link">Card link</a>
+                                    <a href="#" class="card-link">Another link</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation Section -->
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Navigation</h2>
+                </div>
+                <div class="card-body component-demo">
+                    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+                        <a class="navbar-brand" href="#">Navbar</a>
+                        <button class="navbar-toggler" type="button">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="navbar-nav">
+                            <a class="nav-link active" href="#">Home</a>
+                            <a class="nav-link" href="#">Features</a>
+                            <a class="nav-link" href="#">Pricing</a>
+                            <a class="nav-link disabled" href="#">Disabled</a>
+                        </div>
+                    </nav>
+
+                    <ul class="nav nav-tabs mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">Active</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Link</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Link</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" href="#">Disabled</a>
+                        </li>
+                    </ul>
+
+                    <ul class="nav nav-pills">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">Active</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Link</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Link</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" href="#">Disabled</a>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Modal Demo Section -->
+            <section class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Modals</h2>
+                </div>
+                <div class="card-body component-demo">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        Launch demo modal
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Modal title</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>This is a modal dialog. The styling and functionality changes depending on the Bootstrap version.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Floating Version Switcher -->
+    <div class="version-switcher" id="versionSwitcher">
+        <button class="version-btn" data-version="1.0.0" data-css="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/1.4.0/css/bootstrap.min.css">1.0</button>
+        <button class="version-btn" data-version="2.3.2" data-css="https://maxcdn.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css">2.3</button>
+        <button class="version-btn" data-version="3.4.1" data-css="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">3.4</button>
+        <button class="version-btn" data-version="4.6.2" data-css="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">4.6</button>
+        <button class="version-btn active" data-version="5.3.2" data-css="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">5.3</button>
+    </div>
+
+    <script>
+        class BootstrapVersionSwitcher {
+            constructor() {
+                this.currentVersion = '5.3.2';
+                this.loadingIndicator = document.getElementById('loadingIndicator');
+                this.loadingVersion = document.getElementById('loadingVersion');
+                this.versionInfo = document.getElementById('currentVersionInfo');
+                this.bootstrapCSS = document.getElementById('bootstrap-css');
+                
+                this.init();
+            }
+
+            init() {
+                // Load initial version
+                this.loadVersion('5.3.2', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
+                
+                // Add event listeners
+                document.querySelectorAll('.version-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const version = e.target.dataset.version;
+                        const cssUrl = e.target.dataset.css;
+                        this.switchVersion(version, cssUrl, e.target);
+                    });
+                });
+            }
+
+            showLoading(version) {
+                this.loadingVersion.textContent = version;
+                this.loadingIndicator.classList.add('show');
+            }
+
+            hideLoading() {
+                this.loadingIndicator.classList.remove('show');
+            }
+
+            switchVersion(version, cssUrl, button) {
+                if (version === this.currentVersion) return;
+                
+                this.showLoading(version);
+                
+                // Update active button
+                document.querySelectorAll('.version-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                
+                this.loadVersion(version, cssUrl);
+            }
+
+            loadVersion(version, cssUrl) {
+                this.currentVersion = version;
+                
+                // Update version info
+                this.versionInfo.textContent = `Bootstrap ${version}`;
+                
+                // Load new CSS
+                const newLink = document.createElement('link');
+                newLink.rel = 'stylesheet';
+                newLink.href = cssUrl;
+                
+                newLink.onload = () => {
+                    // Replace old CSS
+                    if (this.bootstrapCSS.href) {
+                        this.bootstrapCSS.remove();
+                    }
+                    newLink.id = 'bootstrap-css';
+                    this.bootstrapCSS = newLink;
+                    
+                    this.hideLoading();
+                    this.handleVersionSpecificChanges(version);
+                };
+                
+                newLink.onerror = () => {
+                    console.warn(`Failed to load Bootstrap ${version}`);
+                    this.hideLoading();
+                    
+                    // Fallback to working version
+                    if (version !== '5.3.2') {
+                        this.switchVersion('5.3.2', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css', 
+                            document.querySelector('[data-version="5.3.2"]'));
+                    }
+                };
+                
+                document.head.appendChild(newLink);
+            }
+
+            handleVersionSpecificChanges(version) {
+                // Handle version-specific class differences
+                const majorVersion = parseInt(version.split('.')[0]);
+                const minorVersion = parseInt(version.split('.')[1] || '0');
+                
+                // Store original content if not already stored
+                if (!this.originalContent) {
+                    this.originalContent = document.getElementById('main-content').innerHTML;
+                }
+                
+                // Reset to original content
+                document.getElementById('main-content').innerHTML = this.originalContent;
+                
+                if (majorVersion <= 1) {
+                    this.handleBootstrap1x();
+                } else if (majorVersion <= 2) {
+                    this.handleBootstrap2x();
+                } else if (majorVersion <= 3) {
+                    this.handleBootstrap3x();
+                } else {
+                    this.handleModernBootstrap(majorVersion);
+                }
+            }
+
+            handleBootstrap1x() {
+                // Bootstrap 1.x had very limited components
+                const content = `
+                    <header class="hero-unit" style="text-align: center; margin-bottom: 40px;">
+                        <span class="label label-warning" id="currentVersionInfo">Bootstrap 1.4.0</span>
+                        <h1>Bootstrap Evolution</h1>
+                        <p>Entdecke die Entwicklung von Bootstrap über die Jahre - von Version 1.0 bis heute.</p>
+                    </header>
+                    
+                    <!-- Typography -->
+                    <div class="row" style="margin-bottom: 40px;">
+                        <div class="span16">
+                            <h2>Typography</h2>
+                            <h1>Heading 1</h1>
+                            <h2>Heading 2</h2>
+                            <h3>Heading 3</h3>
+                            <p><strong>Bold text</strong> and <em>italic text</em> with <a href="#">links</a>.</p>
+                            <code>Inline code</code>
+                            <pre>Code block
+Multiple lines</pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Buttons -->
+                    <div class="row" style="margin-bottom: 40px;">
+                        <div class="span16">
+                            <h2>Buttons</h2>
+                            <p>
+                                <a class="btn primary">Primary</a>
+                                <a class="btn">Default</a>
+                                <a class="btn success">Success</a>
+                                <a class="btn danger">Danger</a>
+                                <a class="btn large">Large</a>
+                                <a class="btn small">Small</a>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Forms -->
+                    <div class="row">
+                        <div class="span16">
+                            <h2>Forms</h2>
+                            <form>
+                                <div class="clearfix">
+                                    <label for="email">Email</label>
+                                    <div class="input">
+                                        <input type="email" id="email" placeholder="Enter email">
+                                    </div>
+                                </div>
+                                <div class="clearfix">
+                                    <label for="password">Password</label>
+                                    <div class="input">
+                                        <input type="password" id="password" placeholder="Password">
+                                    </div>
+                                </div>
+                                <div class="actions">
+                                    <input type="submit" class="btn primary" value="Submit">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('main-content').innerHTML = content;
+            }
+
+            handleBootstrap2x() {
+                // Bootstrap 2.x
+                const content = `
+                    <header class="hero-unit" style="text-align: center; margin-bottom: 40px;">
+                        <span class="label label-warning" id="currentVersionInfo">Bootstrap 2.3.2</span>
+                        <h1>Bootstrap Evolution</h1>
+                        <p class="lead">Entdecke die Entwicklung von Bootstrap über die Jahre.</p>
+                    </header>
+                    
+                    <!-- Typography -->
+                    <section style="margin-bottom: 40px;">
+                        <h2>Typography</h2>
+                        <h1>Heading 1</h1>
+                        <h2>Heading 2</h2>
+                        <h3>Heading 3</h3>
+                        <p class="lead">Lead paragraph text.</p>
+                        <p><strong>Bold</strong> and <em>italic</em> with <a href="#">links</a>.</p>
+                        <blockquote>
+                            <p>Blockquote text</p>
+                            <small>Someone famous</small>
+                        </blockquote>
+                        <code>Inline code</code>
+                        <pre>Code block</pre>
+                    </section>
+                    
+                    <!-- Buttons -->
+                    <section style="margin-bottom: 40px;">
+                        <h2>Buttons</h2>
+                        <p>
+                            <button class="btn btn-primary">Primary</button>
+                            <button class="btn">Default</button>
+                            <button class="btn btn-success">Success</button>
+                            <button class="btn btn-danger">Danger</button>
+                            <button class="btn btn-warning">Warning</button>
+                            <button class="btn btn-info">Info</button>
+                        </p>
+                        <p>
+                            <button class="btn btn-large btn-primary">Large</button>
+                            <button class="btn btn-primary">Default</button>
+                            <button class="btn btn-small btn-primary">Small</button>
+                        </p>
+                    </section>
+                    
+                    <!-- Alerts -->
+                    <section style="margin-bottom: 40px;">
+                        <h2>Alerts</h2>
+                        <div class="alert alert-success">Success alert</div>
+                        <div class="alert alert-error">Error alert</div>
+                        <div class="alert alert-info">Info alert</div>
+                        <div class="alert">Default alert</div>
+                    </section>
+                    
+                    <!-- Navigation -->
+                    <section style="margin-bottom: 40px;">
+                        <h2>Navigation</h2>
+                        <div class="navbar">
+                            <div class="navbar-inner">
+                                <a class="brand" href="#">Brand</a>
+                                <ul class="nav">
+                                    <li class="active"><a href="#">Home</a></li>
+                                    <li><a href="#">Link</a></li>
+                                    <li><a href="#">Link</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a href="#">Active</a></li>
+                            <li><a href="#">Link</a></li>
+                            <li><a href="#">Link</a></li>
+                        </ul>
+                    </section>
+                    
+                    <!-- Modals -->
+                    <section>
+                        <h2>Modals</h2>
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#modal2x">Open Modal</button>
+                        
+                        <div class="modal hide" id="modal2x">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">×</button>
+                                <h3>Modal Title</h3>
+                            </div>
+                            <div class="modal-body">
+                                <p>Bootstrap 2.x modal content</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn" data-dismiss="modal">Close</button>
+                                <button class="btn btn-primary">Save</button>
+                            </div>
+                        </div>
+                    </section>
+                `;
+                document.getElementById('main-content').innerHTML = content;
+            }
+
+            handleBootstrap3x() {
+                // Update form-group classes for Bootstrap 3
+                document.querySelectorAll('.mb-3').forEach(el => {
+                    el.classList.remove('mb-3');
+                });
+                
+                // Bootstrap 3 doesn't have outline buttons
+                document.querySelectorAll('.btn-outline-primary').forEach(el => {
+                    el.classList.remove('btn-outline-primary');
+                    el.classList.add('btn-default');
+                });
+                
+                // Bootstrap 3 uses different modal close button
+                document.querySelectorAll('.btn-close').forEach(el => {
+                    el.innerHTML = '&times;';
+                    el.classList.remove('btn-close');
+                    el.classList.add('close');
+                });
+                
+                // Remove cards (not available in Bootstrap 3) and replace with panels
+                document.querySelectorAll('.card').forEach(card => {
+                    const panel = document.createElement('div');
+                    panel.className = 'panel panel-default';
+                    
+                    const header = card.querySelector('.card-header');
+                    if (header) {
+                        const panelHeader = document.createElement('div');
+                        panelHeader.className = 'panel-heading';
+                        panelHeader.innerHTML = header.innerHTML;
+                        panel.appendChild(panelHeader);
+                    }
+                    
+                    const body = card.querySelector('.card-body');
+                    if (body) {
+                        const panelBody = document.createElement('div');
+                        panelBody.className = 'panel-body';
+                        panelBody.innerHTML = body.innerHTML;
+                        panel.appendChild(panelBody);
+                    }
+                    
+                    card.parentNode.replaceChild(panel, card);
+                });
+                
+                // Update grid classes for Bootstrap 3
+                document.querySelectorAll('.row.g-3').forEach(el => {
+                    el.classList.remove('g-3');
+                });
+            }
+
+            handleModernBootstrap(majorVersion) {
+                // Restore modern Bootstrap classes for v4+
+                document.querySelectorAll('.form-group:not(.mb-3)').forEach(el => {
+                    el.classList.add('mb-3');
+                });
+                
+                document.querySelectorAll('.btn-default').forEach(el => {
+                    el.classList.remove('btn-default');
+                    el.classList.add('btn-outline-primary');
+                });
+                
+                document.querySelectorAll('.close').forEach(el => {
+                    el.innerHTML = '';
+                    el.classList.remove('close');
+                    el.classList.add('btn-close');
+                });
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new BootstrapVersionSwitcher();
+        });
+
+        // Enhanced modal handling for different Bootstrap versions
+        document.addEventListener('click', (e) => {
+            // Handle Bootstrap 4+ modals
+            if (e.target.matches('[data-bs-toggle="modal"]')) {
+                e.preventDefault();
+                const targetModal = document.querySelector(e.target.getAttribute('data-bs-target'));
+                if (targetModal) {
+                    targetModal.style.display = 'block';
+                    targetModal.classList.add('show');
+                    document.body.classList.add('modal-open');
+                    
+                    // Add backdrop
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                }
+            }
+            
+            // Handle Bootstrap 2.x/3.x modals
+            if (e.target.matches('[data-toggle="modal"]')) {
+                e.preventDefault();
+                const targetSelector = e.target.getAttribute('data-target');
+                const targetModal = document.querySelector(targetSelector);
+                if (targetModal) {
+                    targetModal.style.display = 'block';
+                    targetModal.classList.remove('hide');
+                    targetModal.classList.add('in');
+                    document.body.classList.add('modal-open');
+                    
+                    // Add backdrop for Bootstrap 2.x/3.x
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade in';
+                    document.body.appendChild(backdrop);
+                }
+            }
+            
+            // Handle modal close for all versions
+            if (e.target.matches('[data-bs-dismiss="modal"], [data-dismiss="modal"]') || e.target.closest('.modal-backdrop')) {
+                const modal = e.target.closest('.modal') || document.querySelector('.modal.show, .modal.in');
+                if (modal) {
+                    modal.style.display = 'none';
+                    modal.classList.remove('show', 'in');
+                    modal.classList.add('hide');
+                    document.body.classList.remove('modal-open');
+                    
+                    // Remove backdrop
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

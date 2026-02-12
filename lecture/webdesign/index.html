@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Web Design - Begleitmaterial</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Begleitmaterial zur Vorlesung 'Web Design' - Interaktive Tools und Experimente zu modernen Webentwicklungs-Themen">
+    <meta name="keywords" content="Web Design, Vorlesung, Begleitmaterial, HTML, CSS, JavaScript, Frontend, interaktiv">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Web Design - Begleitmaterial">
+    <meta property="og:description"
+        content="Interaktive Tools und Experimente zur Vorlesung Web Design">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/lecture/webdesign/">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <style>
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .course-intro {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .course-title {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .course-description {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .progress-info {
+            color: var(--secondary-text);
+            font-size: 0.95rem;
+            margin-top: 1rem;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .module-tile {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-tile.available {
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .module-tile.available:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(255, 229, 92, 0.15);
+            border-color: var(--accent-color);
+        }
+
+        .module-tile.available:hover .module-title {
+            color: var(--accent-color);
+        }
+
+        .module-tile.unavailable {
+            opacity: 0.5;
+            background: rgba(255, 255, 255, 0.02);
+            cursor: not-allowed;
+        }
+
+        .module-tile.unavailable::after {
+            content: "🔒";
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+
+        .module-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .module-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .module-description {
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            line-height: 1.4;
+            margin-bottom: 0.8rem;
+        }
+
+        .module-topics {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--accent-color);
+            color: black;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.coming-soon {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--secondary-text);
+        }
+
+        .status-badge.in-development {
+            background: rgba(255, 165, 0, 0.8);
+            color: black;
+        }
+
+        @media (max-width: 1024px) {
+            .modules-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .modules-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .content-container {
+                padding: 1rem;
+            }
+            
+            .course-intro {
+                padding: 1.5rem;
+            }
+            
+            .course-title {
+                font-size: 2rem;
+            }
+            
+            .module-tile {
+                padding: 1.2rem;
+            }
+        }
+
+        /* Special styling for first module */
+        .module-tile.module-01 {
+            border: 2px solid var(--accent-color);
+            background: linear-gradient(135deg, var(--glass-bg), rgba(255, 229, 92, 0.1));
+        }
+
+        /* Special styling for development modules */
+        .module-tile.in-development {
+            border: 2px solid rgba(255, 165, 0, 0.5);
+            background: linear-gradient(135deg, var(--glass-bg), rgba(255, 165, 0, 0.05));
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="../../index.html" class="home-link">
+                <span>🏠</span>
+                <span>Home</span>
+            </a>
+            <h1>Web Design - Begleitmaterial</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="content-container">
+            <!-- Course Introduction -->
+            <div class="course-intro">
+                <h1 class="course-title">Webdesign & -development</h1>
+                <p class="course-description">
+                    Interaktive Tools und Experimente zur Vorlesung "Webdesign & -development". 
+                    Diese Materialien unterstützen das Verständnis moderner Webentwicklung durch praktische Anwendungen, 
+                    Visualisierungen und hands-on Experimente zu Design-Prinzipien, Performance und Benutzererfahrung.
+                </p>
+                <div class="progress-info">
+                    <strong>Status:</strong> 1 von 12 Modulen verfügbar, 11 in Entwicklung
+                </div>
+            </div>
+
+            <!-- Module Grid -->
+            <div class="modules-grid">
+                <!-- Modul 1 - Grundlagen HTML & CSS -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">01</span>
+                    <h3 class="module-title">Grundlagen HTML & CSS</h3>
+                    <p class="module-description">
+                        HTML5-Struktur, Semantik und CSS-Grundlagen.
+                        Erstellung einer responsiven Webseite.
+                    </p>
+                    <div class="module-topics">
+                        Visual Clutter • Design-Prinzipien • Responsive Design
+                    </div>
+                </div>
+
+                <!-- Modul 2 - Fortgeschrittenes CSS & Layout-Techniken -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">02</span>
+                    <h3 class="module-title">Fortgeschrittenes CSS & Layout-Techniken</h3>
+                    <p class="module-description">
+                        CSS Grid, Media Queries und Design-Prinzipien.
+                        Mobile First Ansatz und Design Systems.
+                    </p>
+                    <div class="module-topics">
+                        CSS Grid • Media Queries • Design Systems • Mobile First
+                    </div>
+                </div>
+
+                <!-- Modul 3 - JavaScript & Interaktivität I -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">03</span>
+                    <h3 class="module-title">JavaScript & Interaktivität I</h3>
+                    <p class="module-description">
+                        DOM-Manipulation und Event-Handling.
+                        Implementierung einer interaktiven To-Do-Liste.
+                    </p>
+                    <div class="module-topics">
+                        DOM Manipulation • Event-Handling • ES6+ Features • To-Do-Liste
+                    </div>
+                </div>
+
+                <!-- Modul 4 - JavaScript & Interaktivität II -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">04</span>
+                    <h3 class="module-title">JavaScript & Interaktivität II</h3>
+                    <p class="module-description">
+                        Animationen und Microinteractions.
+                        UX-Prinzipien und Benutzerführung.
+                    </p>
+                    <div class="module-topics">
+                        Animationen • Microinteractions • UX Laws • Affordances
+                    </div>
+                </div>
+
+                <!-- Modul 5 - Webdesign Trends: Gestern bis Heute -->
+                <a href="05trends.html" class="module-tile available">
+                    <div class="status-badge">Verfügbar</div>
+                    <span class="module-number">05</span>
+                    <h3 class="module-title">Webdesign Trends: Gestern bis Heute</h3>
+                    <p class="module-description">
+                        Evolution des Webdesigns von den 90ern bis heute.
+                        Aktuelle Trends: Dark Mode, Neumorphismus, Voice UI und KI-Integration.
+                    </p>
+                    <div class="module-topics">
+                        Design-Evolution • Dark Mode • Neumorphismus • Voice UI • KI im Design
+                    </div>
+                </a>
+
+                <!-- Modul 6 - Client & Server Integration -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">06</span>
+                    <h3 class="module-title">Client & Server Integration</h3>
+                    <p class="module-description">
+                        APIs und Datenintegration.
+                        Aufbau einer Webanwendung mit externen Datenquellen.
+                    </p>
+                    <div class="module-topics">
+                        Fetch API • REST APIs • JSON • CORS
+                    </div>
+                </div>
+
+                <!-- Modul 7 - Web-Performance & Best Practices -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">07</span>
+                    <h3 class="module-title">Web-Performance & Best Practices</h3>
+                    <p class="module-description">
+                        Optimierung von Ladezeiten und Performance.
+                        Analyse und Verbesserung bestehender Webseiten.
+                    </p>
+                    <div class="module-topics">
+                        Lighthouse • Lazy Loading • Bildoptimierung • Caching
+                    </div>
+                </div>
+
+                <!-- Modul 8 - Accessibility & SEO -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">08</span>
+                    <h3 class="module-title">Accessibility & SEO</h3>
+                    <p class="module-description">
+                        Barrierefreie Webseiten und Suchmaschinenoptimierung.
+                        WCAG-Richtlinien und SEO-Grundlagen.
+                    </p>
+                    <div class="module-topics">
+                        WCAG • ARIA-Attribute • SEO • Meta-Tags • Strukturierte Daten
+                    </div>
+                </div>
+
+                <!-- Modul 9 - Progressive Web Apps & A/B Testing -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">09</span>
+                    <h3 class="module-title">Progressive Web Apps & A/B Testing</h3>
+                    <p class="module-description">
+                        Progressive Web Apps und Benutzertests.
+                        Offline-Funktionalität und Personalisierung.
+                    </p>
+                    <div class="module-topics">
+                        A/B Testing • Service Worker • PWA • Offline-Support
+                    </div>
+                </div>
+
+                <!-- Modul 10 - Web-Frameworks -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">10</span>
+                    <h3 class="module-title">Web-Frameworks</h3>
+                    <p class="module-description">
+                        Frontend-Frameworks und Build-Tools.
+                        React-Anwendung mit State-Management.
+                    </p>
+                    <div class="module-topics">
+                        React • Vue • Angular • Build-Tools • State Management
+                    </div>
+                </div>
+
+                <!-- Modul 11 - Web-Sicherheit & Datenschutz -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">11</span>
+                    <h3 class="module-title">Web-Sicherheit & Datenschutz</h3>
+                    <p class="module-description">
+                        Webanwendungen sicher gestalten.
+                        HTTPS, XSS-Schutz und DSGVO-Compliance.
+                    </p>
+                    <div class="module-topics">
+                        HTTPS • CSP • XSS Prevention • DSGVO
+                    </div>
+                </div>
+
+                <!-- Modul 12 - Web-Animationen & Design-Ressourcen -->
+                <div class="module-tile unavailable">
+                    <div class="status-badge coming-soon">Bald verfügbar</div>
+                    <span class="module-number">12</span>
+                    <h3 class="module-title">Web-Animationen & Design-Ressourcen</h3>
+                    <p class="module-description">
+                        Web-Animationen und Design-Tools.
+                        Erstellung von Design-Systemen.
+                    </p>
+                    <div class="module-topics">
+                        CSS Animationen • GSAP • Design Systems • UI-Kits
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        const root = document.documentElement;
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('webdesign-lecture-theme');
+            if (savedTheme) {
+                root.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = prefersDark ? 'dark' : 'light';
+                root.setAttribute('data-theme', theme);
+                updateThemeIcon(theme);
+            }
+        }
+
+        function updateThemeIcon(theme) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('webdesign-lecture-theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        initTheme();
+
+        // Add click handler for unavailable modules
+        document.querySelectorAll('.module-tile.unavailable').forEach(tile => {
+            tile.addEventListener('click', (e) => {
+                e.preventDefault();
+                const moduleTitle = tile.querySelector('.module-title').textContent;
+                alert(`${moduleTitle} ist noch nicht verfügbar. Bitte schauen Sie später wieder vorbei!`);
+            });
+        });
+
+        // Add hover effect for development modules
+        document.querySelectorAll('.module-tile.in-development').forEach(tile => {
+            tile.addEventListener('click', (e) => {
+                e.preventDefault();
+                const moduleTitle = tile.querySelector('.module-title').textContent;
+                if (confirm(`${moduleTitle} befindet sich noch in der Entwicklung. Möchten Sie trotzdem fortfahren? Das Modul könnte unvollständig oder fehlerhaft sein.`)) {
+                    // Allow navigation to development modules
+                    const href = tile.getAttribute('href');
+                    if (href) {
+                        window.location.href = href;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
