@@ -160,9 +160,9 @@
                     <p class="lead">This is a lead paragraph. It stands out from regular paragraphs.</p>
                     <p>This is a regular paragraph with some <strong>bold text</strong> and <em>italic text</em>. 
                     It also contains a <a href="#">link</a> to demonstrate link styling.</p>
-                    <blockquote>
+                    <blockquote class="blockquote">
                         <p>This is a blockquote. It's used to highlight important quotes or excerpts.</p>
-                        <footer>Someone famous in <cite title="Source Title">Source Title</cite></footer>
+                        <footer class="blockquote-footer">Someone famous in <cite title="Source Title">Source Title</cite></footer>
                     </blockquote>
                     <code>This is inline code</code>
                     <pre><code>This is a code block
@@ -686,6 +686,94 @@ Multiple lines</pre>
                     el.innerHTML = '&times;';
                     el.classList.remove('btn-close');
                     el.classList.add('close');
+                });
+                
+                // Fix navbar for Bootstrap 3
+                document.querySelectorAll('.navbar').forEach(navbar => {
+                    // Convert to Bootstrap 3 navbar structure
+                    navbar.className = 'navbar navbar-default';
+                    
+                    // Create container-fluid wrapper
+                    const containerFluid = document.createElement('div');
+                    containerFluid.className = 'container-fluid';
+                    
+                    // Create navbar-header
+                    const navbarHeader = document.createElement('div');
+                    navbarHeader.className = 'navbar-header';
+                    
+                    // Move brand to navbar-header
+                    const brand = navbar.querySelector('.navbar-brand');
+                    if (brand) {
+                        navbarHeader.appendChild(brand);
+                    }
+                    
+                    // Create toggle button
+                    const toggleButton = document.createElement('button');
+                    toggleButton.type = 'button';
+                    toggleButton.className = 'navbar-toggle collapsed';
+                    toggleButton.setAttribute('data-toggle', 'collapse');
+                    toggleButton.setAttribute('data-target', '#navbar-collapse-3');
+                    toggleButton.innerHTML = `
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    `;
+                    navbarHeader.appendChild(toggleButton);
+                    
+                    // Create navbar-collapse
+                    const navbarCollapse = document.createElement('div');
+                    navbarCollapse.className = 'collapse navbar-collapse';
+                    navbarCollapse.id = 'navbar-collapse-3';
+                    
+                    // Move nav items to navbar-collapse with proper Bootstrap 3 structure
+                    const navDiv = navbar.querySelector('.navbar-nav');
+                    if (navDiv) {
+                        const navList = document.createElement('ul');
+                        navList.className = 'nav navbar-nav';
+                        
+                        // Convert nav-link elements to proper li structure
+                        const navLinks = navDiv.querySelectorAll('.nav-link');
+                        navLinks.forEach(link => {
+                            const li = document.createElement('li');
+                            if (link.classList.contains('active')) {
+                                li.className = 'active';
+                                link.innerHTML += ' <span class="sr-only">(current)</span>';
+                            }
+                            if (link.classList.contains('disabled')) {
+                                li.className = 'disabled';
+                            }
+                            
+                            // Clean up the link classes for Bootstrap 3
+                            link.className = '';
+                            li.appendChild(link);
+                            navList.appendChild(li);
+                        });
+                        
+                        navbarCollapse.appendChild(navList);
+                    }
+                    
+                    // Clear navbar and rebuild with Bootstrap 3 structure
+                    navbar.innerHTML = '';
+                    containerFluid.appendChild(navbarHeader);
+                    containerFluid.appendChild(navbarCollapse);
+                    navbar.appendChild(containerFluid);
+                });
+                
+                // Fix nav-tabs and nav-pills for Bootstrap 3
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    // Bootstrap 3 doesn't use nav-item class, move classes to parent li
+                    const link = item.querySelector('.nav-link');
+                    if (link) {
+                        if (link.classList.contains('active')) {
+                            item.classList.add('active');
+                        }
+                        if (link.classList.contains('disabled')) {
+                            item.classList.add('disabled');
+                        }
+                        link.classList.remove('nav-link', 'active', 'disabled');
+                    }
+                    item.classList.remove('nav-item');
                 });
                 
                 // Remove cards (not available in Bootstrap 3) and replace with panels
