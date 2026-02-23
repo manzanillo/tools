@@ -336,22 +336,12 @@
     <div class="container">
         <div class="controls-panel">
             <div class="control-group">
-                <label>Pattern Type</label>
-                <div class="control-tabs">
-                    <button class="tab-button active" data-tab="pattern">Pattern</button>
-                    <button class="tab-button" data-tab="noise">Noise</button>
-                    <button class="tab-button" data-tab="organic">Organic</button>
-                </div>
-                
+                <label>Noise Pattern</label>
                 <div class="pattern-grid" id="patternGrid">
-                    <button class="pattern-btn active" data-pattern="noise">⚡</button>
-                    <button class="pattern-btn" data-pattern="dots">●</button>
-                    <button class="pattern-btn" data-pattern="lines">|||</button>
-                    <button class="pattern-btn" data-pattern="grid">⬜</button>
-                    <button class="pattern-btn" data-pattern="waves">〜</button>
-                    <button class="pattern-btn" data-pattern="triangles">△</button>
-                    <button class="pattern-btn" data-pattern="hexagons">⬡</button>
-                    <button class="pattern-btn" data-pattern="circles">○</button>
+                    <button class="pattern-btn active" data-pattern="perlin">🌊</button>
+                    <button class="pattern-btn" data-pattern="pixels">⚡</button>
+                    <button class="pattern-btn" data-pattern="turbulence">💨</button>
+                    <button class="pattern-btn" data-pattern="fractal">❄️</button>
                 </div>
             </div>
 
@@ -458,7 +448,7 @@
     <script>
         // Configuration object storing all current settings
         const config = {
-            pattern: 'noise',
+            pattern: 'perlin',
             tone: 'duo',
             primaryColor: '#333333',
             secondaryColor: '#ffffff',
@@ -478,15 +468,6 @@
 
         // Set up all event listeners
         function setupEventListeners() {
-            // Tab buttons
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-                    updatePatternOptions(e.target.dataset.tab);
-                });
-            });
-
             // Pattern buttons
             document.querySelectorAll('.pattern-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -553,52 +534,7 @@
             });
         }
 
-        function updatePatternOptions(tab) {
-            const patterns = {
-                pattern: [
-                    { icon: '⚡', name: 'noise' },
-                    { icon: '●', name: 'dots' },
-                    { icon: '|||', name: 'lines' },
-                    { icon: '⬜', name: 'grid' }
-                ],
-                noise: [
-                    { icon: '❄️', name: 'perlin' },
-                    { icon: '🌊', name: 'turbulence' },
-                    { icon: '💨', name: 'fractal' },
-                    { icon: '🔥', name: 'flames' }
-                ],
-                organic: [
-                    { icon: '〜', name: 'waves' },
-                    { icon: '△', name: 'triangles' },
-                    { icon: '⬡', name: 'hexagons' },
-                    { icon: '○', name: 'circles' }
-                ]
-            };
 
-            const grid = document.getElementById('patternGrid');
-            grid.innerHTML = '';
-            
-            patterns[tab].forEach((pattern, index) => {
-                const btn = document.createElement('button');
-                btn.className = `pattern-btn ${index === 0 ? 'active' : ''}`;
-                btn.dataset.pattern = pattern.name;
-                btn.textContent = pattern.icon;
-                
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-                    config.pattern = pattern.name;
-                    generateTexture();
-                });
-                
-                grid.appendChild(btn);
-            });
-
-            if (patterns[tab].length > 0) {
-                config.pattern = patterns[tab][0].name;
-                generateTexture();
-            }
-        }
 
         // Generate the SVG texture based on current configuration
         function generateTexture() {
@@ -610,32 +546,20 @@
             let svgContent = '';
             
             switch (config.pattern) {
-                case 'noise':
-                    svgContent = generateNoise();
+                case 'perlin':
+                    svgContent = generatePerlinNoise();
                     break;
-                case 'dots':
-                    svgContent = generateDots();
+                case 'pixels':
+                    svgContent = generatePixelNoise();
                     break;
-                case 'lines':
-                    svgContent = generateLines();
+                case 'turbulence':
+                    svgContent = generateTurbulence();
                     break;
-                case 'grid':
-                    svgContent = generateGrid();
-                    break;
-                case 'waves':
-                    svgContent = generateWaves();
-                    break;
-                case 'triangles':
-                    svgContent = generateTriangles();
-                    break;
-                case 'hexagons':
-                    svgContent = generateHexagons();
-                    break;
-                case 'circles':
-                    svgContent = generateCircles();
+                case 'fractal':
+                    svgContent = generateFractalNoise();
                     break;
                 default:
-                    svgContent = generateNoise();
+                    svgContent = generatePerlinNoise();
             }
             
             svg.innerHTML = svgContent;
@@ -656,167 +580,161 @@
             return colors[Math.floor(Math.random() * colors.length)];
         }
 
-        function generateNoise() {
+        // Simplified noise function for creating a 2D noise pattern
+        function noise2D(x, y, scale = 1) {
+            let value = 0;
+            let amplitude = 1;
+            let frequency = scale;
+            
+            for (let i = 0; i < 4; i++) {
+                value += Math.sin(x * frequency) * Math.cos(y * frequency) * amplitude;
+                frequency *= 2;
+                amplitude *= 0.5;
+            }
+            
+            return (value + 1) / 2; // Normalize to 0-1
+        }
+
+        function generatePerlinNoise() {
             const colors = getColors();
             let elements = '';
-            const density = config.density / 100;
-            const numElements = Math.floor(config.canvasSize * config.canvasSize * density / 10000);
+            const pixelSize = Math.max(1, config.size / 10);
+            const noiseScale = 0.01;
+            const opacity = config.opacity / 100;
+            const fillThreshold = config.density / 100;
             
-            for (let i = 0; i < numElements; i++) {
-                const x = Math.random() * config.canvasSize;
-                const y = Math.random() * config.canvasSize;
-                const size = (Math.random() * config.size / 2) + (config.size / 4);
+            for (let x = 0; x < config.canvasSize; x += pixelSize) {
+                for (let y = 0; y < config.canvasSize; y += pixelSize) {
+                    const noiseValue = noise2D(x * noiseScale, y * noiseScale, config.size * 0.01);
+                    
+                    if (noiseValue > (1 - fillThreshold)) {
+                        const colorIntensity = Math.floor(noiseValue * colors.length);
+                        const color = colors[Math.min(colorIntensity, colors.length - 1)];
+                        
+                        if (config.shape === 'circle') {
+                            elements += `<circle cx="${x + pixelSize/2}" cy="${y + pixelSize/2}" r="${pixelSize/2}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                        } else {
+                            elements += `<rect x="${x}" y="${y}" width="${pixelSize}" height="${pixelSize}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                        }
+                    }
+                }
+            }
+            
+            return elements;
+        }
+
+        function generatePixelNoise() {
+            const colors = getColors();
+            let elements = '';
+            const pixelSize = Math.max(1, config.size / 10);
+            const opacity = config.opacity / 100;
+            const density = config.density / 100;
+            
+            // Calculate how many pixels to fill based on density
+            const totalPixels = Math.floor(config.canvasSize / pixelSize) ** 2;
+            const pixelsToFill = Math.floor(totalPixels * density);
+            
+            // Generate random positions
+            const positions = new Set();
+            while (positions.size < pixelsToFill) {
+                const x = Math.floor(Math.random() * (config.canvasSize / pixelSize)) * pixelSize;
+                const y = Math.floor(Math.random() * (config.canvasSize / pixelSize)) * pixelSize;
+                positions.add(`${x},${y}`);
+            }
+            
+            positions.forEach(pos => {
+                const [x, y] = pos.split(',').map(Number);
                 const color = getRandomColor(colors);
-                const opacity = config.opacity / 100;
                 
                 if (config.shape === 'circle') {
-                    elements += `<circle cx="${x}" cy="${y}" r="${size/2}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                    elements += `<circle cx="${x + pixelSize/2}" cy="${y + pixelSize/2}" r="${pixelSize/2}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
                 } else {
-                    elements += `<rect x="${x - size/2}" y="${y - size/2}" width="${size}" height="${size}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                    elements += `<rect x="${x}" y="${y}" width="${pixelSize}" height="${pixelSize}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
                 }
-            }
+            });
             
             return elements;
         }
 
-        function generateDots() {
+        function generateTurbulence() {
             const colors = getColors();
             let elements = '';
-            const spacing = config.size * (2 - config.density / 100);
+            const pixelSize = Math.max(1, config.size / 8);
             const opacity = config.opacity / 100;
+            const fillThreshold = config.density / 100;
             
-            for (let x = 0; x < config.canvasSize; x += spacing) {
-                for (let y = 0; y < config.canvasSize; y += spacing) {
-                    const jitterX = (Math.random() - 0.5) * spacing * 0.5;
-                    const jitterY = (Math.random() - 0.5) * spacing * 0.5;
-                    const size = config.size * (0.5 + Math.random() * 0.5);
-                    const color = getRandomColor(colors);
+            for (let x = 0; x < config.canvasSize; x += pixelSize) {
+                for (let y = 0; y < config.canvasSize; y += pixelSize) {
+                    // Create turbulence by combining multiple frequencies
+                    let turbulence = 0;
+                    let amplitude = 1;
+                    let frequency = 0.005;
                     
-                    if (config.shape === 'circle') {
-                        elements += `<circle cx="${x + jitterX}" cy="${y + jitterY}" r="${size/2}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
-                    } else {
-                        elements += `<rect x="${x + jitterX - size/2}" y="${y + jitterY - size/2}" width="${size}" height="${size}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
-                    }
-                }
-            }
-            
-            return elements;
-        }
-
-        function generateLines() {
-            const colors = getColors();
-            let elements = '';
-            const spacing = config.size * (2 - config.density / 100);
-            const opacity = config.opacity / 100;
-            
-            for (let x = 0; x < config.canvasSize; x += spacing) {
-                const color = getRandomColor(colors);
-                const thickness = config.size * 0.1;
-                elements += `<line x1="${x}" y1="0" x2="${x}" y2="${config.canvasSize}" stroke="${color}" stroke-width="${thickness}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
-            }
-            
-            return elements;
-        }
-
-        function generateGrid() {
-            const colors = getColors();
-            let elements = '';
-            const spacing = config.size * (2 - config.density / 100);
-            const opacity = config.opacity / 100;
-            
-            for (let x = 0; x < config.canvasSize; x += spacing) {
-                for (let y = 0; y < config.canvasSize; y += spacing) {
-                    const color = getRandomColor(colors);
-                    const size = config.size * 0.8;
-                    
-                    elements += `<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="none" stroke="${color}" stroke-width="2" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
-                }
-            }
-            
-            return elements;
-        }
-
-        function generateWaves() {
-            const colors = getColors();
-            let elements = '';
-            const spacing = config.size * (2 - config.density / 100);
-            const opacity = config.opacity / 100;
-            
-            for (let y = 0; y < config.canvasSize; y += spacing) {
-                let path = `M0,${y}`;
-                for (let x = 0; x < config.canvasSize; x += 20) {
-                    const waveY = y + Math.sin(x * 0.05) * config.size * 0.5;
-                    path += ` L${x},${waveY}`;
-                }
-                
-                const color = getRandomColor(colors);
-                elements += `<path d="${path}" fill="none" stroke="${color}" stroke-width="3" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
-            }
-            
-            return elements;
-        }
-
-        function generateTriangles() {
-            const colors = getColors();
-            let elements = '';
-            const spacing = config.size * (2 - config.density / 100);
-            const opacity = config.opacity / 100;
-            
-            for (let x = 0; x < config.canvasSize; x += spacing) {
-                for (let y = 0; y < config.canvasSize; y += spacing) {
-                    const size = config.size * 0.8;
-                    const color = getRandomColor(colors);
-                    const centerX = x + size / 2;
-                    const centerY = y + size / 2;
-                    
-                    const points = `${centerX},${centerY - size/2} ${centerX - size/2},${centerY + size/2} ${centerX + size/2},${centerY + size/2}`;
-                    elements += `<polygon points="${points}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
-                }
-            }
-            
-            return elements;
-        }
-
-        function generateHexagons() {
-            const colors = getColors();
-            let elements = '';
-            const spacing = config.size * (2 - config.density / 100);
-            const opacity = config.opacity / 100;
-            
-            for (let x = 0; x < config.canvasSize; x += spacing) {
-                for (let y = 0; y < config.canvasSize; y += spacing) {
-                    const size = config.size * 0.4;
-                    const color = getRandomColor(colors);
-                    const centerX = x + spacing / 2;
-                    const centerY = y + spacing / 2;
-                    
-                    let points = '';
                     for (let i = 0; i < 6; i++) {
-                        const angle = (i * 60) * Math.PI / 180;
-                        const px = centerX + size * Math.cos(angle);
-                        const py = centerY + size * Math.sin(angle);
-                        points += `${px},${py} `;
+                        turbulence += Math.abs(Math.sin(x * frequency) * Math.cos(y * frequency)) * amplitude;
+                        frequency *= 2;
+                        amplitude *= 0.5;
                     }
                     
-                    elements += `<polygon points="${points.trim()}" fill="none" stroke="${color}" stroke-width="2" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                    turbulence = Math.min(turbulence, 1);
+                    
+                    if (turbulence > (1 - fillThreshold)) {
+                        const color = getRandomColor(colors);
+                        const size = pixelSize * (0.5 + turbulence * 0.5);
+                        
+                        if (config.shape === 'circle') {
+                            elements += `<circle cx="${x + pixelSize/2}" cy="${y + pixelSize/2}" r="${size/2}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                        } else {
+                            elements += `<rect x="${x + (pixelSize-size)/2}" y="${y + (pixelSize-size)/2}" width="${size}" height="${size}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                        }
+                    }
                 }
             }
             
             return elements;
         }
 
-        function generateCircles() {
+        function generateFractalNoise() {
             const colors = getColors();
             let elements = '';
-            const spacing = config.size * (2 - config.density / 100);
+            const pixelSize = Math.max(1, config.size / 12);
             const opacity = config.opacity / 100;
+            const fillThreshold = config.density / 100;
             
-            for (let x = 0; x < config.canvasSize; x += spacing) {
-                for (let y = 0; y < config.canvasSize; y += spacing) {
-                    const radius = config.size * 0.4 * (0.5 + Math.random() * 0.5);
-                    const color = getRandomColor(colors);
+            for (let x = 0; x < config.canvasSize; x += pixelSize) {
+                for (let y = 0; y < config.canvasSize; y += pixelSize) {
+                    // Multi-octave fractal noise
+                    let fractalValue = 0;
+                    let amplitude = 1;
+                    let frequency = 0.008;
                     
-                    elements += `<circle cx="${x + spacing/2}" cy="${y + spacing/2}" r="${radius}" fill="none" stroke="${color}" stroke-width="2" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                    for (let octave = 0; octave < 5; octave++) {
+                        const nx = x * frequency;
+                        const ny = y * frequency;
+                        
+                        // Simple fractal calculation
+                        const sample = Math.sin(nx) * Math.cos(ny) + 
+                                      Math.sin(nx * 2.1) * Math.cos(ny * 2.1) * 0.5 +
+                                      Math.sin(nx * 4.3) * Math.cos(ny * 4.3) * 0.25;
+                        
+                        fractalValue += sample * amplitude;
+                        amplitude *= 0.5;
+                        frequency *= 2;
+                    }
+                    
+                    // Normalize and apply threshold
+                    fractalValue = (fractalValue + 3) / 6; // Rough normalization
+                    
+                    if (fractalValue > (1 - fillThreshold)) {
+                        const color = getRandomColor(colors);
+                        const size = pixelSize * (0.3 + fractalValue * 0.7);
+                        
+                        if (config.shape === 'circle') {
+                            elements += `<circle cx="${x + pixelSize/2}" cy="${y + pixelSize/2}" r="${size/2}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                        } else {
+                            elements += `<rect x="${x + (pixelSize-size)/2}" y="${y + (pixelSize-size)/2}" width="${size}" height="${size}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                        }
+                    }
                 }
             }
             
