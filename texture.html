@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SVG Texture Generator</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Generate and download random SVG texture patterns with customizable settings including shapes, colors, density, and effects.">
+    <meta name="keywords" content="SVG generator, texture patterns, noise generator, pattern creator, SVG download">
+    <meta name="author" content="Stefan Seegerer">
+
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="SVG Texture Generator">
+    <meta property="og:description"
+        content="Generate and download random SVG texture patterns with customizable settings including shapes, colors, density, and effects.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://manzanillo.github.io/tools/texture.html">
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="shared-styles.css">
+
+    <style>
+        /* Texture Generator specific styles */
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 2rem auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .controls-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .preview-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-group label {
+            display: block;
+            color: var(--text-color);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .control-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 0.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .tab-button {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            color: var(--secondary-text);
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+        }
+
+        .tab-button.active {
+            background: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .pattern-btn {
+            aspect-ratio: 1;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 1.2rem;
+        }
+
+        .pattern-btn:hover {
+            border-color: var(--accent-color);
+        }
+
+        .pattern-btn.active {
+            border-color: var(--text-color);
+            background: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        .slider-container {
+            margin-bottom: 1rem;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(0, 0, 0, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--text-color);
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--text-color);
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .value-display {
+            color: var(--secondary-text);
+            font-weight: 500;
+        }
+
+        .color-input {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: none;
+        }
+
+        .select-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            background: var(--glass-bg);
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .preview-area {
+            flex: 1;
+            position: relative;
+            border: 2px dashed rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #texturePreview {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+
+        .action-buttons {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .tone-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tone-btn {
+            padding: 0.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .tone-btn.active {
+            background: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        .shape-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .shape-btn {
+            aspect-ratio: 1;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+
+        .shape-btn:hover {
+            border-color: var(--accent-color);
+        }
+
+        .shape-btn.active {
+            border-color: var(--text-color);
+            background: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                width: 95%;
+                margin: 1rem auto;
+            }
+
+            .controls-panel {
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🏠</span>
+                <span>Home</span>
+            </a>
+            <h1>SVG Texture Generator</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="controls-panel">
+            <div class="control-group">
+                <label>Pattern Type</label>
+                <div class="control-tabs">
+                    <button class="tab-button active" data-tab="pattern">Pattern</button>
+                    <button class="tab-button" data-tab="noise">Noise</button>
+                    <button class="tab-button" data-tab="organic">Organic</button>
+                </div>
+                
+                <div class="pattern-grid" id="patternGrid">
+                    <button class="pattern-btn active" data-pattern="noise">⚡</button>
+                    <button class="pattern-btn" data-pattern="dots">●</button>
+                    <button class="pattern-btn" data-pattern="lines">|||</button>
+                    <button class="pattern-btn" data-pattern="grid">⬜</button>
+                    <button class="pattern-btn" data-pattern="waves">〜</button>
+                    <button class="pattern-btn" data-pattern="triangles">△</button>
+                    <button class="pattern-btn" data-pattern="hexagons">⬡</button>
+                    <button class="pattern-btn" data-pattern="circles">○</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Tone</label>
+                <div class="tone-options">
+                    <button class="tone-btn" data-tone="mono">Mono</button>
+                    <button class="tone-btn active" data-tone="duo">Duo</button>
+                    <button class="tone-btn" data-tone="multi">Multi</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Color</label>
+                <input type="color" class="color-input" id="primaryColor" value="#333333">
+                <div style="margin-top: 0.5rem;">
+                    <input type="color" class="color-input" id="secondaryColor" value="#ffffff">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-container">
+                    <div class="slider-value">
+                        <label>Size</label>
+                        <span class="value-display" id="sizeValue">50px</span>
+                    </div>
+                    <input type="range" class="slider" id="sizeSlider" min="10" max="200" value="50">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-container">
+                    <div class="slider-value">
+                        <label>Density</label>
+                        <span class="value-display" id="densityValue">50%</span>
+                    </div>
+                    <input type="range" class="slider" id="densitySlider" min="10" max="100" value="50">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Shape</label>
+                <div class="shape-grid">
+                    <button class="shape-btn active" data-shape="square">⬜</button>
+                    <button class="shape-btn" data-shape="circle">●</button>
+                    <button class="shape-btn" data-shape="triangle">△</button>
+                    <button class="shape-btn" data-shape="diamond">◆</button>
+                    <button class="shape-btn" data-shape="star">★</button>
+                    <button class="shape-btn" data-shape="plus">+</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-container">
+                    <div class="slider-value">
+                        <label>Opacity</label>
+                        <span class="value-display" id="opacityValue">80%</span>
+                    </div>
+                    <input type="range" class="slider" id="opacitySlider" min="10" max="100" value="80">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Blend Mode</label>
+                <select class="select-input" id="blendMode">
+                    <option value="normal">Normal</option>
+                    <option value="multiply">Multiply</option>
+                    <option value="screen">Screen</option>
+                    <option value="overlay">Overlay</option>
+                    <option value="soft-light">Soft Light</option>
+                    <option value="hard-light">Hard Light</option>
+                    <option value="color-dodge">Color Dodge</option>
+                    <option value="color-burn">Color Burn</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-container">
+                    <div class="slider-value">
+                        <label>Canvas Size</label>
+                        <span class="value-display" id="canvasSizeValue">800px</span>
+                    </div>
+                    <input type="range" class="slider" id="canvasSizeSlider" min="200" max="2000" value="800">
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-panel">
+            <h2 style="margin-top: 0; color: var(--text-color);">Preview</h2>
+            <div class="preview-area">
+                <svg id="texturePreview" width="600" height="400" viewBox="0 0 600 400">
+                    <!-- Generated pattern will be inserted here -->
+                </svg>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="generateTexture()">🎲 Generate New</button>
+                <button class="btn btn-secondary" onclick="downloadSVG()">⬇️ Download SVG</button>
+                <button class="btn btn-secondary" onclick="copyToClipboard()">📋 Copy SVG</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration object storing all current settings
+        const config = {
+            pattern: 'noise',
+            tone: 'duo',
+            primaryColor: '#333333',
+            secondaryColor: '#ffffff',
+            size: 50,
+            density: 50,
+            shape: 'square',
+            opacity: 80,
+            blendMode: 'normal',
+            canvasSize: 800
+        };
+
+        // Initialize the texture generator
+        function init() {
+            setupEventListeners();
+            generateTexture();
+        }
+
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    updatePatternOptions(e.target.dataset.tab);
+                });
+            });
+
+            // Pattern buttons
+            document.querySelectorAll('.pattern-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    config.pattern = e.target.dataset.pattern;
+                    generateTexture();
+                });
+            });
+
+            // Tone buttons
+            document.querySelectorAll('.tone-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    config.tone = e.target.dataset.tone;
+                    generateTexture();
+                });
+            });
+
+            // Shape buttons
+            document.querySelectorAll('.shape-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    config.shape = e.target.dataset.shape;
+                    generateTexture();
+                });
+            });
+
+            // Color inputs
+            document.getElementById('primaryColor').addEventListener('change', (e) => {
+                config.primaryColor = e.target.value;
+                generateTexture();
+            });
+
+            document.getElementById('secondaryColor').addEventListener('change', (e) => {
+                config.secondaryColor = e.target.value;
+                generateTexture();
+            });
+
+            // Sliders
+            setupSlider('sizeSlider', 'sizeValue', 'size', 'px');
+            setupSlider('densitySlider', 'densityValue', 'density', '%');
+            setupSlider('opacitySlider', 'opacityValue', 'opacity', '%');
+            setupSlider('canvasSizeSlider', 'canvasSizeValue', 'canvasSize', 'px');
+
+            // Blend mode
+            document.getElementById('blendMode').addEventListener('change', (e) => {
+                config.blendMode = e.target.value;
+                generateTexture();
+            });
+        }
+
+        function setupSlider(sliderId, valueId, configKey, unit) {
+            const slider = document.getElementById(sliderId);
+            const valueDisplay = document.getElementById(valueId);
+            
+            slider.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                config[configKey] = value;
+                valueDisplay.textContent = value + unit;
+                generateTexture();
+            });
+        }
+
+        function updatePatternOptions(tab) {
+            const patterns = {
+                pattern: [
+                    { icon: '⚡', name: 'noise' },
+                    { icon: '●', name: 'dots' },
+                    { icon: '|||', name: 'lines' },
+                    { icon: '⬜', name: 'grid' }
+                ],
+                noise: [
+                    { icon: '❄️', name: 'perlin' },
+                    { icon: '🌊', name: 'turbulence' },
+                    { icon: '💨', name: 'fractal' },
+                    { icon: '🔥', name: 'flames' }
+                ],
+                organic: [
+                    { icon: '〜', name: 'waves' },
+                    { icon: '△', name: 'triangles' },
+                    { icon: '⬡', name: 'hexagons' },
+                    { icon: '○', name: 'circles' }
+                ]
+            };
+
+            const grid = document.getElementById('patternGrid');
+            grid.innerHTML = '';
+            
+            patterns[tab].forEach((pattern, index) => {
+                const btn = document.createElement('button');
+                btn.className = `pattern-btn ${index === 0 ? 'active' : ''}`;
+                btn.dataset.pattern = pattern.name;
+                btn.textContent = pattern.icon;
+                
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    config.pattern = pattern.name;
+                    generateTexture();
+                });
+                
+                grid.appendChild(btn);
+            });
+
+            if (patterns[tab].length > 0) {
+                config.pattern = patterns[tab][0].name;
+                generateTexture();
+            }
+        }
+
+        // Generate the SVG texture based on current configuration
+        function generateTexture() {
+            const svg = document.getElementById('texturePreview');
+            svg.setAttribute('width', config.canvasSize);
+            svg.setAttribute('height', config.canvasSize);
+            svg.setAttribute('viewBox', `0 0 ${config.canvasSize} ${config.canvasSize}`);
+            
+            let svgContent = '';
+            
+            switch (config.pattern) {
+                case 'noise':
+                    svgContent = generateNoise();
+                    break;
+                case 'dots':
+                    svgContent = generateDots();
+                    break;
+                case 'lines':
+                    svgContent = generateLines();
+                    break;
+                case 'grid':
+                    svgContent = generateGrid();
+                    break;
+                case 'waves':
+                    svgContent = generateWaves();
+                    break;
+                case 'triangles':
+                    svgContent = generateTriangles();
+                    break;
+                case 'hexagons':
+                    svgContent = generateHexagons();
+                    break;
+                case 'circles':
+                    svgContent = generateCircles();
+                    break;
+                default:
+                    svgContent = generateNoise();
+            }
+            
+            svg.innerHTML = svgContent;
+        }
+
+        function getColors() {
+            if (config.tone === 'mono') {
+                return [config.primaryColor];
+            } else if (config.tone === 'duo') {
+                return [config.primaryColor, config.secondaryColor];
+            } else {
+                // Multi-tone: generate rainbow colors
+                return ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd'];
+            }
+        }
+
+        function getRandomColor(colors) {
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function generateNoise() {
+            const colors = getColors();
+            let elements = '';
+            const density = config.density / 100;
+            const numElements = Math.floor(config.canvasSize * config.canvasSize * density / 10000);
+            
+            for (let i = 0; i < numElements; i++) {
+                const x = Math.random() * config.canvasSize;
+                const y = Math.random() * config.canvasSize;
+                const size = (Math.random() * config.size / 2) + (config.size / 4);
+                const color = getRandomColor(colors);
+                const opacity = config.opacity / 100;
+                
+                if (config.shape === 'circle') {
+                    elements += `<circle cx="${x}" cy="${y}" r="${size/2}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                } else {
+                    elements += `<rect x="${x - size/2}" y="${y - size/2}" width="${size}" height="${size}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                }
+            }
+            
+            return elements;
+        }
+
+        function generateDots() {
+            const colors = getColors();
+            let elements = '';
+            const spacing = config.size * (2 - config.density / 100);
+            const opacity = config.opacity / 100;
+            
+            for (let x = 0; x < config.canvasSize; x += spacing) {
+                for (let y = 0; y < config.canvasSize; y += spacing) {
+                    const jitterX = (Math.random() - 0.5) * spacing * 0.5;
+                    const jitterY = (Math.random() - 0.5) * spacing * 0.5;
+                    const size = config.size * (0.5 + Math.random() * 0.5);
+                    const color = getRandomColor(colors);
+                    
+                    if (config.shape === 'circle') {
+                        elements += `<circle cx="${x + jitterX}" cy="${y + jitterY}" r="${size/2}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                    } else {
+                        elements += `<rect x="${x + jitterX - size/2}" y="${y + jitterY - size/2}" width="${size}" height="${size}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                    }
+                }
+            }
+            
+            return elements;
+        }
+
+        function generateLines() {
+            const colors = getColors();
+            let elements = '';
+            const spacing = config.size * (2 - config.density / 100);
+            const opacity = config.opacity / 100;
+            
+            for (let x = 0; x < config.canvasSize; x += spacing) {
+                const color = getRandomColor(colors);
+                const thickness = config.size * 0.1;
+                elements += `<line x1="${x}" y1="0" x2="${x}" y2="${config.canvasSize}" stroke="${color}" stroke-width="${thickness}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+            }
+            
+            return elements;
+        }
+
+        function generateGrid() {
+            const colors = getColors();
+            let elements = '';
+            const spacing = config.size * (2 - config.density / 100);
+            const opacity = config.opacity / 100;
+            
+            for (let x = 0; x < config.canvasSize; x += spacing) {
+                for (let y = 0; y < config.canvasSize; y += spacing) {
+                    const color = getRandomColor(colors);
+                    const size = config.size * 0.8;
+                    
+                    elements += `<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="none" stroke="${color}" stroke-width="2" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                }
+            }
+            
+            return elements;
+        }
+
+        function generateWaves() {
+            const colors = getColors();
+            let elements = '';
+            const spacing = config.size * (2 - config.density / 100);
+            const opacity = config.opacity / 100;
+            
+            for (let y = 0; y < config.canvasSize; y += spacing) {
+                let path = `M0,${y}`;
+                for (let x = 0; x < config.canvasSize; x += 20) {
+                    const waveY = y + Math.sin(x * 0.05) * config.size * 0.5;
+                    path += ` L${x},${waveY}`;
+                }
+                
+                const color = getRandomColor(colors);
+                elements += `<path d="${path}" fill="none" stroke="${color}" stroke-width="3" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+            }
+            
+            return elements;
+        }
+
+        function generateTriangles() {
+            const colors = getColors();
+            let elements = '';
+            const spacing = config.size * (2 - config.density / 100);
+            const opacity = config.opacity / 100;
+            
+            for (let x = 0; x < config.canvasSize; x += spacing) {
+                for (let y = 0; y < config.canvasSize; y += spacing) {
+                    const size = config.size * 0.8;
+                    const color = getRandomColor(colors);
+                    const centerX = x + size / 2;
+                    const centerY = y + size / 2;
+                    
+                    const points = `${centerX},${centerY - size/2} ${centerX - size/2},${centerY + size/2} ${centerX + size/2},${centerY + size/2}`;
+                    elements += `<polygon points="${points}" fill="${color}" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                }
+            }
+            
+            return elements;
+        }
+
+        function generateHexagons() {
+            const colors = getColors();
+            let elements = '';
+            const spacing = config.size * (2 - config.density / 100);
+            const opacity = config.opacity / 100;
+            
+            for (let x = 0; x < config.canvasSize; x += spacing) {
+                for (let y = 0; y < config.canvasSize; y += spacing) {
+                    const size = config.size * 0.4;
+                    const color = getRandomColor(colors);
+                    const centerX = x + spacing / 2;
+                    const centerY = y + spacing / 2;
+                    
+                    let points = '';
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (i * 60) * Math.PI / 180;
+                        const px = centerX + size * Math.cos(angle);
+                        const py = centerY + size * Math.sin(angle);
+                        points += `${px},${py} `;
+                    }
+                    
+                    elements += `<polygon points="${points.trim()}" fill="none" stroke="${color}" stroke-width="2" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                }
+            }
+            
+            return elements;
+        }
+
+        function generateCircles() {
+            const colors = getColors();
+            let elements = '';
+            const spacing = config.size * (2 - config.density / 100);
+            const opacity = config.opacity / 100;
+            
+            for (let x = 0; x < config.canvasSize; x += spacing) {
+                for (let y = 0; y < config.canvasSize; y += spacing) {
+                    const radius = config.size * 0.4 * (0.5 + Math.random() * 0.5);
+                    const color = getRandomColor(colors);
+                    
+                    elements += `<circle cx="${x + spacing/2}" cy="${y + spacing/2}" r="${radius}" fill="none" stroke="${color}" stroke-width="2" opacity="${opacity}" mix-blend-mode="${config.blendMode}"/>`;
+                }
+            }
+            
+            return elements;
+        }
+
+        // Download the generated SVG
+        function downloadSVG() {
+            const svg = document.getElementById('texturePreview');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+            
+            const url = URL.createObjectURL(svgBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `texture-${Date.now()}.svg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // Copy SVG to clipboard
+        async function copyToClipboard() {
+            const svg = document.getElementById('texturePreview');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            
+            try {
+                await navigator.clipboard.writeText(svgData);
+                // Visual feedback
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+            }
+        }
+
+        // Initialize the application
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

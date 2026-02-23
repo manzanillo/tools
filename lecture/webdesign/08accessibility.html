@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- SEO Meta Tags -->
+    <title>Hochschule Ansbach - Innovation und Praxis in Bayern</title>
+    <meta name="description" content="Die Hochschule Ansbach ist eine der führenden Hochschulen für angewandte Wissenschaften in Bayern mit über 4.000 Studierenden in Wirtschaft, Technik und Medien.">
+    <meta name="keywords" content="Hochschule Ansbach, Studium Bayern, Angewandte Wissenschaften, Wirtschaft, Technik, Medien, Ansbach">
+    <meta name="author" content="Hochschule Ansbach">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Hochschule Ansbach - Innovation und Praxis in Bayern">
+    <meta property="og:description" content="Die Hochschule Ansbach ist eine der führenden Hochschulen für angewandte Wissenschaften in Bayern mit über 4.000 Studierenden.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.hs-ansbach.de/">
+    <meta property="og:image" content="https://www.hs-ansbach.de/images/campus.jpg">
+    <meta property="og:site_name" content="Hochschule Ansbach">
+    <meta property="og:locale" content="de_DE">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Hochschule Ansbach - Innovation und Praxis in Bayern">
+    <meta name="twitter:description" content="Die Hochschule Ansbach ist eine der führenden Hochschulen für angewandte Wissenschaften in Bayern.">
+    <meta name="twitter:image" content="https://www.hs-ansbach.de/images/campus.jpg">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "EducationalOrganization",
+        "name": "Hochschule Ansbach",
+        "alternateName": "University of Applied Sciences Ansbach",
+        "url": "https://www.hs-ansbach.de",
+        "logo": "https://www.hs-ansbach.de/images/logo.png",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Residenzstraße 8",
+            "addressLocality": "Ansbach",
+            "postalCode": "91522",
+            "addressCountry": "DE"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+49-981-4877-0",
+            "contactType": "general information"
+        }
+    }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏫</text></svg>">
+    
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="../../shared-styles.css">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .content-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--secondary-text);
+            margin-bottom: 2rem;
+        }
+
+        .demo-notice {
+            background: linear-gradient(135deg, rgba(255, 229, 92, 0.1), rgba(255, 229, 92, 0.05));
+            border: 2px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .demo-notice h3 {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .demo-instructions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .instruction-item {
+            background: var(--glass-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .instruction-item strong {
+            color: var(--accent-color);
+        }
+
+        .article-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--glass-border);
+            position: relative;
+        }
+
+        /* Hover reveals for accessibility elements */
+        .a11y-element {
+            position: relative;
+        }
+
+        .a11y-tooltip {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-color);
+            color: black;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .a11y-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: var(--accent-color);
+        }
+
+        .a11y-element:hover .a11y-tooltip {
+            opacity: 1;
+        }
+
+        .a11y-element:hover {
+            outline: 2px dashed var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        /* SEO Meta Display */
+        .seo-inspector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 350px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--accent-color);
+            border-radius: 16px;
+            padding: 1rem;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .seo-inspector.active {
+            transform: translateX(0);
+        }
+
+        .seo-inspector h3 {
+            color: var(--accent-color);
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        .seo-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-color);
+            color: black;
+            border: none;
+            padding: 1rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            z-index: 1001;
+            transition: transform 0.3s ease;
+        }
+
+        .seo-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .meta-item {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .meta-item strong {
+            color: var(--accent-color);
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .meta-item code {
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        /* Article styling */
+        h1, h2, h3 {
+            color: var(--text-color);
+        }
+
+        .article-image {
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin: 1.5rem auto;
+            display: block;
+        }
+
+        .image-container {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .image-caption {
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        /* Screen reader text */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .sr-text-reveal {
+            position: relative;
+        }
+
+        .sr-text-reveal:hover .sr-only {
+            position: static;
+            width: auto;
+            height: auto;
+            margin: 0;
+            overflow: visible;
+            clip: auto;
+            white-space: normal;
+            background: var(--accent-color);
+            color: black;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-weight: 600;
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+
+        /* Semantic structure indicators */
+        .semantic-indicator {
+            position: relative;
+        }
+
+        .semantic-indicator::before {
+            content: attr(data-semantic);
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            background: var(--accent-color);
+            color: black;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .semantic-indicator:hover::before {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .content-container {
+                padding: 1rem;
+            }
+            
+            .seo-inspector {
+                width: 300px;
+            }
+            
+            .demo-instructions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="nav-container">
+            <a href="index.html" class="home-link">
+                <span>🔙</span>
+                <span>Zurück</span>
+            </a>
+            <h1>Session 05: Accessibility & SEO Demo</h1>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- SEO Inspector -->
+    <button class="seo-toggle" onclick="toggleSEOInspector()" aria-label="SEO Metadaten anzeigen/verbergen">
+        🔍
+    </button>
+    
+    <div class="seo-inspector" id="seoInspector">
+        <h3>SEO & Meta-Daten</h3>
+        
+        <div class="meta-item">
+            <strong>Title Tag:</strong>
+            <code id="titleDisplay">Hochschule Ansbach - Innovation und Praxis in Bayern</code>
+        </div>
+        
+        <div class="meta-item">
+            <strong>Meta Description:</strong>
+            <code id="descriptionDisplay">Die Hochschule Ansbach ist eine der führenden Hochschulen für angewandte Wissenschaften in Bayern mit über 4.000 Studierenden in Wirtschaft, Technik und Medien.</code>
+        </div>
+        
+        <div class="meta-item">
+            <strong>Keywords:</strong>
+            <code>Hochschule Ansbach, Studium Bayern, Angewandte Wissenschaften, Wirtschaft, Technik, Medien</code>
+        </div>
+        
+        <div class="meta-item">
+            <strong>Open Graph Title:</strong>
+            <code>Hochschule Ansbach - Innovation und Praxis in Bayern</code>
+        </div>
+        
+        <div class="meta-item">
+            <strong>Open Graph Image:</strong>
+            <code>https://www.hs-ansbach.de/images/campus.jpg</code>
+        </div>
+        
+        <div class="meta-item">
+            <strong>Structured Data:</strong>
+            <code>EducationalOrganization Schema</code>
+        </div>
+        
+        <div class="meta-item">
+            <strong>Language:</strong>
+            <code>de (Deutsch)</code>
+        </div>
+        
+        <div class="meta-item">
+            <strong>Viewport:</strong>
+            <code>width=device-width, initial-scale=1.0</code>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="content-container">
+            <!-- Demo Instructions -->
+            <div class="demo-notice">
+                <h3>🎯 Interaktive A11y & SEO Demo</h3>
+                <p>Diese Seite demonstriert Accessibility- und SEO-Elemente interaktiv. Bewegen Sie die Maus über verschiedene Bereiche!</p>
+                
+                <div class="demo-instructions">
+                    <div class="instruction-item">
+                        <strong>🔍 Hover über Elemente</strong><br>
+                        Zeigt ARIA-Labels, Alt-Texte und semantische Struktur
+                    </div>
+                    <div class="instruction-item">
+                        <strong>🔍 SEO-Button (rechts oben)</strong><br>
+                        Zeigt alle Meta-Tags und SEO-Elemente
+                    </div>
+                    <div class="instruction-item">
+                        <strong>🔍 Screen Reader Texte</strong><br>
+                        Versteckte Texte werden sichtbar gemacht
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Header -->
+            <header class="page-header semantic-indicator a11y-element" data-semantic="<header>" role="banner">
+                <div class="a11y-tooltip">ARIA: role="banner" - Hauptkopfzeile der Seite</div>
+                
+                <h1 class="page-title semantic-indicator a11y-element" data-semantic="<h1>">
+                    <div class="a11y-tooltip">Hauptüberschrift - H1 für SEO und Screen Reader</div>
+                    Hochschule Ansbach
+                    <span class="sr-only sr-text-reveal">Hauptinhalt der Seite über die Hochschule Ansbach</span>
+                </h1>
+                
+                <p class="page-subtitle a11y-element">
+                    <div class="a11y-tooltip">Untertitel - beschreibt den Seiteninhalt</div>
+                    Hochschule für angewandte Wissenschaften in Bayern
+                </p>
+            </header>
+
+            <!-- Main Content -->
+            <main class="article-content semantic-indicator a11y-element" data-semantic="<main>" role="main">
+                <div class="a11y-tooltip">ARIA: role="main" - Hauptinhalt der Seite</div>
+
+                <!-- Article -->
+                <article class="semantic-indicator a11y-element" data-semantic="<article>">
+                    <div class="a11y-tooltip">Semantisches HTML: <article> - Eigenständiger Inhalt</div>
+
+                    <section class="semantic-indicator a11y-element" data-semantic="<section>">
+                        <div class="a11y-tooltip">Semantisches HTML: <section> - Thematischer Abschnitt</div>
+                        
+                        <h2 class="a11y-element">
+                            <div class="a11y-tooltip">H2 - Abschnittsüberschrift für Dokumentstruktur</div>
+                            Geschichte und Überblick
+                        </h2>
+                        
+                        <div class="image-container a11y-element">
+                            <div class="a11y-tooltip">Bildbehälter mit Alt-Text für Barrierefreiheit</div>
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='300' viewBox='0 0 600 300'%3E%3Crect width='600' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' font-size='20' text-anchor='middle' dy='.3em' fill='%23666'%3EHochschule Ansbach Campus%3C/text%3E%3C/svg%3E" 
+                                 class="article-image a11y-element" 
+                                 alt="Campus der Hochschule Ansbach mit modernen Gebäuden und Grünflächen"
+                                 loading="lazy">
+                            <div class="a11y-tooltip">Alt-Text: "Campus der Hochschule Ansbach mit modernen Gebäuden und Grünflächen" + lazy loading</div>
+                            <p class="image-caption a11y-element">
+                                <div class="a11y-tooltip">Bildunterschrift für zusätzlichen Kontext</div>
+                                Der moderne Campus der Hochschule Ansbach
+                            </p>
+                        </div>
+
+                        <p class="a11y-element">
+                            <div class="a11y-tooltip">Paragraph - gut strukturierter Fließtext</div>
+                            Die <strong class="a11y-element">
+                                <div class="a11y-tooltip">Semantische Hervorhebung mit <strong></div>
+                                Hochschule Ansbach
+                            </strong> ist eine staatliche Hochschule für angewandte Wissenschaften in 
+                            <span class="a11y-element">
+                                <div class="a11y-tooltip">Geografische Information für Suchmaschinen</div>
+                                Ansbach, Bayern
+                            </span>. Sie wurde 1996 gegründet und hat sich zu einer der führenden Fachhochschulen in der Region entwickelt.
+                            <span class="sr-only sr-text-reveal">Zusätzliche Information für Screen Reader: Die Hochschule bietet praxisnahe Studiengänge</span>
+                        </p>
+
+                        <p class="a11y-element">
+                            <div class="a11y-tooltip">Strukturierter Absatz mit wichtigen Fakten</div>
+                            Mit über <span class="a11y-element">
+                                <div class="a11y-tooltip">Numerische Daten für SEO-Relevanz</div>
+                                4.000 Studierenden
+                            </span> in mehr als <span class="a11y-element">
+                                <div class="a11y-tooltip">Studiengangs-Information für Suchrelevanz</div>
+                                50 Studiengängen
+                            </span> bietet sie ein breites Spektrum an Bildungsmöglichkeiten in den Bereichen Wirtschaft, Technik und Medien.
+                        </p>
+                    </section>
+
+                    <section class="semantic-indicator a11y-element" data-semantic="<section>">
+                        <div class="a11y-tooltip">Weitere thematische Sektion</div>
+                        
+                        <h2 class="a11y-element">
+                            <div class="a11y-tooltip">H2 - Zweite Hauptabschnittsüberschrift</div>
+                            Fakultäten und Studienbereiche
+                        </h2>
+
+                        <nav class="semantic-indicator a11y-element" data-semantic="<nav>" role="navigation" aria-label="Fakultäten-Navigation">
+                            <div class="a11y-tooltip">ARIA: role="navigation" + aria-label für Screen Reader</div>
+                            
+                            <h3 class="a11y-element">
+                                <div class="a11y-tooltip">H3 - Unterabschnittsüberschrift</div>
+                                Hauptfakultäten
+                                <span class="sr-only sr-text-reveal">Navigation durch die verschiedenen Fakultätsbereiche</span>
+                            </h3>
+
+                            <ul class="a11y-element">
+                                <div class="a11y-tooltip">Semantische Liste für strukturierte Inhalte</div>
+                                <li class="a11y-element">
+                                    <div class="a11y-tooltip">Listenpunkt - strukturierte Information</div>
+                                    <strong class="a11y-element">
+                                        <div class="a11y-tooltip">Betonung des Fakultätsnamens</div>
+                                        Fakultät Wirtschaft:
+                                    </strong> Betriebswirtschaft, International Business, Wirtschaftsinformatik
+                                </li>
+                                <li class="a11y-element">
+                                    <div class="a11y-tooltip">Zweiter strukturierter Listenpunkt</div>
+                                    <strong class="a11y-element">
+                                        <div class="a11y-tooltip">Technische Fakultät hervorgehoben</div>
+                                        Fakultät Technik:
+                                    </strong> Maschinenbau, Elektrotechnik, Industrielle Biotechnologie
+                                    <span class="sr-only sr-text-reveal">Diese Fakultät bietet besonders praxisnahe Studiengänge</span>
+                                </li>
+                                <li class="a11y-element">
+                                    <div class="a11y-tooltip">Medienfakultät - wichtig für moderne Ausbildung</div>
+                                    <strong class="a11y-element">
+                                        <div class="a11y-tooltip">Medien- und Kommunikationsbereich</div>
+                                        Fakultät Medien:
+                                    </strong> Multimedia und Kommunikation, Ressortjournalismus, Interaktive Medien
+                                </li>
+                            </ul>
+                        </nav>
+                    </section>
+
+                    <section class="semantic-indicator a11y-element" data-semantic="<section>">
+                        <div class="a11y-tooltip">Abschließende Sektion mit Kontaktinformationen</div>
+                        
+                        <h2 class="a11y-element">
+                            <div class="a11y-tooltip">H2 - Kontaktbereich für bessere Navigation</div>
+                            Standort und Kontakt
+                        </h2>
+
+                        <address class="semantic-indicator a11y-element" data-semantic="<address>">
+                            <div class="a11y-tooltip">Semantisches <address>-Element für Kontaktdaten</div>
+                            <strong class="a11y-element">
+                                <div class="a11y-tooltip">Institution hervorgehoben</div>
+                                Hochschule Ansbach
+                            </strong><br>
+                            <span class="a11y-element">
+                                <div class="a11y-tooltip">Vollständige Adresse für lokale SEO</div>
+                                Residenzstraße 8<br>
+                                91522 Ansbach<br>
+                                Bayern, Deutschland
+                            </span>
+                            <span class="sr-only sr-text-reveal">Postadresse für Kontaktaufnahme</span>
+                        </address>
+
+                        <p class="a11y-element">
+                            <div class="a11y-tooltip">Kontaktinformationen für Erreichbarkeit</div>
+                            <strong>Telefon:</strong> 
+                            <a href="tel:+4998148770" class="a11y-element">
+                                <div class="a11y-tooltip">Telefon-Link für direkte Anwahl</div>
+                                +49 981 4877-0
+                            </a><br>
+                            <strong>Website:</strong> 
+                            <a href="https://www.hs-ansbach.de" class="a11y-element" target="_blank" rel="noopener noreferrer">
+                                <div class="a11y-tooltip">Externer Link mit security attributes (noopener noreferrer)</div>
+                                www.hs-ansbach.de
+                                <span class="sr-only sr-text-reveal">Link öffnet in neuem Tab</span>
+                            </a>
+                        </p>
+                    </section>
+                </article>
+            </main>
+
+            <!-- Footer -->
+            <footer class="semantic-indicator a11y-element" data-semantic="<footer>" role="contentinfo">
+                <div class="a11y-tooltip">ARIA: role="contentinfo" - Seitenfuß mit Meta-Informationen</div>
+                <p class="a11y-element">
+                    <div class="a11y-tooltip">Copyright-Information für rechtliche Klarheit</div>
+                    © 2026 Demo-Seite für Accessibility & SEO Schulung
+                    <span class="sr-only sr-text-reveal">Diese Seite dient nur zu Demonstrationszwecken</span>
+                </p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.querySelector('.theme-icon');
+        const root = document.documentElement;
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('webdesign-lecture-theme');
+            if (savedTheme) {
+                root.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = prefersDark ? 'dark' : 'light';
+                root.setAttribute('data-theme', theme);
+                updateThemeIcon(theme);
+            }
+        }
+
+        function updateThemeIcon(theme) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('webdesign-lecture-theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        initTheme();
+
+        // SEO Inspector Toggle
+        function toggleSEOInspector() {
+            const inspector = document.getElementById('seoInspector');
+            inspector.classList.toggle('active');
+        }
+
+        // Update meta display dynamically
+        function updateMetaDisplay() {
+            const title = document.title;
+            const description = document.querySelector('meta[name="description"]').content;
+            
+            document.getElementById('titleDisplay').textContent = title;
+            document.getElementById('descriptionDisplay').textContent = description;
+        }
+
+        updateMetaDisplay();
+
+        // Add keyboard navigation for accessibility
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const inspector = document.getElementById('seoInspector');
+                inspector.classList.remove('active');
+            }
+            if (e.key === 'F12' || (e.ctrlKey && e.key === 'i')) {
+                e.preventDefault();
+                toggleSEOInspector();
+            }
+        });
+
+        // Announce changes for screen readers
+        function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.style.position = 'absolute';
+            announcement.style.left = '-9999px';
+            announcement.textContent = message;
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcement);
+            }, 1000);
+        }
+
+        // Announce when SEO inspector is toggled
+        const seoToggle = document.querySelector('.seo-toggle');
+        seoToggle.addEventListener('click', () => {
+            const inspector = document.getElementById('seoInspector');
+            const isActive = inspector.classList.contains('active');
+            announceToScreenReader(isActive ? 'SEO-Inspektor geschlossen' : 'SEO-Inspektor geöffnet');
+        });
+    </script>
+</body>
+
+</html>
